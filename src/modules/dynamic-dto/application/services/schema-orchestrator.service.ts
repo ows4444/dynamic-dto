@@ -3,13 +3,11 @@ import { FieldSchema } from '../../core/interfaces/schema';
 import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
 import { FieldValidatorRegistry } from '../../infrastructure/registries/field-validator.registry';
 import { EnhancedStructuralSchemaValidator } from '../../validators/schema-validators/enhanced-structural-schema.validator';
-import { FieldProcessorRegistry } from '../../infrastructure/registries/field-processor.registry';
 
 @Injectable()
 export class SchemaOrchestratorService {
   constructor(
     private fieldValidatorRegistry: FieldValidatorRegistry,
-    private fieldProcessorRegistry: FieldProcessorRegistry,
     private enhancedValidator: EnhancedStructuralSchemaValidator,
   ) {}
 
