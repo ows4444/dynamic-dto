@@ -10,7 +10,7 @@ export interface BaseFieldSchema {
   readonly description?: string;
   readonly default?: unknown;
   readonly nullable?: boolean;
-  readonly readonly?: boolean;
+  readonly readonly?: boolean; // if readonly,  and autoGenerate is set, it will not be included in the DTO
   readonly version?: string;
 
   // Lifecycle

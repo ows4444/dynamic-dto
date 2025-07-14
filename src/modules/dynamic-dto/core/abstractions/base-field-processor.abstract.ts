@@ -16,7 +16,6 @@ export interface TransformParams {
   value: unknown;
   obj: Record<string, unknown>;
   key: string;
-  type: string;
 }
 
 export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
@@ -110,8 +109,8 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
   }
 
   protected createUnifiedTransform(schema: T, transformFunctions: TransformationFunction[]): PropertyDecorator {
-    return Transform(({ value, obj, key, type }) => {
-      const params: TransformParams = { value, obj, key, type: String(type) };
+    return Transform(({ value, obj, key }: TransformParams) => {
+      const params = { value, obj, key };
       let currentValue = value;
 
       for (const fn of transformFunctions) {
