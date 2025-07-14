@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Transform } from 'class-transformer';
 import { IsBoolean, IsDefined, IsOptional } from 'class-validator';
-import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
+import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 
 import { FieldSchema } from '../../../core/interfaces/schema';
 import { FieldType } from '../../../core/types/field.types';
@@ -15,7 +14,7 @@ export class BooleanFieldProcessor extends BaseFieldProcessor<BooleanFieldSchema
     return schema.type === FieldType.BOOLEAN;
   }
 
-  generateValidationDecorators(schema: BooleanFieldSchema, isRequired: boolean, parentIsArray: boolean): PropertyDecorator[] {
+  generateValidationDecorators(_schema: BooleanFieldSchema, isRequired: boolean, parentIsArray: boolean): PropertyDecorator[] {
     const decorators: PropertyDecorator[] = [];
 
     if (isRequired) {
@@ -29,30 +28,39 @@ export class BooleanFieldProcessor extends BaseFieldProcessor<BooleanFieldSchema
     return decorators;
   }
 
-  generateTransformationDecorators(schema: BooleanFieldSchema): PropertyDecorator[] {
-    const decorators: PropertyDecorator[] = [];
+  protected getTypeSpecificTransformations(schema: BooleanFieldSchema): TransformationFunction[] {
+    const functions: TransformationFunction[] = [];
 
-    // Default should come last (i.e., applied first)
-    if (schema.default !== undefined) {
-      decorators.unshift(this.createDefaultValueTransform(schema));
-    }
-
-    // Combined transformation logic
-    decorators.push(
-      Transform(({ value }: { value: string | number }) => {
+    // Boolean coercion transformation (order: 30)
+    functions.push({
+      order: 30,
+      name: 'boolean_coercion',
+      transform: ({ value }) => {
         // Apply custom true/false mappings first
-        if (schema.trueValues?.includes(value)) return true;
-        if (schema.falseValues?.includes(value)) return false;
+        if (schema.trueValues?.includes(value as string | number)) return true;
+        if (schema.falseValues?.includes(value as string | number)) return false;
 
         // Handle string coercion
         if (typeof value === 'string') {
-          return value.toLowerCase() === 'true';
+          const lowerValue = value.toLowerCase().trim();
+          if (lowerValue === 'true' || lowerValue === '1' || lowerValue === 'yes' || lowerValue === 'on') {
+            return true;
+          }
+          if (lowerValue === 'false' || lowerValue === '0' || lowerValue === 'no' || lowerValue === 'off' || lowerValue === '') {
+            return false;
+          }
         }
+
+        // Handle number coercion
+        if (typeof value === 'number') {
+          return value !== 0;
+        }
+
         // Fallback boolean coercion
         return Boolean(value);
-      }),
-    );
+      },
+    });
 
-    return decorators;
+    return functions;
   }
 }

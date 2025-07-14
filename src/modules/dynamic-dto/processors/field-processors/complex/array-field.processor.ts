@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsOptional, ValidateNested } from 'class-validator';
-import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
+import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../../core/interfaces/schema';
 import { FieldProcessorRegistry } from '../../../infrastructure/registries/field-processor.registry';
 import { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';
@@ -57,18 +57,59 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
     return decorators;
   }
 
-  generateTransformationDecorators(schema: ArrayFieldSchema): PropertyDecorator[] {
-    const decorators: PropertyDecorator[] = [];
+  protected getTypeSpecificTransformations(schema: ArrayFieldSchema): TransformationFunction[] {
+    const functions: TransformationFunction[] = [];
 
-    if (schema.default !== undefined) {
-      decorators.push(this.createDefaultValueTransform(schema));
-    }
-    // Nested object transformation
+    // Array coercion (order: 30)
+    functions.push({
+      order: 30,
+      name: 'array_coercion',
+      transform: ({ value }) => {
+        if (Array.isArray(value)) return value;
+
+        // Convert single values to arrays if not already an array
+        if (value !== undefined && value !== null) {
+          return [value];
+        }
+
+        return value;
+      },
+    });
+
+    // Array processing (order: 40)
+    functions.push({
+      order: 40,
+      name: 'array_processing',
+      transform: ({ value }) => {
+        if (!Array.isArray(value)) return value;
+
+        let result = [...value];
+
+        // Remove duplicates if configured
+        if (schema.uniqueItems) {
+          result = [...new Set(result)];
+        }
+
+        return result;
+      },
+      condition: (_, { value }) => Array.isArray(value),
+    });
+
+    // Basic item validation for complex items (order: 50)
     if (!Array.isArray(schema.items) && schema.items.type === FieldType.OBJECT) {
-      // This would need to be implemented with nested class generation
-      // For now, we'll skip this complex case
+      functions.push({
+        order: 50,
+        name: 'item_validation',
+        transform: ({ value }) => {
+          if (!Array.isArray(value)) return value;
+
+          // Basic validation that items are objects
+          return value.filter((item) => item && typeof item === 'object');
+        },
+        condition: (_, { value }) => Array.isArray(value),
+      });
     }
 
-    return decorators;
+    return functions;
   }
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Transform } from 'class-transformer';
 import { IsDate, IsDateString, IsDefined, IsOptional } from 'class-validator';
-import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
+import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../../core/interfaces/schema';
 import { DateFieldSchema, DateFormat } from '../../../core/interfaces/schema/specialized-primitives/date-field.schema';
 import { FieldType } from '../../../core/types/field.types';
@@ -36,32 +35,65 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
     return decorators;
   }
 
-  generateTransformationDecorators(schema: DateFieldSchema): PropertyDecorator[] {
-    const decorators: PropertyDecorator[] = [];
+  protected getTypeSpecificTransformations(schema: DateFieldSchema): TransformationFunction[] {
+    const functions: TransformationFunction[] = [];
 
-    // Date parsing transformation
-    decorators.push(
-      Transform(({ value }) => {
+    // Date parsing transformation (order: 30)
+    functions.push({
+      order: 30,
+      name: 'date_parsing',
+      transform: ({ value }) => {
         if (!value) return value;
+        if (value instanceof Date) return value;
 
         if (typeof value === 'string') {
-          const date = new Date(value);
-          return isNaN(date.getTime()) ? value : date;
+          const trimmed = value.trim();
+          if (!trimmed) return value;
+
+          // Try parsing as ISO string first
+          const date = new Date(trimmed);
+          if (!isNaN(date.getTime())) {
+            return date;
+          }
+
+          // Try parsing with specific format if provided
+          if (schema.format === DateFormat.ISO) {
+            const isoDate = new Date(trimmed);
+            return !isNaN(isoDate.getTime()) ? isoDate : value;
+          }
+
+          return value;
         }
 
         if (typeof value === 'number') {
-          return new Date(value);
+          // Assume timestamp
+          const date = new Date(value);
+          return !isNaN(date.getTime()) ? date : value;
         }
 
         return value;
-      }),
-    );
+      },
+    });
 
-    // Default value transformation
-    if (schema.default !== undefined) {
-      decorators.push(this.createDefaultValueTransform(schema));
+    // Date formatting transformation (order: 40)
+    if (schema.format) {
+      functions.push({
+        order: 40,
+        name: 'date_formatting',
+        transform: ({ value }) => {
+          if (!(value instanceof Date)) return value;
+
+          switch (schema.format) {
+            case DateFormat.ISO:
+              return value.toISOString();
+            default:
+              return value;
+          }
+        },
+        condition: (_, { value }) => value instanceof Date,
+      });
     }
 
-    return decorators;
+    return functions;
   }
 }
