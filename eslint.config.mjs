@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', 'scripts/**', 'dist/**', 'node_modules/**', 'jest.*.js'],
+    ignores: ['eslint.config.mjs', 'scripts/**', 'dist/**', 'node_modules/**', 'jest.*.js',"src/**/*.spec.ts", "*.test.ts","test/**", "tests/**", "coverage/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
