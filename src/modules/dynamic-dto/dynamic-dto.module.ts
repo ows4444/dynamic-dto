@@ -31,7 +31,6 @@ import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.mod
 
 // Services
 import { ValidationErrorService, ValidationErrorRecoveryService } from './exceptions/validation';
-import { AuditModule } from '../audit/audit.module';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 
 @Module({})
@@ -44,7 +43,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
     return {
       module: DynamicDtoModule,
       global: options.isGlobal ?? false,
-      imports: [AuditModule, ...(options.imports ?? [])],
+      imports: [...(options.imports ?? [])],
       providers: [
         // Module options
         {

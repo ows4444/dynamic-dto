@@ -10,6 +10,7 @@ export interface NumberFieldSchema extends BaseFieldSchema {
   readonly max?: number;
   readonly exclusiveMin?: number;
   readonly exclusiveMax?: number;
+  readonly clamp?: boolean;
 
   // Precision
   readonly precision?: number;

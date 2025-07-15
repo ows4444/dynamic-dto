@@ -83,7 +83,7 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
     }
 
     // Range clamping (order: 50)
-    if (schema.min !== undefined || schema.max !== undefined) {
+    if (schema.clamp && (schema.min !== undefined || schema.max !== undefined)) {
       functions.push({
         order: 50,
         name: 'range_clamping',

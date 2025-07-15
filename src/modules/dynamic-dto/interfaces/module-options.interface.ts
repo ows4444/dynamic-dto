@@ -11,8 +11,4 @@ export interface DynamicDtoModuleOptions {
     maxNestingDepth?: number;
     performanceMode?: 'strict' | 'optimized';
   };
-  audit?: {
-    enabled: boolean;
-    retentionPeriod?: number;
-  };
 }

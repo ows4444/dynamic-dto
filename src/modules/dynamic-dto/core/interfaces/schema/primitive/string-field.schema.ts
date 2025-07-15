@@ -151,7 +151,6 @@ export interface SecurityConfig {
   encryption?: EncryptionConfig;
   hashing?: HashingConfig;
   redaction?: RedactionConfig;
-  audit?: boolean;
   pii?: boolean; // Personally Identifiable Information
   sensitive?: boolean;
 }
