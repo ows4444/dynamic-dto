@@ -13,7 +13,6 @@ import { SchemaValidationPipeline } from './application/pipelines/schema-validat
 // Infrastructure
 import { CacheManagerService } from './infrastructure/cache/cache-manager.service';
 import { MemoryCacheStrategy } from './infrastructure/cache/strategies/memory-cache.strategy';
-import { RedisCacheStrategy } from './infrastructure/cache/strategies/redis-cache.strategy';
 
 // Registries (refactored to avoid circular dependencies)
 import { FieldProcessorRegistry } from './infrastructure/registries/field-processor.registry';
@@ -31,9 +30,8 @@ import { createFieldValidatorProviders } from './infrastructure/factories/field-
 import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
 import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.module-definition';
 
-// Interceptors and Guards
+// Interceptors
 import { TenantContextInterceptor } from '../tenant/interceptors/tenant-context.interceptor';
-import { SchemaValidationGuard } from './guards/schema-validation.guard';
 import { ValidationErrorService, ValidationErrorRecoveryService } from './exceptions/validation';
 import { AuditModule } from '../audit/audit.module';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
@@ -90,8 +88,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         ValidationErrorService,
         ValidationErrorRecoveryService,
 
-        // Guards and Interceptors
-        SchemaValidationGuard,
+        // Interceptors
         TenantContextInterceptor,
         NestedClassGeneratorService,
       ],
@@ -113,7 +110,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
     return [
       {
         provide: 'ICacheStrategy',
-        useClass: cacheStrategy === 'redis' ? RedisCacheStrategy : MemoryCacheStrategy,
+        useClass: MemoryCacheStrategy,
       },
       CacheManagerService,
       {

@@ -4,7 +4,12 @@ import { FieldSchema } from '../../core/interfaces/schema';
 import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
 import { FieldType, FieldTypeValue } from '../../core/types/field.types';
 import { ValidationResultBuilder } from '../../core/utils/validation-result.builder';
-import { ValidatorStats } from '../../core/interfaces/registry-stats.interface';
+
+interface ValidatorStats {
+  totalValidators: number;
+  supportedTypes: FieldTypeValue[];
+  initialized: boolean;
+}
 
 // Import validators
 import { BooleanFieldValidator } from '../../validators/field-validators/primitive/boolean-field.validator';

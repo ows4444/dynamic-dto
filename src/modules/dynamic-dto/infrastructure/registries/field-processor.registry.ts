@@ -2,17 +2,20 @@ import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { FieldTypeValue } from '../../core/types/field.types';
-import { ProcessorStats } from '../../core/interfaces/registry-stats.interface';
 
 // Import processors
 import { StringFieldProcessor } from '../../processors/field-processors/primitive/string-field.processor';
 import { NumberFieldProcessor } from '../../processors/field-processors/primitive/number-field.processor';
 import { BooleanFieldProcessor } from '../../processors/field-processors/primitive/boolean-field.processor';
 import { DateFieldProcessor } from '../../processors/field-processors/specialized/date-field.processor';
-import { EnumFieldProcessor } from '../../processors/field-processors/specialized/enum-field.processor';
-import { FileFieldProcessor } from '../../processors/field-processors/specialized/file-field.processor';
 import { ArrayFieldProcessor } from '../../processors/field-processors/complex/array-field.processor';
 import { ObjectFieldProcessor } from '../../processors/field-processors/complex/object-field.processor';
+
+interface ProcessorStats {
+  totalProcessors: number;
+  supportedTypes: FieldTypeValue[];
+  initialized: boolean;
+}
 
 @Injectable()
 export class FieldProcessorRegistry implements OnModuleInit {
@@ -25,8 +28,6 @@ export class FieldProcessorRegistry implements OnModuleInit {
     private readonly numberProcessor: NumberFieldProcessor,
     private readonly booleanProcessor: BooleanFieldProcessor,
     private readonly dateProcessor: DateFieldProcessor,
-    private readonly enumProcessor: EnumFieldProcessor,
-    private readonly fileProcessor: FileFieldProcessor,
     private readonly arrayProcessor: ArrayFieldProcessor,
     private readonly objectProcessor: ObjectFieldProcessor,
   ) {}
@@ -40,8 +41,6 @@ export class FieldProcessorRegistry implements OnModuleInit {
       this.registerProcessor(this.numberProcessor);
       this.registerProcessor(this.booleanProcessor);
       this.registerProcessor(this.dateProcessor);
-      this.registerProcessor(this.enumProcessor);
-      this.registerProcessor(this.fileProcessor);
       this.registerProcessor(this.arrayProcessor);
       this.registerProcessor(this.objectProcessor);
 

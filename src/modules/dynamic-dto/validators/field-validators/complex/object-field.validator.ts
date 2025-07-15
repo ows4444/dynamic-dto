@@ -321,8 +321,8 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     if (!schema.discriminator) return;
 
     const discriminatorProp = schema.properties[schema.discriminator.propertyName];
-    if (discriminatorProp && discriminatorProp.type !== FieldType.STRING && discriminatorProp.type !== FieldType.ENUM) {
-      builder.addWarning('OBJECT_DISCRIMINATOR_TYPE_RECOMMENDATION', `Discriminator property '${schema.discriminator.propertyName}' should be of type 'string' or 'enum'`);
+    if (discriminatorProp && discriminatorProp.type !== FieldType.STRING) {
+      builder.addWarning('OBJECT_DISCRIMINATOR_TYPE_RECOMMENDATION', `Discriminator property '${schema.discriminator.propertyName}' should be of type 'string'`);
     }
   }
 

@@ -287,9 +287,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
       return sensitiveFormats.includes(stringSchema.format!);
     }
 
-    if (schema.type === FieldType.FILE) {
-      return true; // Files are generally sensitive
-    }
+    // Note: FILE type was removed from supported field types
 
     return false;
   }
