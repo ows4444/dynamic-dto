@@ -10,7 +10,6 @@ export interface ValidationErrorContext {
   readonly userRoles?: readonly string[];
   readonly timestamp?: Date;
   readonly requestId?: string;
-  readonly tenantId?: string;
 }
 
 export interface ValidationErrorSuggestion {

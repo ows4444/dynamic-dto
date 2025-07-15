@@ -4,7 +4,6 @@ import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity
 import { DtoGenerationPipeline } from '../pipelines/dto-generation.pipeline';
 import { ValidationPipeline } from '../pipelines/validation.pipeline';
 import { ClassConstructor } from '../../core/types/common.types';
-import { TenantContextService } from '../../../tenant/services/tenant-context.service';
 import { MODULE_OPTIONS_TOKEN } from '../../dynamic-dto.module-definition';
 import { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
 import { PerformanceMonitoringService } from '../../../monitoring/services/performance-monitoring.service';
@@ -16,7 +15,6 @@ export class DtoOrchestratorService {
   constructor(
     private readonly validationPipeline: ValidationPipeline,
     private readonly generationPipeline: DtoGenerationPipeline,
-    private readonly tenantContext: TenantContextService,
     private readonly performanceMonitoring: PerformanceMonitoringService,
     @Inject('ICacheManager') private readonly cacheManager: ICacheManager,
     @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions,
@@ -24,11 +22,10 @@ export class DtoOrchestratorService {
 
   async generateDto(schema: DynamicSchemaEntity): Promise<ClassConstructor<object>> {
     const startTime = Date.now();
-    const tenantId = this.tenantContext.getTenantId();
 
     try {
-      // Generate tenant-specific cache key
-      const cacheKey = this.generateCacheKey(schema, tenantId);
+      // Generate cache key
+      const cacheKey = this.generateCacheKey(schema);
 
       // Check cache first
       const cached = await this.cacheManager.get<ClassConstructor<object>>(cacheKey);
@@ -39,12 +36,11 @@ export class DtoOrchestratorService {
 
       this.performanceMonitoring.recordCacheMiss('dto_generation');
 
-      // Validate schema with tenant context
+      // Validate schema
       const validationResult = this.validationPipeline.validate(schema);
       if (!validationResult.isValid) {
         this.logger.error('Schema validation failed', {
           schemaId: schema.id,
-          tenantId,
           errors: validationResult.errors,
         });
         throw new Error(`Schema validation failed: ${JSON.stringify(validationResult.errors)}`);
@@ -53,7 +49,7 @@ export class DtoOrchestratorService {
       // Generate DTO
       const generatedClass = await this.generationPipeline.generateAsync(schema);
 
-      // Cache result with tenant isolation
+      // Cache result
       const ttl = this.options.cache?.ttl ?? 3600; // 1 hour default
       await this.cacheManager.set(cacheKey, generatedClass, ttl);
 
@@ -63,7 +59,6 @@ export class DtoOrchestratorService {
 
       this.logger.log('DTO generated successfully', {
         schemaId: schema.id,
-        tenantId,
         duration,
       });
 
@@ -74,7 +69,6 @@ export class DtoOrchestratorService {
 
       this.logger.error('DTO generation failed', {
         schemaId: schema.id,
-        tenantId,
         duration,
         error: error.message,
       });
@@ -114,8 +108,7 @@ export class DtoOrchestratorService {
     }
   }
 
-  private generateCacheKey(schema: DynamicSchemaEntity, tenantId?: string): string {
-    const baseKey = `dto:${schema.name}:${schema.version.toString()}`;
-    return tenantId ? `${tenantId}:${baseKey}` : baseKey;
+  private generateCacheKey(schema: DynamicSchemaEntity): string {
+    return `dto:${schema.name}:${schema.version.toString()}`;
   }
 }

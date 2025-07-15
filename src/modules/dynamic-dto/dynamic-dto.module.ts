@@ -3,7 +3,6 @@ import { Module, DynamicModule, Provider } from '@nestjs/common';
 // Core services
 import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';
 import { SchemaOrchestratorService } from './application/services/schema-orchestrator.service';
-import { TenantContextService } from '../tenant/services/tenant-context.service';
 
 // Pipelines
 import { DtoGenerationPipeline } from './application/pipelines/dto-generation.pipeline';
@@ -30,8 +29,7 @@ import { createFieldValidatorProviders } from './infrastructure/factories/field-
 import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
 import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.module-definition';
 
-// Interceptors
-import { TenantContextInterceptor } from '../tenant/interceptors/tenant-context.interceptor';
+// Services
 import { ValidationErrorService, ValidationErrorRecoveryService } from './exceptions/validation';
 import { AuditModule } from '../audit/audit.module';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
@@ -81,18 +79,14 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         ...fieldProcessorProviders,
         ...fieldValidatorProviders,
 
-        // Multi-tenant services
-        TenantContextService,
-
         // Validation services
         ValidationErrorService,
         ValidationErrorRecoveryService,
 
-        // Interceptors
-        TenantContextInterceptor,
+        // Infrastructure services
         NestedClassGeneratorService,
       ],
-      exports: [DtoOrchestratorService, NestedClassGeneratorService, SchemaOrchestratorService, FieldProcessorRegistry, FieldValidatorRegistry, SchemaValidationPipeline, TenantContextService],
+      exports: [DtoOrchestratorService, NestedClassGeneratorService, SchemaOrchestratorService, FieldProcessorRegistry, FieldValidatorRegistry, SchemaValidationPipeline],
     };
   }
 
@@ -105,8 +99,6 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
   }
 
   private static createCacheProviders(options: DynamicDtoModuleOptions): Provider[] {
-    const cacheStrategy = options.cache?.strategy ?? 'memory';
-
     return [
       {
         provide: 'ICacheStrategy',

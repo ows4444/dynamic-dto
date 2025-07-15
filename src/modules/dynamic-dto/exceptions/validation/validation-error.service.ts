@@ -274,7 +274,6 @@ export class ValidationErrorService {
     userRoles?: readonly string[],
     operation?: 'create' | 'read' | 'update' | 'delete',
     requestId?: string,
-    tenantId?: string,
   ): ValidationErrorAggregator {
     const context: ValidationErrorContext = {
       schemaName,
@@ -282,7 +281,6 @@ export class ValidationErrorService {
       userRoles,
       operation,
       requestId,
-      tenantId,
       timestamp: new Date(),
     };
 
