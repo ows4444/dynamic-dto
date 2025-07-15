@@ -34,6 +34,7 @@ import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.mod
 // Interceptors and Guards
 import { TenantContextInterceptor } from '../tenant/interceptors/tenant-context.interceptor';
 import { SchemaValidationGuard } from './guards/schema-validation.guard';
+import { ValidationErrorService, ValidationErrorRecoveryService } from './exceptions/validation';
 import { AuditModule } from '../audit/audit.module';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 
@@ -84,6 +85,10 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
 
         // Multi-tenant services
         TenantContextService,
+
+        // Validation services
+        ValidationErrorService,
+        ValidationErrorRecoveryService,
 
         // Guards and Interceptors
         SchemaValidationGuard,

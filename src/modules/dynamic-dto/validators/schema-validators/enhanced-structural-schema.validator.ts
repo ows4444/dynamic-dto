@@ -4,6 +4,7 @@ import { FieldSchema } from '../../core/interfaces/schema';
 import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
 import { FieldValidatorRegistry } from '../../infrastructure/registries/field-validator.registry';
 import { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
+import { ValidationResultMerger } from '../../core/utils/validation-result-merger';
 
 @Injectable()
 export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
@@ -12,41 +13,36 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
   }
 
   validate(schema: Record<string, FieldSchema>, data?: unknown, context: string = ''): ValidationResult {
-    return this.validateSchemaObject(schema, context);
+    return this.validateSchemaObject(schema, context, data);
   }
 
-  private validateSchemaObject(schema: Record<string, FieldSchema>, context: string): ValidationResult {
-    const errors: ValidationIssue[] = [];
-    const warnings: ValidationIssue[] = [];
-    const infos: ValidationIssue[] = [];
-    const issues: ValidationIssue[] = [];
+  private validateSchemaObject(schema: Record<string, FieldSchema>, context: string, data?: unknown): ValidationResult {
+    const results: ValidationResult[] = [];
 
-    // Validate schema structure
-    const structureResult = this.validateSchemaStructure(schema, context);
-    if (!structureResult.isValid) {
-      if (structureResult.errors) errors.push(...structureResult.errors);
-    }
-    if (structureResult.warnings) warnings.push(...structureResult.warnings);
-    if (structureResult.infos) infos.push(...structureResult.infos);
-    if (structureResult.issues) issues.push(...structureResult.issues);
+    // Enhanced schema structure validation with integrity checks
+    results.push(this.validateSchemaStructure(schema, context));
+    results.push(this.validateSchemaIntegrity(schema, context));
 
-    // Validate individual fields using the new validator registry
+    // Validate individual fields using both BaseSchemaValidator and FieldValidatorRegistry
     for (const [fieldName, fieldSchema] of Object.entries(schema)) {
       const fieldPath = context ? `${context}.${fieldName}` : fieldName;
       const validationContext: ValidationContext = {
         fieldPath,
         depth: context.split('.').filter(Boolean).length,
         parentType: undefined,
+        data,
       };
 
-      const result = this.fieldValidatorRegistry.validateField(fieldSchema, validationContext);
-      if (result.errors) errors.push(...result.errors);
-      if (result.warnings) warnings.push(...result.warnings);
-      if (result.infos) infos.push(...result.infos);
-      if (result.issues) issues.push(...result.issues);
+      // Use enhanced validateFieldSchema from BaseSchemaValidator
+      const baseValidationResult = this.validateFieldSchema(fieldName, fieldSchema, validationContext);
+      results.push(baseValidationResult);
+
+      // Use field-specific validation from registry
+      const registryResult = this.fieldValidatorRegistry.validateField(fieldSchema, validationContext);
+      results.push(registryResult);
     }
 
-    return { isValid: errors.length === 0, errors, infos, issues, warnings };
+    return ValidationResultMerger.mergeResults(results);
   }
 
   private validateSchemaStructure(schema: Record<string, FieldSchema>, context: string): ValidationResult {
