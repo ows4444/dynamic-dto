@@ -6,7 +6,6 @@ import { ValidationPipeline } from '../pipelines/validation.pipeline';
 import { ClassConstructor } from '../../core/types/common.types';
 import { MODULE_OPTIONS_TOKEN } from '../../dynamic-dto.module-definition';
 import { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
-import { PerformanceMonitoringService } from '../../../monitoring/services/performance-monitoring.service';
 
 @Injectable()
 export class DtoOrchestratorService {
@@ -15,7 +14,6 @@ export class DtoOrchestratorService {
   constructor(
     private readonly validationPipeline: ValidationPipeline,
     private readonly generationPipeline: DtoGenerationPipeline,
-    private readonly performanceMonitoring: PerformanceMonitoringService,
     @Inject('ICacheManager') private readonly cacheManager: ICacheManager,
     @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions,
   ) {}
@@ -30,11 +28,8 @@ export class DtoOrchestratorService {
       // Check cache first
       const cached = await this.cacheManager.get<ClassConstructor<object>>(cacheKey);
       if (cached) {
-        this.performanceMonitoring.recordCacheHit('dto_generation');
         return cached;
       }
-
-      this.performanceMonitoring.recordCacheMiss('dto_generation');
 
       // Validate schema
       const validationResult = this.validationPipeline.validate(schema);
@@ -55,7 +50,6 @@ export class DtoOrchestratorService {
 
       // Record performance metrics
       const duration = Date.now() - startTime;
-      this.performanceMonitoring.recordOperationDuration('dto_generation', duration);
 
       this.logger.log('DTO generated successfully', {
         schemaId: schema.id,
@@ -65,7 +59,6 @@ export class DtoOrchestratorService {
       return generatedClass;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.performanceMonitoring.recordError('dto_generation', error.message);
 
       this.logger.error('DTO generation failed', {
         schemaId: schema.id,
