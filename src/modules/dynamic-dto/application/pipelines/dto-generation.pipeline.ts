@@ -9,7 +9,7 @@ export class DtoGenerationPipeline {
   private readonly logger = new Logger(DtoGenerationPipeline.name);
   private readonly generatedClasses = new Map<string, ClassConstructor<object>>();
 
-  constructor(@Inject(forwardRef(() => FieldProcessorRegistry)) private readonly fieldProcessorRegistry: FieldProcessorRegistry) {}
+  constructor(private readonly fieldProcessorRegistry: FieldProcessorRegistry) {}
 
   async generateAsync(schema: DynamicSchemaEntity): Promise<ClassConstructor<object>> {
     return new Promise((resolve, reject) => {
