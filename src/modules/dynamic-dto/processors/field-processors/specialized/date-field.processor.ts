@@ -7,10 +7,10 @@ import { FieldType } from '../../../core/types/field.types';
 
 @Injectable()
 export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
-  readonly supportedType = FieldType.DATE;
+  readonly supportedType = FieldType.date;
 
   canProcess(schema: FieldSchema): schema is DateFieldSchema {
-    return schema.type === FieldType.DATE;
+    return schema.type === FieldType.date;
   }
 
   generateValidationDecorators(schema: DateFieldSchema, isRequired: boolean, parentIsArray?: boolean): PropertyDecorator[] {
@@ -25,7 +25,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
 
     // Date validation based on format
     switch (schema.format) {
-      case DateFormat.ISO:
+      case DateFormat.iso:
         decorators.push(IsDateString({}, options));
         break;
       default:
@@ -57,7 +57,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
           }
 
           // Try parsing with specific format if provided
-          if (schema.format === DateFormat.ISO) {
+          if (schema.format === DateFormat.iso) {
             const isoDate = new Date(trimmed);
             return !isNaN(isoDate.getTime()) ? isoDate : value;
           }
@@ -84,7 +84,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
           if (!(value instanceof Date)) return value;
 
           switch (schema.format) {
-            case DateFormat.ISO:
+            case DateFormat.iso:
               return value.toISOString();
             default:
               return value;

@@ -17,12 +17,12 @@ import { FieldType, FieldTypeValue } from '../../../core/types/field.types';
 
 @Injectable()
 export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
-  readonly supportedType = FieldType.ARRAY;
+  readonly supportedType = FieldType.array;
   readonly priority = 100;
   readonly name = 'ArrayFieldValidator';
 
   canValidate(schema: BaseFieldSchema): schema is ArrayFieldSchema {
-    return schema.type === FieldType.ARRAY;
+    return schema.type === FieldType.array;
   }
 
   validateStructure(schema: ArrayFieldSchema, context: ValidationContext): ValidationResult {
@@ -107,7 +107,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
     }
 
     // Validate circular reference prevention
-    if (item.type === FieldType.ARRAY) {
+    if (item.type === FieldType.array) {
       builder.addWarning('ARRAY_NESTED_ARRAY', 'Nested arrays can impact performance and complexity');
     }
   }
@@ -183,7 +183,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
     });
   }
 
-  private validateSingleValidationRule(rule: ValidationRule, index: number, builder: ValidationResultBuilder, context: ValidationContext): void {
+  private validateSingleValidationRule(rule: ValidationRule, index: number, builder: ValidationResultBuilder, _context: ValidationContext): void {
     if (!rule.type) {
       builder.addError('ARRAY_ITEM_VALIDATION_MISSING_TYPE', `Item validation rule at index ${index} is missing type`, index);
     }
@@ -240,7 +240,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
     }
   }
 
-  private validateItemSecurityPropagation(schema: ArrayFieldSchema, builder: ValidationResultBuilder, context: ValidationContext): void {
+  private validateItemSecurityPropagation(schema: ArrayFieldSchema, builder: ValidationResultBuilder, _context: ValidationContext): void {
     if (Array.isArray(schema.items)) return;
 
     const itemSchema = schema.items;
@@ -269,7 +269,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
       builder.addWarning('ARRAY_DEEP_NESTING', `Array at depth ${context.depth} may impact performance`);
     }
 
-    if (!Array.isArray(schema.items) && schema.items.type === FieldType.OBJECT) {
+    if (!Array.isArray(schema.items) && schema.items.type === FieldType.object) {
       builder.addInfo('ARRAY_COMPLEX_OBJECTS', 'Array of objects may require additional performance considerations');
     }
   }
@@ -281,7 +281,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
 
   private containsSensitiveData(schema: FieldSchema): boolean {
     // Check for potentially sensitive field types or formats
-    if (schema.type === FieldType.STRING) {
+    if (schema.type === FieldType.string) {
       const stringSchema = schema;
       const sensitiveFormats: StringFormat[] = ['password', 'credit_card', 'email'];
       return sensitiveFormats.includes(stringSchema.format!);

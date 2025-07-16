@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { FieldSchema } from '../../core/interfaces/schema';
-import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
+import type { FieldSchema } from '../../core/interfaces/schema';
+import type { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
 import { FieldValidatorRegistry } from '../../infrastructure/registries/field-validator.registry';
 import { EnhancedStructuralSchemaValidator } from '../../validators/schema-validators/enhanced-structural-schema.validator';
 
 @Injectable()
 export class SchemaOrchestratorService {
   constructor(
-    private fieldValidatorRegistry: FieldValidatorRegistry,
-    private enhancedValidator: EnhancedStructuralSchemaValidator,
+    private readonly fieldValidatorRegistry: FieldValidatorRegistry,
+    private readonly enhancedValidator: EnhancedStructuralSchemaValidator,
   ) {}
 
   validateSchema(schema: Record<string, FieldSchema>, context?: Partial<ValidationContext>): ValidationResult {

@@ -1,6 +1,6 @@
-import { ValidationSeverity, ValidationStrategy } from '../../../../core/enums/validation.enums';
-import { DeepReadonly } from '../../../types/common.types';
-import { FieldTypeValue } from '../../../types/field.types';
+import type { ValidationSeverity, ValidationStrategy } from '../../../../core/enums/validation.enums';
+import type { DeepReadonly } from '../../../types/common.types';
+import type { FieldTypeValue } from '../../../types/field.types';
 
 export interface BaseFieldSchema {
   readonly type: FieldTypeValue;

@@ -1,6 +1,6 @@
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
-import { DeepReadonly } from '../../core/types/common.types';
+import type { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
+import type { DeepReadonly } from '../../core/types/common.types';
 
 export interface ValidationErrorContext {
   readonly fieldPath?: string;
@@ -41,7 +41,7 @@ export abstract class BaseValidationError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    severity: ValidationSeverity = ValidationSeverity.ERROR,
+    severity: ValidationSeverity = ValidationSeverity.error,
     context?: ValidationErrorContext,
     suggestions: ValidationErrorSuggestion[] = [],
     metadata: Record<string, unknown> = {},
@@ -136,21 +136,21 @@ export abstract class BaseValidationError extends Error {
    * Check if error is critical (ERROR severity)
    */
   isCritical(): boolean {
-    return this.severity === ValidationSeverity.ERROR;
+    return this.severity === ValidationSeverity.error;
   }
 
   /**
    * Check if error is a warning
    */
   isWarning(): boolean {
-    return this.severity === ValidationSeverity.WARNING;
+    return this.severity === ValidationSeverity.warning;
   }
 
   /**
    * Check if error is informational
    */
   isInfo(): boolean {
-    return this.severity === ValidationSeverity.INFO;
+    return this.severity === ValidationSeverity.info;
   }
 
   /**
@@ -175,7 +175,7 @@ export class ValidationFieldError extends BaseValidationError {
   constructor(
     code: string,
     message: string,
-    severity: ValidationSeverity = ValidationSeverity.ERROR,
+    severity: ValidationSeverity = ValidationSeverity.error,
     context?: ValidationErrorContext,
     suggestions: ValidationErrorSuggestion[] = [],
     metadata: Record<string, unknown> = {},

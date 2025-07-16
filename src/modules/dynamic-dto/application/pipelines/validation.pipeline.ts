@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { BaseSchemaValidator } from '../../core/abstractions/base-schema-validator.abstract';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { SchemaValidationPipeline } from './schema-validation.pipeline';
-import { ValidationResult, ValidationContext } from '../../core/interfaces/validation';
+import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
 import { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
 import { ValidationResultMerger } from '../../core/utils/validation-result-merger';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
@@ -58,7 +58,7 @@ export class ValidationPipeline {
           {
             message: `Validation pipeline failed: ${error.message}`,
             code: 'VALIDATION_PIPELINE_ERROR',
-            severity: ValidationSeverity.ERROR,
+            severity: ValidationSeverity.error,
             fieldPath: schema.name,
             metadata: { error: error.message },
           },
@@ -67,7 +67,7 @@ export class ValidationPipeline {
           {
             message: `Validation pipeline failed: ${error.message}`,
             code: 'VALIDATION_PIPELINE_ERROR',
-            severity: ValidationSeverity.ERROR,
+            severity: ValidationSeverity.error,
             fieldPath: schema.name,
             metadata: { error: error.message },
           },
@@ -109,7 +109,7 @@ export class ValidationPipeline {
         issues.push({
           message: `Required field '${requiredField}' is missing in schema`,
           code: 'MISSING_REQUIRED_FIELD',
-          severity: ValidationSeverity.ERROR,
+          severity: ValidationSeverity.error,
           fieldPath: requiredField,
         });
       }
@@ -122,7 +122,7 @@ export class ValidationPipeline {
         issues.push({
           message: `Schema version '${schema.version.toString()}' must follow semantic versioning (x.y.z)`,
           code: 'INVALID_SCHEMA_VERSION',
-          severity: ValidationSeverity.WARNING,
+          severity: ValidationSeverity.warning,
           fieldPath: 'version',
           metadata: { version: schema.version.toString() },
         });
@@ -134,17 +134,17 @@ export class ValidationPipeline {
       issues.push({
         message: 'Schema has empty metadata object',
         code: 'EMPTY_SCHEMA_METADATA',
-        severity: ValidationSeverity.INFO,
+        severity: ValidationSeverity.info,
         fieldPath: 'metadata',
       });
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -161,7 +161,7 @@ export class ValidationPipeline {
         issues.push({
           message: `Field '${fieldName}' cannot have both 'exclude' and 'expose' set to true`,
           code: 'CONFLICTING_FIELD_VISIBILITY',
-          severity: ValidationSeverity.ERROR,
+          severity: ValidationSeverity.error,
           fieldPath: fieldName,
         });
       }
@@ -176,7 +176,7 @@ export class ValidationPipeline {
             issues.push({
               message: `Field '${fieldName}' has conditional validation depending on non-existent field '${dependentField}'`,
               code: 'MISSING_DEPENDENT_FIELD',
-              severity: ValidationSeverity.ERROR,
+              severity: ValidationSeverity.error,
               fieldPath: fieldName,
               metadata: { dependentField },
             });
@@ -186,11 +186,11 @@ export class ValidationPipeline {
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 }

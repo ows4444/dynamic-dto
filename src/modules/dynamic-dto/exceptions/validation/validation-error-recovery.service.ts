@@ -165,7 +165,7 @@ export class ValidationErrorRecoveryService {
         manualSteps.push({
           id: `manual_fix_${error.code}`,
           description: `Manually resolve: ${error.message}`,
-          priority: error.severity === ValidationSeverity.ERROR ? 'high' : 'medium',
+          priority: error.severity === ValidationSeverity.error ? 'high' : 'medium',
         });
         break;
     }

@@ -8,14 +8,14 @@ import { FieldType } from '../../../core/types/field.types';
 
 @Injectable()
 export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
-  readonly supportedType = FieldType.ARRAY;
+  readonly supportedType = FieldType.array;
 
   constructor(@Inject(forwardRef(() => FieldProcessorRegistry)) private readonly processorRegistry: FieldProcessorRegistry) {
     super();
   }
 
   canProcess(schema: FieldSchema): schema is ArrayFieldSchema {
-    return schema.type === FieldType.ARRAY;
+    return schema.type === FieldType.array;
   }
 
   generateValidationDecorators(schema: ArrayFieldSchema, isRequired: boolean): PropertyDecorator[] {
@@ -40,7 +40,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
     }
 
     // Item validation
-    if (!Array.isArray(schema.items) && schema.items.type === FieldType.OBJECT) {
+    if (!Array.isArray(schema.items) && schema.items.type === FieldType.object) {
       decorators.push(ValidateNested({ each: true }));
     } else if (!Array.isArray(schema.items)) {
       const itemProcessor = this.processorRegistry.getProcessor(schema.items.type);
@@ -96,7 +96,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
     });
 
     // Basic item validation for complex items (order: 50)
-    if (!Array.isArray(schema.items) && schema.items.type === FieldType.OBJECT) {
+    if (!Array.isArray(schema.items) && schema.items.type === FieldType.object) {
       functions.push({
         order: 50,
         name: 'item_validation',

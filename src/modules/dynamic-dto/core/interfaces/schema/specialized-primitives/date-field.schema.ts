@@ -1,8 +1,8 @@
-import { FieldType } from '../../../types/field.types';
-import { BaseFieldSchema } from '../base/base-field.schema';
+import type { FieldType } from '../../../types/field.types';
+import type { BaseFieldSchema } from '../base/base-field.schema';
 
 export interface DateFieldSchema extends BaseFieldSchema {
-  readonly type: typeof FieldType.DATE;
+  readonly type: typeof FieldType.date;
   readonly default?: Date | string | DateDefaultValue;
 
   // Format
@@ -29,11 +29,11 @@ export interface DateFieldSchema extends BaseFieldSchema {
 }
 
 export const DateFormat = {
-  ISO: 'iso',
-  TIMESTAMP: 'timestamp',
-  UNIX: 'unix',
-  CUSTOM: 'custom',
-  RELATIVE: 'relative',
+  iso: 'iso',
+  timestamp: 'timestamp',
+  unix: 'unix',
+  custom: 'custom',
+  relative: 'relative',
 } as const;
 
 export type DateFormat = (typeof DateFormat)[keyof typeof DateFormat];

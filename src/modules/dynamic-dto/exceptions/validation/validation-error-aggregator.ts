@@ -1,6 +1,7 @@
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { BaseValidationError, ValidationErrorContext, SerializedValidationError } from './base-validation.error';
-import { ValidationResult, ValidationIssue } from '../../core/interfaces/validation';
+import type { SerializedValidationError, ValidationErrorContext } from './base-validation.error';
+import { BaseValidationError } from './base-validation.error';
+import type { ValidationIssue, ValidationResult } from '../../core/interfaces/validation';
 
 export interface ValidationErrorSummary {
   readonly totalErrors: number;
@@ -128,9 +129,9 @@ export class ValidationErrorAggregator {
 
     return {
       totalErrors: this.errors.length,
-      criticalErrors: this.getErrorsBySeverity(ValidationSeverity.ERROR).length,
-      warnings: this.getErrorsBySeverity(ValidationSeverity.WARNING).length,
-      infos: this.getErrorsBySeverity(ValidationSeverity.INFO).length,
+      criticalErrors: this.getErrorsBySeverity(ValidationSeverity.error).length,
+      warnings: this.getErrorsBySeverity(ValidationSeverity.warning).length,
+      infos: this.getErrorsBySeverity(ValidationSeverity.info).length,
       fieldErrors,
       schemaErrors,
       hasBlockingErrors: this.hasCriticalErrors(),
@@ -166,14 +167,14 @@ export class ValidationErrorAggregator {
 
     if (summary.criticalErrors > 0) {
       report += `Critical Errors:\n`;
-      this.getErrorsBySeverity(ValidationSeverity.ERROR).forEach((error, index) => {
+      this.getErrorsBySeverity(ValidationSeverity.error).forEach((error, index) => {
         report += `${index + 1}. ${error.getErrorWithSuggestions()}\n\n`;
       });
     }
 
     if (summary.warnings > 0) {
       report += `Warnings:\n`;
-      this.getErrorsBySeverity(ValidationSeverity.WARNING).forEach((error, index) => {
+      this.getErrorsBySeverity(ValidationSeverity.warning).forEach((error, index) => {
         report += `${index + 1}. ${error.getErrorWithSuggestions()}\n\n`;
       });
     }
@@ -200,17 +201,17 @@ export class ValidationErrorAggregator {
    * Group errors by a key function
    */
   groupBy<K extends string | number>(keyFn: (error: BaseValidationError) => K): Record<K, BaseValidationError[]> {
-    const groups = {} as Record<K, BaseValidationError[]>;
-
-    for (const error of this.errors) {
-      const key = keyFn(error);
-      if (!groups[key]) {
-        groups[key] = [];
-      }
-      groups[key].push(error);
-    }
-
-    return groups;
+    return this.errors.reduce(
+      (groups: Record<K, BaseValidationError[]>, error) => {
+        const key = keyFn(error);
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+        groups[key].push(error);
+        return groups;
+      },
+      {} as Record<K, BaseValidationError[]>,
+    );
   }
 
   /**
@@ -218,7 +219,7 @@ export class ValidationErrorAggregator {
    */
   getCriticalErrorsAggregator(): ValidationErrorAggregator {
     const aggregator = new ValidationErrorAggregator(this.context);
-    aggregator.addErrors(this.getErrorsBySeverity(ValidationSeverity.ERROR));
+    aggregator.addErrors(this.getErrorsBySeverity(ValidationSeverity.error));
     return aggregator;
   }
 
@@ -251,21 +252,21 @@ export class ValidationErrorAggregator {
     return {
       isValid: !this.hasCriticalErrors(),
       issues,
-      errors: this.getErrorsBySeverity(ValidationSeverity.ERROR).map((e) => ({
+      errors: this.getErrorsBySeverity(ValidationSeverity.error).map((e) => ({
         message: e.message,
         code: e.code,
         severity: e.severity,
         fieldPath: e.context?.fieldPath,
         metadata: e.metadata,
       })),
-      warnings: this.getErrorsBySeverity(ValidationSeverity.WARNING).map((e) => ({
+      warnings: this.getErrorsBySeverity(ValidationSeverity.warning).map((e) => ({
         message: e.message,
         code: e.code,
         severity: e.severity,
         fieldPath: e.context?.fieldPath,
         metadata: e.metadata,
       })),
-      infos: this.getErrorsBySeverity(ValidationSeverity.INFO).map((e) => ({
+      infos: this.getErrorsBySeverity(ValidationSeverity.info).map((e) => ({
         message: e.message,
         code: e.code,
         severity: e.severity,

@@ -1,9 +1,9 @@
-import { StringFormat } from '../../../../core/enums/string.enums';
-import { FieldType } from '../../../types/field.types';
-import { BaseFieldSchema } from '../base/base-field.schema';
+import type { StringFormat } from '../../../../core/enums/string.enums';
+import type { FieldType } from '../../../types/field.types';
+import type { BaseFieldSchema } from '../base/base-field.schema';
 
 export interface StringFieldSchema extends BaseFieldSchema {
-  readonly type: typeof FieldType.STRING;
+  readonly type: typeof FieldType.string;
   readonly default?: string | StringDefaultValue;
 
   // Length constraints
@@ -50,15 +50,15 @@ export interface StringFormatOptions {
 }
 
 export const AutoGenerationType = {
-  UUID: 'uuid',
-  ULID: 'ulid',
-  NANOID: 'nanoid',
-  TIMESTAMP: 'timestamp',
-  INCREMENTAL: 'incremental',
-  SLUG: 'slug',
-  HASH: 'hash',
-  RANDOM_STRING: 'random_string',
-  SEQUENCE: 'sequence',
+  uuid: 'uuid',
+  ulid: 'ulid',
+  nanoid: 'nanoid',
+  timestamp: 'timestamp',
+  incremental: 'incremental',
+  slug: 'slug',
+  hash: 'hash',
+  random_string: 'random_string',
+  sequence: 'sequence',
 } as const;
 
 export type AutoGenerationType = (typeof AutoGenerationType)[keyof typeof AutoGenerationType];

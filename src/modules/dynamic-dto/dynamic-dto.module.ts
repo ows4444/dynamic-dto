@@ -1,4 +1,4 @@
-import { Module, DynamicModule, Provider } from '@nestjs/common';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
 
 // Core services
 import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';
@@ -30,7 +30,7 @@ import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
 import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.module-definition';
 
 // Services
-import { ValidationErrorService, ValidationErrorRecoveryService } from './exceptions/validation';
+import { ValidationErrorRecoveryService, ValidationErrorService } from './exceptions/validation';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 
 @Module({})
@@ -89,7 +89,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
     };
   }
 
-  static forFeature(options: Partial<DynamicDtoModuleOptions> = {}): DynamicModule {
+  static forFeature(_options: Partial<DynamicDtoModuleOptions> = {}): DynamicModule {
     return {
       module: DynamicDtoModule,
       providers: [DtoOrchestratorService, SchemaOrchestratorService],
@@ -97,7 +97,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
     };
   }
 
-  private static createCacheProviders(options: DynamicDtoModuleOptions): Provider[] {
+  private static createCacheProviders(_options: DynamicDtoModuleOptions): Provider[] {
     return [
       {
         provide: 'ICacheStrategy',

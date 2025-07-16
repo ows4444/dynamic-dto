@@ -3,6 +3,7 @@ import { ValidationContext, ValidationResult } from '../../core/interfaces/valid
 import { SchemaOrchestratorService } from '../services/schema-orchestrator.service';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
+import { FieldSchema } from '../../core/interfaces/schema';
 
 export interface SchemaValidationPipelineOptions {
   userId?: string;
@@ -13,12 +14,12 @@ export interface SchemaValidationPipelineOptions {
 
 @Injectable()
 export class SchemaValidationPipeline {
-  constructor(private schemaOrchestrator: SchemaOrchestratorService) {}
+  constructor(private readonly schemaOrchestrator: SchemaOrchestratorService) {}
 
   execute(schema: DynamicSchemaEntity, options: SchemaValidationPipelineOptions = {}): ValidationResult {
     const { userRoles, schemaVersion } = options;
 
-    const schemaProperties: any = schema instanceof DynamicSchemaEntity ? schema.properties : schema;
+    const schemaProperties: Record<string, FieldSchema> = schema instanceof DynamicSchemaEntity ? schema.properties : schema;
 
     // Enhanced validation with context
     const context: Partial<ValidationContext> = {

@@ -1,4 +1,4 @@
-import { Injectable, Logger, forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { ClassConstructor } from '../../core/types/common.types';
@@ -16,7 +16,7 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
 
   constructor(@Inject(forwardRef(() => FieldProcessorRegistry)) private readonly fieldProcessorRegistry: FieldProcessorRegistry) {}
 
-  generateNestedClass(properties: Record<string, FieldSchema>, required: string[] = [], exclude: boolean = false): ClassConstructor<object> {
+  generateNestedClass(properties: Record<string, FieldSchema>, required: string[] = [], exclude = false): ClassConstructor<object> {
     const cacheKey = this.generateCacheKey(properties, required, exclude);
 
     if (this.generatedClasses.has(cacheKey)) {

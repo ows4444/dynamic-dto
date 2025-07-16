@@ -8,12 +8,12 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class NumberFieldValidator extends BaseFieldValidator<NumberFieldSchema> {
-  readonly supportedType = FieldType.NUMBER;
+  readonly supportedType = FieldType.number;
   readonly priority = 100;
   readonly name = 'NumberFieldValidator';
 
   canValidate(schema: BaseFieldSchema): schema is NumberFieldSchema {
-    return schema.type === FieldType.NUMBER;
+    return schema.type === FieldType.number;
   }
 
   validateStructure(schema: NumberFieldSchema, context: ValidationContext): ValidationResult {

@@ -1,8 +1,8 @@
 import { ValidationSeverity } from '../enums/validation.enums';
-import { BaseFieldSchema, ConditionalValidation, DisplayHints, FieldPermissions } from '../interfaces/schema';
-import { ValidationContext, ValidationResult } from '../interfaces/validation';
-import { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
-import { FieldTypeValue } from '../types/field.types';
+import type { BaseFieldSchema, ConditionalValidation, DisplayHints, FieldPermissions } from '../interfaces/schema';
+import type { ValidationContext, ValidationResult } from '../interfaces/validation';
+import type { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
+import type { FieldTypeValue } from '../types/field.types';
 
 export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSchema> {
   abstract readonly supportedType: FieldTypeValue;
@@ -54,12 +54,12 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
     const allIssues = results.flatMap((r) => r.issues);
 
     return {
-      isValid: allIssues.every((issue) => issue.severity !== ValidationSeverity.ERROR),
+      isValid: allIssues.every((issue) => issue.severity !== ValidationSeverity.error),
       issues: allIssues,
       fieldPath: results[0]?.fieldPath,
-      errors: allIssues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: allIssues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: allIssues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: allIssues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: allIssues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: allIssues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -87,12 +87,12 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath: context.fieldPath,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -101,7 +101,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
     if (schema.deprecated) {
       issues.push({
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
         code: 'FIELD_DEPRECATED',
         message: `Field '${context.fieldPath}' is deprecated`,
         fieldPath: context.fieldPath,
@@ -118,7 +118,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
     if (allRoles.length === 0) {
       issues.push({
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
         code: 'PERMISSIONS_EMPTY',
         message: `Field '${context.fieldPath}' has permissions object but no roles defined`,
         fieldPath: context.fieldPath,
@@ -133,7 +133,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
     const writeOnlyRoles = [...writeRoles].filter((role) => !readRoles.has(role));
     if (writeOnlyRoles.length > 0) {
       issues.push({
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
         code: 'PERMISSIONS_WRITE_WITHOUT_READ',
         message: `Field '${context.fieldPath}' has write permissions without read permissions for roles: ${writeOnlyRoles.join(', ')}`,
         fieldPath: context.fieldPath,
@@ -149,7 +149,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
     if (hints.order !== undefined && (hints.order < 0 || !Number.isInteger(hints.order))) {
       issues.push({
-        severity: ValidationSeverity.ERROR,
+        severity: ValidationSeverity.error,
         code: 'DISPLAY_INVALID_ORDER',
         message: `Display order for field '${context.fieldPath}' must be a non-negative integer`,
         fieldPath: context.fieldPath,
@@ -159,7 +159,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
     if (hints.validation?.debounceMs !== undefined && hints.validation.debounceMs < 0) {
       issues.push({
-        severity: ValidationSeverity.ERROR,
+        severity: ValidationSeverity.error,
         code: 'DISPLAY_INVALID_DEBOUNCE',
         message: `Validation debounce for field '${context.fieldPath}' must be non-negative`,
         fieldPath: context.fieldPath,
@@ -178,7 +178,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
       if (!rule.condition.field) {
         issues.push({
-          severity: ValidationSeverity.ERROR,
+          severity: ValidationSeverity.error,
           code: 'CONDITIONAL_MISSING_FIELD',
           message: `Conditional validation rule at ${rulePath} must specify a field`,
           fieldPath: rulePath,
@@ -187,7 +187,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
       if (!rule.validationRules?.length) {
         issues.push({
-          severity: ValidationSeverity.WARNING,
+          severity: ValidationSeverity.warning,
           code: 'CONDITIONAL_EMPTY_RULES',
           message: `Conditional validation rule at ${rulePath} has no validation rules`,
           fieldPath: rulePath,
@@ -200,7 +200,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
   protected createError(code: string, message: string, context: ValidationContext, metadata?: Record<string, unknown>): ValidationIssue {
     return {
-      severity: ValidationSeverity.ERROR,
+      severity: ValidationSeverity.error,
       code,
       message,
       fieldPath: context.fieldPath,
@@ -210,7 +210,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
   protected createWarning(code: string, message: string, context: ValidationContext, metadata?: Record<string, unknown>): ValidationIssue {
     return {
-      severity: ValidationSeverity.WARNING,
+      severity: ValidationSeverity.warning,
       code,
       message,
       fieldPath: context.fieldPath,
@@ -220,7 +220,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
 
   protected createInfo(code: string, message: string, context: ValidationContext, metadata?: Record<string, unknown>): ValidationIssue {
     return {
-      severity: ValidationSeverity.INFO,
+      severity: ValidationSeverity.info,
       code,
       message,
       fieldPath: context.fieldPath,

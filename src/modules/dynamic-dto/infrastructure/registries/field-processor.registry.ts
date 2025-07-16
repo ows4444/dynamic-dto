@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { FieldTypeValue } from '../../core/types/field.types';
@@ -53,7 +53,7 @@ export class FieldProcessorRegistry implements OnModuleInit {
   }
 
   registerProcessor(processor: BaseFieldProcessor): void {
-    if (!processor || !processor.supportedType) {
+    if (!processor?.supportedType) {
       this.logger.warn('Invalid processor provided', { processor: processor?.constructor.name });
       return;
     }

@@ -1,49 +1,49 @@
 export const StringFormat = {
   // Basic formats
-  EMAIL: 'email',
-  URL: 'url',
-  UUID: 'uuid',
+  email: 'email',
+  url: 'url',
+  uuid: 'uuid',
 
   // Date/Time
-  DATE: 'date',
-  TIME: 'time',
-  DATETIME: 'datetime',
+  date: 'date',
+  time: 'time',
+  datetime: 'datetime',
 
   // Communication
-  PHONE: 'phone',
-  MOBILE: 'mobile',
+  phone: 'phone',
+  mobile: 'mobile',
 
   // Network
-  IPV4: 'ipv4',
-  IPV6: 'ipv6',
-  MAC_ADDRESS: 'mac_address',
-  DOMAIN: 'domain',
+  ipv4: 'ipv4',
+  ipv6: 'ipv6',
+  mac_address: 'mac_address',
+  domain: 'domain',
 
   // Identity
-  USERNAME: 'username',
-  PASSWORD: 'password',
+  username: 'username',
+  password: 'password',
 
   // Data formats
-  JSON: 'json',
-  XML: 'xml',
-  BASE64: 'base64',
-  HEX: 'hex',
+  json: 'json',
+  xml: 'xml',
+  base64: 'base64',
+  hex: 'hex',
 
   // Financial
-  CURRENCY: 'currency',
-  CREDIT_CARD: 'credit_card',
+  currency: 'currency',
+  credit_card: 'credit_card',
 
   // Geographic
-  COUNTRY_CODE: 'country_code',
-  POSTAL_CODE: 'postal_code',
-  COORDINATE: 'coordinate',
+  country_code: 'country_code',
+  postal_code: 'postal_code',
+  coordinate: 'coordinate',
 
   // Technical
-  SEMVER: 'semver',
-  CRON: 'cron',
+  semver: 'semver',
+  cron: 'cron',
 
   // Markup
-  HTML: 'html',
+  html: 'html',
 } as const;
 
 export type StringFormat = (typeof StringFormat)[keyof typeof StringFormat];

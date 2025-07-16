@@ -1,5 +1,5 @@
 import { ConfigurableModuleBuilder } from '@nestjs/common';
-import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
+import type { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } = new ConfigurableModuleBuilder<DynamicDtoModuleOptions>({
   moduleName: 'DynamicDto',

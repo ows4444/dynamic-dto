@@ -1,11 +1,11 @@
-import { DeepReadonly } from '../../../../core/types/common.types';
-import { FieldSchema } from '..';
-import { BaseFieldSchema, SerializableCondition } from '../base/base-field.schema';
-import { FieldType } from '../../../../core/types/field.types';
-import { ValidationSeverity } from '../../../../core/enums/validation.enums';
+import type { DeepReadonly } from '../../../../core/types/common.types';
+import type { FieldSchema } from '..';
+import type { BaseFieldSchema, SerializableCondition } from '../base/base-field.schema';
+import type { FieldType } from '../../../../core/types/field.types';
+import type { ValidationSeverity } from '../../../../core/enums/validation.enums';
 
 export interface ObjectFieldSchema extends BaseFieldSchema {
-  readonly type: typeof FieldType.OBJECT;
+  readonly type: typeof FieldType.object;
   readonly properties: DeepReadonly<Record<string, FieldSchema>>;
 
   // Size constraints
@@ -34,7 +34,7 @@ export interface ObjectFieldSchema extends BaseFieldSchema {
 export interface ConditionalRequirement {
   readonly field: string;
   readonly condition: SerializableCondition;
-  readonly requiredFields: readonly string[];
+  readonly requiredFields: string[];
 }
 
 export interface DiscriminatorConfig {
@@ -52,7 +52,7 @@ export interface InheritanceConfig {
 
 export interface CrossPropertyValidationRule {
   readonly name: string;
-  readonly properties: readonly string[];
+  readonly properties: string[];
   readonly condition: string; // Expression
   readonly message?: string;
   readonly severity?: ValidationSeverity;

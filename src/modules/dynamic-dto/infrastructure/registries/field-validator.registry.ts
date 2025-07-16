@@ -49,12 +49,12 @@ export class FieldValidatorRegistry implements OnModuleInit {
 
   private registerValidators(): void {
     const validatorMappings = [
-      { type: FieldType.BOOLEAN, validator: this.booleanValidator },
-      { type: FieldType.NUMBER, validator: this.numberValidator },
-      { type: FieldType.STRING, validator: this.stringValidator },
-      { type: FieldType.ARRAY, validator: this.arrayValidator },
-      { type: FieldType.OBJECT, validator: this.objectValidator },
-      { type: FieldType.DATE, validator: this.dateValidator },
+      { type: FieldType.boolean, validator: this.booleanValidator },
+      { type: FieldType.number, validator: this.numberValidator },
+      { type: FieldType.string, validator: this.stringValidator },
+      { type: FieldType.array, validator: this.arrayValidator },
+      { type: FieldType.object, validator: this.objectValidator },
+      { type: FieldType.date, validator: this.dateValidator },
     ];
 
     for (const { type, validator } of validatorMappings) {
@@ -68,7 +68,7 @@ export class FieldValidatorRegistry implements OnModuleInit {
   }
 
   registerValidator(validator: BaseFieldValidator): void {
-    if (!validator || !validator.supportedType) {
+    if (!validator?.supportedType) {
       this.logger.warn('Invalid validator provided');
       return;
     }

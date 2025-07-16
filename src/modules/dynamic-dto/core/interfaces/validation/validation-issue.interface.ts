@@ -1,5 +1,5 @@
-import { ValidationSeverity } from '../../enums/validation.enums';
-import { DeepReadonly } from '../../types/common.types';
+import type { ValidationSeverity } from '../../enums/validation.enums';
+import type { DeepReadonly } from '../../types/common.types';
 
 export interface ValidationIssue {
   readonly severity: ValidationSeverity;

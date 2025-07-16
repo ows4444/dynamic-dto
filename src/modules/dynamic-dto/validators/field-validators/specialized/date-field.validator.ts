@@ -8,12 +8,12 @@ import { FieldType } from '../../../core/types/field.types';
 
 @Injectable()
 export class DateFieldValidator extends BaseFieldValidator<DateFieldSchema> {
-  readonly supportedType = FieldType.DATE;
+  readonly supportedType = FieldType.date;
   readonly priority = 100;
   readonly name = 'DateFieldValidator';
 
   canValidate(schema: BaseFieldSchema): schema is DateFieldSchema {
-    return schema.type === FieldType.DATE;
+    return schema.type === FieldType.date;
   }
 
   validateStructure(schema: DateFieldSchema, context: ValidationContext): ValidationResult {

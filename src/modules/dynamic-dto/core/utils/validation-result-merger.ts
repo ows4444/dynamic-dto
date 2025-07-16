@@ -1,4 +1,4 @@
-import { ValidationIssue, ValidationResult } from '../interfaces';
+import type { ValidationIssue, ValidationResult } from '../interfaces';
 
 type SeverityType = 'error' | 'warning' | 'info';
 
@@ -80,7 +80,7 @@ export class ValidationResultMerger {
   }
 
   private static createIssueKey(issue: ValidationIssue): string {
-    return `${issue.code}:${issue.fieldPath || 'root'}`;
+    return `${issue.code}:${issue.fieldPath ?? 'root'}`;
   }
 
   private static groupIssuesBySeverity(issues: ValidationIssue[]): Record<SeverityType, ValidationIssue[]> {
@@ -97,9 +97,9 @@ export class ValidationResultMerger {
     );
 
     return {
-      error: grouped.error || [],
-      warning: grouped.warning || [],
-      info: grouped.info || [],
+      error: grouped.error ?? [],
+      warning: grouped.warning ?? [],
+      info: grouped.info ?? [],
     };
   }
 
@@ -163,10 +163,10 @@ export class ValidationResultMerger {
       return obj.map((item) => this.cleanObject(item)) as unknown as T;
     }
 
-    const cleaned = {} as T;
+    const cleaned: T = {} as unknown as T;
     for (const [key, value] of Object.entries(obj)) {
       if (value !== undefined) {
-        (cleaned as any)[key] = typeof value === 'object' ? this.cleanObject(value) : value;
+        (cleaned as Record<string, unknown>)[key] = typeof value === 'object' ? this.cleanObject(value) : value;
       }
     }
 

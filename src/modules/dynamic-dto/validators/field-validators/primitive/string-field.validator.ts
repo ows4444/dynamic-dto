@@ -9,12 +9,12 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class StringFieldValidator extends BaseFieldValidator<StringFieldSchema> {
-  readonly supportedType = FieldType.STRING;
+  readonly supportedType = FieldType.string;
   readonly priority = 100;
   readonly name = 'StringFieldValidator';
 
   canValidate(schema: BaseFieldSchema): schema is StringFieldSchema {
-    return schema.type === FieldType.STRING;
+    return schema.type === FieldType.string;
   }
 
   validateStructure(schema: StringFieldSchema, context: ValidationContext): ValidationResult {
@@ -99,7 +99,7 @@ export class StringFieldValidator extends BaseFieldValidator<StringFieldSchema> 
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     // Check for potentially sensitive formats without security config
-    const sensitiveFormats: StringFormat[] = [StringFormat.PASSWORD, StringFormat.CREDIT_CARD];
+    const sensitiveFormats: StringFormat[] = [StringFormat.password, StringFormat.credit_card];
     if (schema.format && sensitiveFormats.includes(schema.format) && !schema.security) {
       builder.addWarning('STRING_SENSITIVE_WITHOUT_SECURITY', `Field with sensitive format '${schema.format}' should have security configuration`);
     }

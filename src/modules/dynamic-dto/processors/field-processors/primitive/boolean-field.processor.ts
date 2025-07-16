@@ -2,16 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { IsBoolean, IsDefined, IsOptional } from 'class-validator';
 import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 
-import { FieldSchema } from '../../../core/interfaces/schema';
+import type { FieldSchema } from '../../../core/interfaces/schema';
 import { FieldType } from '../../../core/types/field.types';
-import { BooleanFieldSchema } from '../../../core/interfaces/schema/primitive/boolean-field.schema';
+import type { BooleanFieldSchema } from '../../../core/interfaces/schema/primitive/boolean-field.schema';
 
 @Injectable()
 export class BooleanFieldProcessor extends BaseFieldProcessor<BooleanFieldSchema> {
-  readonly supportedType = FieldType.BOOLEAN;
+  readonly supportedType = FieldType.boolean;
 
   canProcess(schema: FieldSchema): schema is BooleanFieldSchema {
-    return schema.type === FieldType.BOOLEAN;
+    return schema.type === FieldType.boolean;
   }
 
   generateValidationDecorators(_schema: BooleanFieldSchema, isRequired: boolean, parentIsArray: boolean): PropertyDecorator[] {

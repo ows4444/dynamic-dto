@@ -1,6 +1,6 @@
-import { FieldSchema } from '../interfaces/schema';
-import { ValidationContext, ValidationResult } from '../interfaces/validation';
-import { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
+import type { FieldSchema } from '../interfaces/schema';
+import type { ValidationContext, ValidationResult } from '../interfaces/validation';
+import type { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
 import { FieldType } from '../types/field.types';
 import { ValidationSeverity } from '../enums/validation.enums';
 import { ValidationResultMerger } from '../utils/validation-result-merger';
@@ -32,7 +32,7 @@ export abstract class BaseSchemaValidator {
         message: `Field '${fieldName}' is missing required 'type' property`,
         fieldPath,
         code: 'MISSING_TYPE',
-        severity: ValidationSeverity.ERROR,
+        severity: ValidationSeverity.error,
       });
     }
 
@@ -41,19 +41,19 @@ export abstract class BaseSchemaValidator {
         message: `Field '${fieldName}' has an invalid 'type': ${schema.type}`,
         fieldPath,
         code: 'INVALID_TYPE',
-        severity: ValidationSeverity.ERROR,
+        severity: ValidationSeverity.error,
         value: schema.type,
       });
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath,
       metadata: schema.metadata,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -71,7 +71,7 @@ export abstract class BaseSchemaValidator {
         message: `Field '${fieldName}' is marked as required but has a default value`,
         fieldPath,
         code: 'REQUIRED_WITH_DEFAULT',
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
         metadata: { defaultValue: schema.default },
       });
     }
@@ -82,17 +82,17 @@ export abstract class BaseSchemaValidator {
         message: `Field '${fieldName}' cannot be both readonly and required`,
         fieldPath,
         code: 'READONLY_REQUIRED_CONFLICT',
-        severity: ValidationSeverity.ERROR,
+        severity: ValidationSeverity.error,
       });
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -100,13 +100,13 @@ export abstract class BaseSchemaValidator {
     const issues: ValidationIssue[] = [];
 
     // Validate sensitive data handling (only if encryption property exists)
-    const hasEncryption = 'encrypted' in schema ? (schema as any).encrypted : false;
+    const hasEncryption = 'encrypted' in schema ? (schema as { encrypted?: boolean }).encrypted : false;
     if (schema.metadata?.sensitive && !hasEncryption) {
       issues.push({
         message: `Field '${fieldName}' is marked as sensitive but not encrypted`,
         fieldPath,
         code: 'SENSITIVE_NOT_ENCRYPTED',
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
       });
     }
 
@@ -116,17 +116,17 @@ export abstract class BaseSchemaValidator {
         message: `Field '${fieldName}' contains PII but has no access permissions defined`,
         fieldPath,
         code: 'PII_NO_PERMISSIONS',
-        severity: ValidationSeverity.ERROR,
+        severity: ValidationSeverity.error,
       });
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -136,13 +136,13 @@ export abstract class BaseSchemaValidator {
     if (schema.deprecated) {
       // Enhanced deprecation validation
       const deprecationSince = schema.deprecated.since;
-      const currentVersion = process.env.APP_VERSION || '1.0.0';
+      const currentVersion = process.env.APP_VERSION ?? '1.0.0';
 
       issues.push({
         message: `Field '${fieldName}' is deprecated${deprecationSince ? ` since ${deprecationSince}` : ''}`,
         fieldPath: fieldName,
         code: 'DEPRECATED_FIELD',
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
         metadata: {
           since: deprecationSince,
           currentVersion,
@@ -155,7 +155,7 @@ export abstract class BaseSchemaValidator {
           message: `Field '${fieldName}' should be replaced by '${schema.deprecated.replacedBy}'`,
           fieldPath: fieldName,
           code: 'FIELD_REPLACEMENT_AVAILABLE',
-          severity: ValidationSeverity.WARNING,
+          severity: ValidationSeverity.warning,
           metadata: { replacedBy: schema.deprecated.replacedBy },
         });
       }
@@ -165,7 +165,7 @@ export abstract class BaseSchemaValidator {
           message: `Field '${fieldName}' deprecation reason: ${schema.deprecated.reason}`,
           fieldPath: fieldName,
           code: 'DEPRECATION_REASON',
-          severity: ValidationSeverity.INFO,
+          severity: ValidationSeverity.info,
           metadata: { reason: schema.deprecated.reason },
         });
       }
@@ -175,7 +175,7 @@ export abstract class BaseSchemaValidator {
           message: `Field '${fieldName}' will be removed in version ${schema.deprecated.removeInVersion}`,
           fieldPath: fieldName,
           code: 'REMOVAL_NOTICE',
-          severity: ValidationSeverity.INFO,
+          severity: ValidationSeverity.info,
           metadata: { removeInVersion: schema.deprecated.removeInVersion },
         });
 
@@ -185,7 +185,7 @@ export abstract class BaseSchemaValidator {
             message: `Field '${fieldName}' should have been removed in version ${schema.deprecated.removeInVersion}`,
             fieldPath: fieldName,
             code: 'REMOVAL_VERSION_PASSED',
-            severity: ValidationSeverity.ERROR,
+            severity: ValidationSeverity.error,
             metadata: {
               removeInVersion: schema.deprecated.removeInVersion,
               currentVersion,
@@ -199,20 +199,20 @@ export abstract class BaseSchemaValidator {
           message: `Migration guide for '${fieldName}': ${schema.deprecated.migrationGuide}`,
           fieldPath: fieldName,
           code: 'MIGRATION_GUIDE',
-          severity: ValidationSeverity.INFO,
+          severity: ValidationSeverity.info,
           metadata: { migrationGuide: schema.deprecated.migrationGuide },
         });
       }
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath: fieldName,
       metadata: schema.metadata,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -248,7 +248,7 @@ export abstract class BaseSchemaValidator {
           message: `Field '${fieldName}' has permissions object but no roles defined`,
           fieldPath: fieldName,
           code: 'PERMISSIONS_EMPTY',
-          severity: ValidationSeverity.WARNING,
+          severity: ValidationSeverity.warning,
         });
       }
 
@@ -263,7 +263,7 @@ export abstract class BaseSchemaValidator {
           message: `Field '${fieldName}' has write permissions without read permissions for roles: ${writeOnlyRoles.join(', ')}`,
           fieldPath: fieldName,
           code: 'PERMISSIONS_WRITE_WITHOUT_READ',
-          severity: ValidationSeverity.WARNING,
+          severity: ValidationSeverity.warning,
           metadata: { roles: writeOnlyRoles },
         });
       }
@@ -276,7 +276,7 @@ export abstract class BaseSchemaValidator {
             message: `Insufficient permissions to access field '${fieldName}'`,
             fieldPath: fieldName,
             code: 'INSUFFICIENT_PERMISSIONS',
-            severity: ValidationSeverity.ERROR,
+            severity: ValidationSeverity.error,
             metadata: {
               userRoles,
               requiredRoles: permissions.read,
@@ -292,24 +292,24 @@ export abstract class BaseSchemaValidator {
           message: `Field '${fieldName}' has invalid role names: ${invalidRoles.join(', ')}`,
           fieldPath: fieldName,
           code: 'INVALID_ROLE_NAMES',
-          severity: ValidationSeverity.WARNING,
+          severity: ValidationSeverity.warning,
           metadata: { invalidRoles },
         });
       }
     }
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath: fieldName,
       metadata: schema.metadata,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
-  protected validateSchemaIntegrity(schema: Record<string, FieldSchema>, context: string = ''): ValidationResult {
+  protected validateSchemaIntegrity(schema: Record<string, FieldSchema>, context = ''): ValidationResult {
     const issues: ValidationIssue[] = [];
     const fieldNames = Object.keys(schema);
 
@@ -320,15 +320,15 @@ export abstract class BaseSchemaValidator {
     this.validateFieldNaming(fieldNames, issues, context);
 
     // Check for schema consistency
-    this.validateSchemaConsistency(schema, issues, context);
+    this.validateSchemaConsistency(schema);
 
     return {
-      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath: context,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 
@@ -338,7 +338,7 @@ export abstract class BaseSchemaValidator {
     const visited = new Set<string>();
 
     for (const fieldName of fieldNames) {
-      if (schema[fieldName].type === FieldType.OBJECT && schema[fieldName].properties) {
+      if (schema[fieldName].type === FieldType.object && schema[fieldName].properties) {
         this.checkForSelfReference(fieldName, schema[fieldName], visited, issues, context);
       }
     }
@@ -350,7 +350,7 @@ export abstract class BaseSchemaValidator {
         message: `Potential circular reference detected in field '${fieldName}'`,
         fieldPath: context ? `${context}.${fieldName}` : fieldName,
         code: 'CIRCULAR_REFERENCE',
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
         metadata: { fieldName },
       });
       return;
@@ -369,7 +369,7 @@ export abstract class BaseSchemaValidator {
         message: `Duplicate field names found: ${duplicates.join(', ')}`,
         fieldPath: context,
         code: 'DUPLICATE_FIELD_NAMES',
-        severity: ValidationSeverity.ERROR,
+        severity: ValidationSeverity.error,
         metadata: { duplicates },
       });
     }
@@ -381,13 +381,13 @@ export abstract class BaseSchemaValidator {
         message: `Invalid field names (must start with letter, contain only alphanumeric and underscore): ${invalidNames.join(', ')}`,
         fieldPath: context,
         code: 'INVALID_FIELD_NAMES',
-        severity: ValidationSeverity.WARNING,
+        severity: ValidationSeverity.warning,
         metadata: { invalidNames },
       });
     }
   }
 
-  private validateSchemaConsistency(schema: Record<string, FieldSchema>, _issues: ValidationIssue[], _context: string): void {
+  private validateSchemaConsistency(schema: Record<string, FieldSchema>): void {
     // Check for fields with same purpose but different configurations
     const fieldsByType = new Map<string, string[]>();
 

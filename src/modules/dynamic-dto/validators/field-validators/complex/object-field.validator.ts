@@ -1,28 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import {
-  BaseFieldValidator,
-  ValidationResult,
-  ValidationContext,
-  ValidationResultBuilder,
-  ObjectFieldSchema,
   BaseFieldSchema,
-  FieldSchema,
+  BaseFieldValidator,
   ConditionalRequirement,
-  DiscriminatorConfig,
-  InheritanceConfig,
   CrossPropertyValidationRule,
+  DiscriminatorConfig,
+  FieldSchema,
+  InheritanceConfig,
+  ObjectFieldSchema,
+  ValidationContext,
+  ValidationResult,
+  ValidationResultBuilder,
 } from '../../../core';
 import { FieldType } from '../../../core/types/field.types';
 import { DeepReadonly } from '../../../core/types/common.types';
 
 @Injectable()
 export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> {
-  readonly supportedType = FieldType.OBJECT;
+  readonly supportedType = FieldType.object;
   readonly priority = 100;
   readonly name = 'ObjectFieldValidator';
 
   canValidate(schema: BaseFieldSchema): schema is ObjectFieldSchema {
-    return schema.type === FieldType.OBJECT;
+    return schema.type === FieldType.object;
   }
 
   validateStructure(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
@@ -90,7 +90,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     }
   }
 
-  private validatePropertyName(propName: string, builder: ValidationResultBuilder, context: ValidationContext): void {
+  private validatePropertyName(propName: string, builder: ValidationResultBuilder, _context: ValidationContext): void {
     if (!propName || typeof propName !== 'string') {
       builder.addError('OBJECT_INVALID_PROPERTY_NAME', 'Property name must be a non-empty string', propName);
       return;
@@ -116,7 +116,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     }
 
     // Validate nested objects don't exceed depth limits
-    if (propSchema.type === FieldType.OBJECT && context.depth >= 10) {
+    if (propSchema.type === FieldType.object && context.depth >= 10) {
       builder.addWarning('OBJECT_EXCESSIVE_NESTING', `Property '${propName}' creates deep nesting (depth: ${context.depth + 1})`, { depth: context.depth + 1, propName });
     }
   }
@@ -321,7 +321,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     if (!schema.discriminator) return;
 
     const discriminatorProp = schema.properties[schema.discriminator.propertyName];
-    if (discriminatorProp && discriminatorProp.type !== FieldType.STRING) {
+    if (discriminatorProp && discriminatorProp.type !== FieldType.string) {
       builder.addWarning('OBJECT_DISCRIMINATOR_TYPE_RECOMMENDATION', `Discriminator property '${schema.discriminator.propertyName}' should be of type 'string'`);
     }
   }
@@ -383,7 +383,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   // Security validation
-  private validateSensitiveDataHandling(schema: ObjectFieldSchema, builder: ValidationResultBuilder, context: ValidationContext): void {
+  private validateSensitiveDataHandling(schema: ObjectFieldSchema, builder: ValidationResultBuilder, _context: ValidationContext): void {
     const sensitiveProps = this.findSensitiveProperties(schema);
 
     if (sensitiveProps.length > 0 && !schema.permissions) {
@@ -397,7 +397,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     return Object.keys(schema.properties).filter((propName) => sensitiveKeywords.some((keyword) => propName.toLowerCase().includes(keyword)));
   }
 
-  private validateNestedPermissions(schema: ObjectFieldSchema, builder: ValidationResultBuilder, context: ValidationContext): void {
+  private validateNestedPermissions(schema: ObjectFieldSchema, builder: ValidationResultBuilder, _context: ValidationContext): void {
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
       if (propSchema.permissions && !schema.permissions) {
         builder.addInfo('OBJECT_NESTED_PERMISSIONS_WITHOUT_PARENT', `Property '${propName}' has permissions but parent object does not`, propSchema.metadata);
@@ -451,7 +451,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     visited.add(currentPath);
 
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
-      if (propSchema.type === FieldType.OBJECT) {
+      if (propSchema.type === FieldType.object) {
         const newPath = `${currentPath}.${propName}`;
         this.detectCircularReferences(propSchema as ObjectFieldSchema, new Set(visited), newPath, builder);
       }

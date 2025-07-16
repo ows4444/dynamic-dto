@@ -1,8 +1,9 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsNotEmpty, IsOptional, ValidateIf } from 'class-validator';
-import { ConditionalValidation, FieldPermissions, FieldSchema, SerializableCondition } from '../interfaces/schema';
-import { FieldTypeValue } from '../types/field.types';
-import { AutoGenerateConfig, AutoGenerationType } from '../interfaces/schema/primitive/string-field.schema';
+import type { ConditionalValidation, FieldPermissions, FieldSchema, SerializableCondition } from '../interfaces/schema';
+import type { FieldTypeValue } from '../types/field.types';
+import type { AutoGenerateConfig } from '../interfaces/schema/primitive/string-field.schema';
+import { AutoGenerationType } from '../interfaces/schema/primitive/string-field.schema';
 import { ValidationStrategy } from '../enums/validation.enums';
 
 export interface TransformationFunction {
@@ -189,13 +190,13 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
     if (!userRoles?.length) return false;
 
     const roleMap = {
-      create: permissions.create || permissions.write || [],
-      read: permissions.read || [],
-      update: permissions.update || permissions.write || [],
-      delete: permissions.delete || permissions.write || [],
+      create: permissions.create ?? permissions.write ?? [],
+      read: permissions.read ?? [],
+      update: permissions.update ?? permissions.write ?? [],
+      delete: permissions.delete ?? permissions.write ?? [],
     };
 
-    const requiredRoles = roleMap[operation ?? 'read'] || [];
+    const requiredRoles = roleMap[operation ?? 'read'] ?? [];
     return this.checkPermission(requiredRoles, userRoles);
   }
 
@@ -208,24 +209,24 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
     return [ValidateIf((_, val) => val !== null)];
   }
 
-  protected generateAutoValue(type: AutoGenerationType, config?: AutoGenerateConfig): unknown {
+  protected generateAutoValue(type: AutoGenerationType, _config?: AutoGenerateConfig): unknown {
     const generators = {
-      [AutoGenerationType.UUID]: 'AUTO_UUID',
-      [AutoGenerationType.TIMESTAMP]: 'AUTO_TIMESTAMP',
-      [AutoGenerationType.INCREMENTAL]: 'AUTO_INCREMENTAL',
-      [AutoGenerationType.SLUG]: 'AUTO_SLUG',
-      [AutoGenerationType.HASH]: 'AUTO_HASH',
-      [AutoGenerationType.RANDOM_STRING]: 'AUTO_RANDOM_STRING',
-      [AutoGenerationType.SEQUENCE]: 'AUTO_SEQUENCE',
+      [AutoGenerationType.uuid]: 'AUTO_UUID',
+      [AutoGenerationType.timestamp]: 'AUTO_TIMESTAMP',
+      [AutoGenerationType.incremental]: 'AUTO_INCREMENTAL',
+      [AutoGenerationType.slug]: 'AUTO_SLUG',
+      [AutoGenerationType.hash]: 'AUTO_HASH',
+      [AutoGenerationType.random_string]: 'AUTO_RANDOM_STRING',
+      [AutoGenerationType.sequence]: 'AUTO_SEQUENCE',
     };
     return generators[type];
   }
 
-  protected evaluateExpression(expression: string, context: Record<string, unknown>): unknown {
+  protected evaluateExpression(expression: string, _context: Record<string, unknown>): unknown {
     return `EXPR:${expression}`;
   }
 
-  protected executeHook(hookId: string, value: unknown, context: Record<string, unknown>): unknown {
+  protected executeHook(_hookId: string, value: unknown, _context: Record<string, unknown>): unknown {
     return value;
   }
 
@@ -237,11 +238,11 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
     if (!('validationStrategy' in schema)) return [];
 
     switch (schema.validationStrategy) {
-      case ValidationStrategy.LOOSE:
+      case ValidationStrategy.loose:
         return [IsOptional()];
-      case ValidationStrategy.STRICT:
-      case ValidationStrategy.TRANSFORM:
-      case ValidationStrategy.SANITIZE:
+      case ValidationStrategy.strict:
+      case ValidationStrategy.transform:
+      case ValidationStrategy.sanitize:
       default:
         return [];
     }

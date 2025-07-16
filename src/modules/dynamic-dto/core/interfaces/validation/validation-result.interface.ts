@@ -1,5 +1,5 @@
-import { DeepReadonly } from '../../types/common.types';
-import { ValidationIssue } from './validation-issue.interface';
+import type { DeepReadonly } from '../../types/common.types';
+import type { ValidationIssue } from './validation-issue.interface';
 
 export interface ValidationResult {
   isValid: boolean;

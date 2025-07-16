@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { IsDefined, IsNumber, IsOptional, Max, Min } from 'class-validator';
 import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
-import { FieldSchema } from '../../../core/interfaces/schema';
+import type { FieldSchema } from '../../../core/interfaces/schema';
 import { FieldType } from '../../../core/types/field.types';
-import { NumberFieldSchema } from '../../../core/interfaces/schema/primitive/number-field.schema';
+import type { NumberFieldSchema } from '../../../core/interfaces/schema/primitive/number-field.schema';
 
 @Injectable()
 export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> {
-  readonly supportedType = FieldType.NUMBER;
+  readonly supportedType = FieldType.number;
 
   canProcess(schema: FieldSchema): schema is NumberFieldSchema {
-    return schema.type === FieldType.NUMBER;
+    return schema.type === FieldType.number;
   }
 
   generateValidationDecorators(schema: NumberFieldSchema, isRequired: boolean, parentIsArray: boolean): PropertyDecorator[] {

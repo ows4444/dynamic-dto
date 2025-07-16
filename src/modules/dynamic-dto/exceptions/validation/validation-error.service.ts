@@ -1,23 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { ValidationResult, ValidationIssue } from '../../core/interfaces/validation';
+import { ValidationIssue, ValidationResult } from '../../core/interfaces/validation';
 import { BaseValidationError, ValidationErrorContext } from './base-validation.error';
 import { ValidationErrorAggregator } from './validation-error-aggregator';
 import {
-  FieldTypeValidationError,
-  FieldRequiredValidationError,
   FieldConstraintValidationError,
-  FieldPermissionValidationError,
   FieldDeprecationValidationError,
+  FieldPermissionValidationError,
+  FieldRequiredValidationError,
   FieldSecurityValidationError,
+  FieldTypeValidationError,
 } from './field-validation.error';
 import {
+  SchemaBusinessRuleError,
+  SchemaCircularReferenceError,
+  SchemaCrossFieldValidationError,
+  SchemaFieldNamingError,
   SchemaStructureValidationError,
   SchemaVersionValidationError,
-  SchemaCircularReferenceError,
-  SchemaFieldNamingError,
-  SchemaBusinessRuleError,
-  SchemaCrossFieldValidationError,
 } from './schema-validation.error';
 
 export interface ValidationErrorMetrics {
@@ -25,8 +25,8 @@ export interface ValidationErrorMetrics {
   errorsByType: Record<string, number>;
   errorsBySeverity: Record<ValidationSeverity, number>;
   averageErrorsPerField: number;
-  mostCommonErrors: Array<{ code: string; count: number }>;
-  errorTrends: Array<{ timestamp: Date; errorCount: number }>;
+  mostCommonErrors: { code: string; count: number }[];
+  errorTrends: { timestamp: Date; errorCount: number }[];
 }
 
 @Injectable()
@@ -36,10 +36,10 @@ export class ValidationErrorService {
     totalErrors: 0,
     errorsByType: {},
     errorsBySeverity: {
-      [ValidationSeverity.ERROR]: 0,
-      [ValidationSeverity.WARNING]: 0,
-      [ValidationSeverity.INFO]: 0,
-      [ValidationSeverity.DEBUG]: 0,
+      [ValidationSeverity.error]: 0,
+      [ValidationSeverity.warning]: 0,
+      [ValidationSeverity.info]: 0,
+      [ValidationSeverity.debug]: 0,
     },
     averageErrorsPerField: 0,
     mostCommonErrors: [],
@@ -160,9 +160,9 @@ export class ValidationErrorService {
     return errors.sort((a, b) => {
       // First by severity (ERROR > WARNING > INFO)
       const severityOrder = {
-        [ValidationSeverity.ERROR]: 3,
-        [ValidationSeverity.WARNING]: 2,
-        [ValidationSeverity.INFO]: 1,
+        [ValidationSeverity.error]: 3,
+        [ValidationSeverity.warning]: 2,
+        [ValidationSeverity.info]: 1,
       };
 
       const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
@@ -255,10 +255,10 @@ export class ValidationErrorService {
     this.errorMetrics.totalErrors = 0;
     this.errorMetrics.errorsByType = {};
     this.errorMetrics.errorsBySeverity = {
-      [ValidationSeverity.ERROR]: 0,
-      [ValidationSeverity.WARNING]: 0,
-      [ValidationSeverity.INFO]: 0,
-      [ValidationSeverity.DEBUG]: 0,
+      [ValidationSeverity.error]: 0,
+      [ValidationSeverity.warning]: 0,
+      [ValidationSeverity.info]: 0,
+      [ValidationSeverity.debug]: 0,
     };
     this.errorMetrics.averageErrorsPerField = 0;
     this.errorMetrics.mostCommonErrors = [];

@@ -1,4 +1,4 @@
-import { ValidationResult } from '../../core/interfaces/validation';
+import type { ValidationResult } from '../../core/interfaces/validation';
 
 export class SchemaValidationResultEntity {
   constructor(

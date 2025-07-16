@@ -1,16 +1,17 @@
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { BaseValidationError, ValidationErrorContext, ValidationErrorSuggestion } from './base-validation.error';
+import type { ValidationErrorContext, ValidationErrorSuggestion } from './base-validation.error';
+import { BaseValidationError } from './base-validation.error';
 
 export class SchemaStructureValidationError extends BaseValidationError {
   constructor(schemaName: string, structureIssue: 'EMPTY_SCHEMA' | 'INVALID_STRUCTURE' | 'MISSING_PROPERTIES', context?: ValidationErrorContext) {
     let message: string;
     let suggestions: ValidationErrorSuggestion[] = [];
-    let severity: ValidationSeverity = ValidationSeverity.ERROR;
+    let severity: ValidationSeverity = ValidationSeverity.error;
 
     switch (structureIssue) {
       case 'EMPTY_SCHEMA':
         message = `Schema '${schemaName}' is empty`;
-        severity = ValidationSeverity.WARNING;
+        severity = ValidationSeverity.warning;
         suggestions = [
           {
             type: 'fix',
@@ -93,7 +94,7 @@ export class SchemaVersionValidationError extends BaseValidationError {
         break;
     }
 
-    super(versionIssue, message, ValidationSeverity.ERROR, { ...context, schemaName, schemaVersion: version }, suggestions, { schemaName, version, versionIssue });
+    super(versionIssue, message, ValidationSeverity.error, { ...context, schemaName, schemaVersion: version }, suggestions, { schemaName, version, versionIssue });
   }
 }
 
@@ -118,7 +119,7 @@ export class SchemaCircularReferenceError extends BaseValidationError {
       },
     ];
 
-    super('CIRCULAR_REFERENCE', message, ValidationSeverity.ERROR, { ...context, schemaName }, suggestions, { schemaName, circularPath });
+    super('CIRCULAR_REFERENCE', message, ValidationSeverity.error, { ...context, schemaName }, suggestions, { schemaName, circularPath });
   }
 }
 
@@ -155,7 +156,7 @@ export class SchemaFieldNamingError extends BaseValidationError {
         break;
     }
 
-    super(namingIssue, message, ValidationSeverity.ERROR, { ...context, schemaName }, suggestions, { schemaName, namingIssue, affectedFields });
+    super(namingIssue, message, ValidationSeverity.error, { ...context, schemaName }, suggestions, { schemaName, namingIssue, affectedFields });
   }
 }
 
@@ -176,7 +177,7 @@ export class SchemaBusinessRuleError extends BaseValidationError {
       },
     ];
 
-    super('BUSINESS_RULE_VIOLATION', message, ValidationSeverity.ERROR, { ...context, schemaName }, suggestions, { schemaName, ruleViolation, description });
+    super('BUSINESS_RULE_VIOLATION', message, ValidationSeverity.error, { ...context, schemaName }, suggestions, { schemaName, ruleViolation, description });
   }
 }
 
@@ -222,6 +223,6 @@ export class SchemaCrossFieldValidationError extends BaseValidationError {
         break;
     }
 
-    super(conflictType, message, ValidationSeverity.ERROR, { ...context, schemaName }, suggestions, { schemaName, conflictType, fields, description });
+    super(conflictType, message, ValidationSeverity.error, { ...context, schemaName }, suggestions, { schemaName, conflictType, fields, description });
   }
 }

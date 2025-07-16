@@ -1,10 +1,10 @@
-import { ValidationSeverity } from '../../../../core/enums/validation.enums';
-import { FieldSchema } from '..';
-import { FieldType } from '../../../types/field.types';
-import { BaseFieldSchema, ValidationRule } from '../base/base-field.schema';
+import type { ValidationSeverity } from '../../../../core/enums/validation.enums';
+import type { FieldSchema } from '..';
+import type { FieldType } from '../../../types/field.types';
+import type { BaseFieldSchema, ValidationRule } from '../base/base-field.schema';
 
 export interface ArrayFieldSchema extends BaseFieldSchema {
-  readonly type: typeof FieldType.ARRAY;
+  readonly type: typeof FieldType.array;
   readonly items: FieldSchema | FieldSchema[]; // Single type or tuple
 
   // Size constraints
@@ -13,7 +13,7 @@ export interface ArrayFieldSchema extends BaseFieldSchema {
 
   // Item constraints
   readonly uniqueItems?: boolean;
-  readonly uniqueBy?: string | readonly string[]; // Property paths for uniqueness
+  readonly uniqueBy?: string[]; // Property paths for uniqueness
 
   // Ordering
   readonly sortable?: boolean;

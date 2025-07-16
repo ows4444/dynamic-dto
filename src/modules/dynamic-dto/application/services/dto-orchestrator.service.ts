@@ -3,9 +3,9 @@ import type { ICacheManager } from '../../core/interfaces/cache/cache-manager.in
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { DtoGenerationPipeline } from '../pipelines/dto-generation.pipeline';
 import { ValidationPipeline } from '../pipelines/validation.pipeline';
-import { ClassConstructor } from '../../core/types/common.types';
+import type { ClassConstructor } from '../../core/types/common.types';
 import { MODULE_OPTIONS_TOKEN } from '../../dynamic-dto.module-definition';
-import { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
+import type { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
 
 @Injectable()
 export class DtoOrchestratorService {
@@ -70,7 +70,10 @@ export class DtoOrchestratorService {
     }
   }
 
-  async validateData(data: any, schema: DynamicSchemaEntity): Promise<{ isValid: boolean; errors: any[] }> {
+  async validateData(
+    data: unknown,
+    schema: DynamicSchemaEntity,
+  ): Promise<{ isValid: boolean; errors: { property?: string; value?: unknown; constraints?: Record<string, string>; message?: string }[] }> {
     const DtoClass = await this.generateDto(schema);
 
     try {

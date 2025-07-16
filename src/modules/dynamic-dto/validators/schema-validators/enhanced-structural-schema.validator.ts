@@ -8,11 +8,11 @@ import { ValidationResultMerger } from '../../core/utils/validation-result-merge
 
 @Injectable()
 export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
-  constructor(private fieldValidatorRegistry: FieldValidatorRegistry) {
+  constructor(private readonly fieldValidatorRegistry: FieldValidatorRegistry) {
     super();
   }
 
-  validate(schema: Record<string, FieldSchema>, data?: unknown, context: string = ''): ValidationResult {
+  validate(schema: Record<string, FieldSchema>, data?: unknown, context = ''): ValidationResult {
     return this.validateSchemaObject(schema, context, data);
   }
 

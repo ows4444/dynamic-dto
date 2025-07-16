@@ -1,4 +1,4 @@
-import { ModuleMetadata } from '@nestjs/common';
+import type { ModuleMetadata } from '@nestjs/common';
 
 export interface DynamicDtoModuleOptions {
   isGlobal?: boolean;

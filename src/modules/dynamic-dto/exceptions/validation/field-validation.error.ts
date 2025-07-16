@@ -1,6 +1,7 @@
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { FieldTypeValue } from '../../core/types/field.types';
-import { BaseValidationError, ValidationErrorContext, ValidationErrorSuggestion } from './base-validation.error';
+import type { FieldTypeValue } from '../../core/types/field.types';
+import type { ValidationErrorContext, ValidationErrorSuggestion } from './base-validation.error';
+import { BaseValidationError } from './base-validation.error';
 
 export class FieldTypeValidationError extends BaseValidationError {
   constructor(fieldName: string, expectedType: FieldTypeValue, actualType: unknown, context?: ValidationErrorContext) {
@@ -19,7 +20,7 @@ export class FieldTypeValidationError extends BaseValidationError {
       },
     ];
 
-    super('FIELD_TYPE_MISMATCH', message, ValidationSeverity.ERROR, { ...context, fieldPath: fieldName }, suggestions, { expectedType, actualType: typeof actualType, fieldName });
+    super('FIELD_TYPE_MISMATCH', message, ValidationSeverity.error, { ...context, fieldPath: fieldName }, suggestions, { expectedType, actualType: typeof actualType, fieldName });
   }
 }
 
@@ -40,7 +41,7 @@ export class FieldRequiredValidationError extends BaseValidationError {
       },
     ];
 
-    super('FIELD_REQUIRED', message, ValidationSeverity.ERROR, { ...context, fieldPath: fieldName }, suggestions, { fieldName });
+    super('FIELD_REQUIRED', message, ValidationSeverity.error, { ...context, fieldPath: fieldName }, suggestions, { fieldName });
   }
 }
 
@@ -56,7 +57,7 @@ export class FieldConstraintValidationError extends BaseValidationError {
       },
     ];
 
-    super('FIELD_CONSTRAINT_VIOLATION', message, ValidationSeverity.ERROR, { ...context, fieldPath: fieldName }, suggestions, { fieldName, constraintType, constraintValue, actualValue });
+    super('FIELD_CONSTRAINT_VIOLATION', message, ValidationSeverity.error, { ...context, fieldPath: fieldName }, suggestions, { fieldName, constraintType, constraintValue, actualValue });
   }
 }
 
@@ -76,7 +77,7 @@ export class FieldPermissionValidationError extends BaseValidationError {
       },
     ];
 
-    super('FIELD_PERMISSION_DENIED', message, ValidationSeverity.ERROR, { ...context, fieldPath: fieldName, userRoles }, suggestions, { fieldName, requiredPermissions, userRoles, operation });
+    super('FIELD_PERMISSION_DENIED', message, ValidationSeverity.error, { ...context, fieldPath: fieldName, userRoles }, suggestions, { fieldName, requiredPermissions, userRoles, operation });
   }
 }
 
@@ -120,7 +121,7 @@ export class FieldDeprecationValidationError extends BaseValidationError {
       });
     }
 
-    const severity = deprecationInfo.removeInVersion ? ValidationSeverity.ERROR : ValidationSeverity.WARNING;
+    const severity = deprecationInfo.removeInVersion ? ValidationSeverity.error : ValidationSeverity.warning;
 
     super('FIELD_DEPRECATED', message, severity, { ...context, fieldPath: fieldName }, suggestions, { fieldName, ...deprecationInfo });
   }
@@ -168,6 +169,6 @@ export class FieldSecurityValidationError extends BaseValidationError {
         break;
     }
 
-    super(securityIssue, message, ValidationSeverity.ERROR, { ...context, fieldPath: fieldName }, suggestions, { fieldName, securityIssue });
+    super(securityIssue, message, ValidationSeverity.error, { ...context, fieldPath: fieldName }, suggestions, { fieldName, securityIssue });
   }
 }

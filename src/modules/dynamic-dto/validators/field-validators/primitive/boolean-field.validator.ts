@@ -8,12 +8,12 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class BooleanFieldValidator extends BaseFieldValidator<BooleanFieldSchema> {
-  readonly supportedType = FieldType.BOOLEAN;
+  readonly supportedType = FieldType.boolean;
   readonly priority = 100;
   readonly name = 'BooleanFieldValidator';
 
   canValidate(schema: BaseFieldSchema): schema is BooleanFieldSchema {
-    return schema.type === FieldType.BOOLEAN;
+    return schema.type === FieldType.boolean;
   }
 
   validateStructure(schema: BooleanFieldSchema, context: ValidationContext): ValidationResult {

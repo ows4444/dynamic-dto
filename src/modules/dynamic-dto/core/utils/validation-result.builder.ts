@@ -1,10 +1,10 @@
 import { ValidationSeverity } from '../enums/validation.enums';
-import { ValidationResult } from '../interfaces/validation';
-import { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
+import type { ValidationResult } from '../interfaces/validation';
+import type { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
 
 export class ValidationResultBuilder {
-  private issues: ValidationIssue[] = [];
-  private fieldPath?: string;
+  private readonly issues: ValidationIssue[] = [];
+  private readonly fieldPath?: string;
   private metadata?: Record<string, unknown>;
 
   constructor(fieldPath?: string) {
@@ -13,7 +13,7 @@ export class ValidationResultBuilder {
 
   addError(code: string, message: string, value?: unknown, constraint?: string, metadata?: Record<string, unknown>): this {
     this.issues.push({
-      severity: ValidationSeverity.ERROR,
+      severity: ValidationSeverity.error,
       code,
       message,
       fieldPath: this.fieldPath!,
@@ -26,7 +26,7 @@ export class ValidationResultBuilder {
 
   addWarning(code: string, message: string, value?: unknown, metadata?: Record<string, unknown>): this {
     this.issues.push({
-      severity: ValidationSeverity.WARNING,
+      severity: ValidationSeverity.warning,
       code,
       message,
       fieldPath: this.fieldPath!,
@@ -38,7 +38,7 @@ export class ValidationResultBuilder {
 
   addInfo(code: string, message: string, metadata?: Record<string, unknown>): this {
     this.issues.push({
-      severity: ValidationSeverity.INFO,
+      severity: ValidationSeverity.info,
       code,
       message,
       fieldPath: this.fieldPath!,
@@ -64,13 +64,13 @@ export class ValidationResultBuilder {
 
   build(): ValidationResult {
     return {
-      isValid: !this.issues.some((issue) => issue.severity === ValidationSeverity.ERROR),
+      isValid: !this.issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues: [...this.issues],
       fieldPath: this.fieldPath,
       metadata: this.metadata,
-      errors: this.issues.filter((issue) => issue.severity === ValidationSeverity.ERROR),
-      warnings: this.issues.filter((issue) => issue.severity === ValidationSeverity.WARNING),
-      infos: this.issues.filter((issue) => issue.severity === ValidationSeverity.INFO),
+      errors: this.issues.filter((issue) => issue.severity === ValidationSeverity.error),
+      warnings: this.issues.filter((issue) => issue.severity === ValidationSeverity.warning),
+      infos: this.issues.filter((issue) => issue.severity === ValidationSeverity.info),
     };
   }
 

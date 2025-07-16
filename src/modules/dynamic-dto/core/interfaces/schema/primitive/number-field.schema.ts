@@ -1,8 +1,8 @@
-import { FieldType } from '../../../types/field.types';
-import { BaseFieldSchema } from '../base/base-field.schema';
+import type { FieldType } from '../../../types/field.types';
+import type { BaseFieldSchema } from '../base/base-field.schema';
 
 export interface NumberFieldSchema extends BaseFieldSchema {
-  readonly type: typeof FieldType.NUMBER;
+  readonly type: typeof FieldType.number;
   readonly default?: number;
 
   // Range constraints
@@ -34,13 +34,13 @@ export interface NumberFieldSchema extends BaseFieldSchema {
 }
 
 export const NumberFormat = {
-  INTEGER: 'integer',
-  FLOAT: 'float',
-  DOUBLE: 'double',
-  DECIMAL: 'decimal',
-  PERCENTAGE: 'percentage',
-  CURRENCY: 'currency',
-  SCIENTIFIC: 'scientific',
+  integer: 'integer',
+  float: 'float',
+  double: 'double',
+  decimal: 'decimal',
+  percentage: 'percentage',
+  currency: 'currency',
+  scientific: 'scientific',
 } as const;
 
 export type NumberFormat = (typeof NumberFormat)[keyof typeof NumberFormat];

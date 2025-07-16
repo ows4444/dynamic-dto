@@ -1,5 +1,5 @@
-import { FieldTypeValue } from '../../../core/types/field.types';
-import { DeepReadonly } from '../../types/common.types';
+import type { FieldTypeValue } from '../../../core/types/field.types';
+import type { DeepReadonly } from '../../types/common.types';
 
 export interface ValidationContext {
   readonly fieldPath: string;
