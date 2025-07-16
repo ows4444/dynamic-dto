@@ -89,14 +89,6 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
     };
   }
 
-  static forFeature(_options: Partial<DynamicDtoModuleOptions> = {}): DynamicModule {
-    return {
-      module: DynamicDtoModule,
-      providers: [DtoOrchestratorService, SchemaOrchestratorService],
-      exports: [DtoOrchestratorService, SchemaOrchestratorService],
-    };
-  }
-
   private static createCacheProviders(_options: DynamicDtoModuleOptions): Provider[] {
     return [
       {
