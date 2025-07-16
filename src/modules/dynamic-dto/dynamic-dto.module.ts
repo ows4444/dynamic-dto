@@ -67,6 +67,13 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         FieldProcessorRegistry,
         FieldValidatorRegistry,
 
+        // Field Processors and Validators (after registries)
+        ...fieldProcessorProviders,
+        ...fieldValidatorProviders,
+
+        // Infrastructure services (after processors)
+        NestedClassGeneratorService,
+
         // Schema Validators
         EnhancedStructuralSchemaValidator,
         {
@@ -74,16 +81,9 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
           useClass: EnhancedStructuralSchemaValidator,
         },
 
-        // Field Processors and Validators
-        ...fieldProcessorProviders,
-        ...fieldValidatorProviders,
-
         // Validation services
         ValidationErrorService,
         ValidationErrorRecoveryService,
-
-        // Infrastructure services
-        NestedClassGeneratorService,
       ],
       exports: [DtoOrchestratorService, NestedClassGeneratorService, SchemaOrchestratorService, FieldProcessorRegistry, FieldValidatorRegistry, SchemaValidationPipeline],
     };
