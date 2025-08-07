@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IsDate, IsDateString, IsDefined, IsOptional } from 'class-validator';
-import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
+import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
+import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
 import { FieldSchema } from '../../../core/interfaces/schema';
 import { DateFieldSchema, DateFormat } from '../../../core/interfaces/schema/specialized-primitives/date-field.schema';
 import { FieldType } from '../../../core/types/field.types';
@@ -35,7 +36,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
     return decorators;
   }
 
-  protected getTypeSpecificTransformations(schema: DateFieldSchema): TransformationFunction[] {
+  getTypeSpecificTransformations(schema: DateFieldSchema): TransformationFunction[] {
     const functions: TransformationFunction[] = [];
 
     // Date parsing transformation (order: 30)

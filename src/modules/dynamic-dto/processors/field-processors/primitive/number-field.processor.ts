@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IsDefined, IsNumber, IsOptional, Max, Min } from 'class-validator';
-import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
+import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
+import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
 import type { FieldSchema } from '../../../core/interfaces/schema';
 import { FieldType } from '../../../core/types/field.types';
 import type { NumberFieldSchema } from '../../../core/interfaces/schema/primitive/number-field.schema';
@@ -34,7 +35,7 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
     return decorators;
   }
 
-  protected getTypeSpecificTransformations(schema: NumberFieldSchema): TransformationFunction[] {
+  getTypeSpecificTransformations(schema: NumberFieldSchema): TransformationFunction[] {
     const functions: TransformationFunction[] = [];
 
     // Type coercion transformation (order: 30)

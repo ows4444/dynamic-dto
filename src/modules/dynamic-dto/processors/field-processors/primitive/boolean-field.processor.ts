@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IsBoolean, IsDefined, IsOptional } from 'class-validator';
-import { BaseFieldProcessor, TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
+import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
+import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
 
 import type { FieldSchema } from '../../../core/interfaces/schema';
 import { FieldType } from '../../../core/types/field.types';
@@ -28,7 +29,7 @@ export class BooleanFieldProcessor extends BaseFieldProcessor<BooleanFieldSchema
     return decorators;
   }
 
-  protected getTypeSpecificTransformations(schema: BooleanFieldSchema): TransformationFunction[] {
+  getTypeSpecificTransformations(schema: BooleanFieldSchema): TransformationFunction[] {
     const functions: TransformationFunction[] = [];
 
     // Boolean coercion transformation (order: 30)

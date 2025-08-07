@@ -42,7 +42,7 @@ export class DtoOrchestratorService {
       }
 
       // Generate DTO
-      const generatedClass = await this.generationPipeline.generateAsync(schema);
+      const generatedClass = this.generationPipeline.generate(schema);
 
       // Cache result
       const ttl = this.options.cache?.ttl ?? 3600; // 1 hour default

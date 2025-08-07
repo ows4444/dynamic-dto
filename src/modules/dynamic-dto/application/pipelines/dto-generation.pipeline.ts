@@ -1,35 +1,51 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldProcessorRegistry } from '../../infrastructure/registries/field-processor.registry';
 import { ClassConstructor } from '../../core/types/common.types';
+import { LRUCache } from '../../infrastructure/cache/lru-cache';
+import { CacheMonitorService } from '../../infrastructure/monitoring/cache-monitor.service';
 
 @Injectable()
 export class DtoGenerationPipeline {
   private readonly logger = new Logger(DtoGenerationPipeline.name);
-  private readonly generatedClasses = new Map<string, ClassConstructor<object>>();
+  private readonly generatedClasses = new LRUCache<string, ClassConstructor<object>>(500); // Max 500 generated classes
 
-  constructor(private readonly fieldProcessorRegistry: FieldProcessorRegistry) {}
-
-  async generateAsync(schema: DynamicSchemaEntity): Promise<ClassConstructor<object>> {
-    return new Promise((resolve, reject) => {
-      try {
-        const result = this.generate(schema);
-        resolve(result);
-      } catch (error) {
-        reject(error instanceof Error ? error : new Error(String(error)));
-      }
-    });
+  constructor(
+    private readonly fieldProcessorRegistry: FieldProcessorRegistry,
+    @Optional() private readonly cacheMonitor?: CacheMonitorService,
+  ) {
+    // Register cache for monitoring if service is available
+    this.cacheMonitor?.registerCache('dto-generation-pipeline', this.generatedClasses);
   }
 
   generate(schema: DynamicSchemaEntity): ClassConstructor<object> {
     const className = this.generateClassName(schema.name, schema.version.toString());
 
     // Check if already generated
-    if (this.generatedClasses.has(className)) {
-      return this.generatedClasses.get(className)!;
+    const cachedClass = this.generatedClasses.get(className);
+    if (cachedClass) {
+      return cachedClass;
     }
 
+    const DynamicClass = this.generateWithRuntimeApproach(className, schema);
+
+    // Cache the generated class
+    this.generatedClasses.set(className, DynamicClass);
+
+    // Log cache statistics if approaching capacity
+    if (this.generatedClasses.isNearCapacity()) {
+      const stats = this.generatedClasses.getStats();
+      this.logger.warn('DTO generation cache approaching capacity', {
+        ...stats,
+        memoryUsageBytes: this.generatedClasses.getApproximateMemoryUsage(),
+      });
+    }
+
+    return DynamicClass;
+  }
+
+  private generateWithRuntimeApproach(className: string, schema: DynamicSchemaEntity): ClassConstructor<object> {
     const DynamicClass = this.createBaseClass(className, schema);
 
     // Process each field
@@ -59,9 +75,6 @@ export class DtoGenerationPipeline {
     if (schema.excludeAll) {
       Exclude()(DynamicClass);
     }
-
-    // Cache the generated class
-    this.generatedClasses.set(className, DynamicClass);
 
     return DynamicClass;
   }

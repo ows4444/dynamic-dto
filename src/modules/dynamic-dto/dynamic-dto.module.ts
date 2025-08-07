@@ -33,6 +33,18 @@ import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.mod
 import { ValidationErrorRecoveryService, ValidationErrorService } from './exceptions/validation';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 
+// Mediator and dependency resolution
+import { FieldProcessingMediator } from './core/mediators/field-processing.mediator';
+import { DependencyResolverService } from './infrastructure/initialization/dependency-resolver.service';
+
+// Validation strategies
+import { ValidationStrategyFactory } from './infrastructure/factories/validation-strategy.factory';
+import { EnhancedSchemaValidationStrategy } from './application/strategies/validation/enhanced-schema-validation.strategy';
+import { BaseSchemaValidationStrategy } from './application/strategies/validation/base-schema-validation.strategy';
+import { FieldRegistryValidationStrategy } from './application/strategies/validation/field-registry-validation.strategy';
+import { BusinessRulesValidationStrategy } from './application/strategies/validation/business-rules-validation.strategy';
+import { CrossFieldValidationStrategy } from './application/strategies/validation/cross-field-validation.strategy';
+
 @Module({})
 export class DynamicDtoModule extends ConfigurableModuleClass {
   static forRoot(options: DynamicDtoModuleOptions = {}): DynamicModule {
@@ -71,6 +83,10 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         ...fieldProcessorProviders,
         ...fieldValidatorProviders,
 
+        // Mediator pattern to resolve circular dependencies
+        FieldProcessingMediator,
+        DependencyResolverService,
+
         // Infrastructure services (after processors)
         NestedClassGeneratorService,
 
@@ -80,6 +96,14 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
           provide: BaseSchemaValidator,
           useClass: EnhancedStructuralSchemaValidator,
         },
+
+        // Validation strategies
+        ValidationStrategyFactory,
+        EnhancedSchemaValidationStrategy,
+        BaseSchemaValidationStrategy,
+        FieldRegistryValidationStrategy,
+        BusinessRulesValidationStrategy,
+        CrossFieldValidationStrategy,
 
         // Validation services
         ValidationErrorService,

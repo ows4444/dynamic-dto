@@ -15,6 +15,11 @@ interface ProcessorStats {
   totalProcessors: number;
   supportedTypes: FieldTypeValue[];
   initialized: boolean;
+  errorMetrics?: {
+    totalErrors: number;
+    errorsByType: Record<string, number>;
+    lastErrorTime?: Date;
+  };
 }
 
 @Injectable()
@@ -22,6 +27,17 @@ export class FieldProcessorRegistry implements OnModuleInit {
   private readonly logger = new Logger(FieldProcessorRegistry.name);
   private readonly processors = new Map<FieldTypeValue, BaseFieldProcessor>();
   private initialized = false;
+
+  // Performance monitoring for errors
+  private readonly errorMetrics: {
+    totalErrors: number;
+    errorsByType: Record<string, number>;
+    lastErrorTime: Date | undefined;
+  } = {
+    totalErrors: 0,
+    errorsByType: {},
+    lastErrorTime: undefined,
+  };
 
   constructor(
     private readonly stringProcessor: StringFieldProcessor,
@@ -67,21 +83,48 @@ export class FieldProcessorRegistry implements OnModuleInit {
     }
 
     this.processors.set(processor.supportedType, processor);
+    // Invalidate cache when processors change
+    this._supportedTypesCache = null;
     this.logger.debug(`Registered processor for type: ${processor.supportedType}`);
   }
 
   getProcessor(type: FieldTypeValue): BaseFieldProcessor {
     const processor = this.processors.get(type);
     if (!processor) {
-      this.logger.error(`No processor found for field type: ${type}`, {
-        availableTypes: Array.from(this.processors.keys()),
-      });
+      // Track error for performance monitoring
+      this.trackError('processor_not_found', type);
+
+      // Log error with minimal overhead - only construct expensive array when needed
+      this.logger.error(`No processor found for field type: ${type}`);
       throw new Error(`No processor found for field type: ${type}`);
     }
     return processor;
   }
 
-  processField(
+  processField(schema: FieldSchema, isRequired: boolean, parentIsArray?: boolean): PropertyDecorator[] {
+    try {
+      const processor = this.getProcessor(schema.type);
+
+      if (!processor.canProcess(schema)) {
+        throw new Error(`Processor ${processor.constructor.name} cannot handle schema for type: ${(schema as { type: string }).type}`);
+      }
+
+      return [
+        ...processor.generateValidationDecorators(schema, isRequired, parentIsArray),
+        ...processor.generateTransformationDecorators(schema),
+        ...processor.generateSerializationDecorators(schema, isRequired, false),
+      ];
+    } catch (error) {
+      // Track error for performance monitoring
+      this.trackError('field_processing_failed', schema.type);
+
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to process field for type: ${schema.type}`, { error: errorMessage });
+      throw new Error(`Field processing failed for type ${schema.type}: ${errorMessage}`);
+    }
+  }
+
+  processFieldSeparated(
     schema: FieldSchema,
     isRequired: boolean,
   ): {
@@ -102,6 +145,9 @@ export class FieldProcessorRegistry implements OnModuleInit {
         serializationDecorators: processor.generateSerializationDecorators(schema, isRequired, false),
       };
     } catch (error) {
+      // Track error for performance monitoring
+      this.trackError('field_separated_processing_failed', schema.type);
+
       this.logger.error('Failed to process field', {
         fieldType: schema.type,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -118,15 +164,53 @@ export class FieldProcessorRegistry implements OnModuleInit {
     return Array.from(this.processors.values());
   }
 
+  private _supportedTypesCache: FieldTypeValue[] | null = null;
+
   getSupportedTypes(): FieldTypeValue[] {
-    return Array.from(this.processors.keys());
+    // Cache supported types since processors rarely change after initialization
+    this._supportedTypesCache ??= Array.from(this.processors.keys());
+    return this._supportedTypesCache;
   }
 
   getProcessorStats(): ProcessorStats {
     return {
       totalProcessors: this.processors.size,
-      supportedTypes: this.getSupportedTypes(),
+      supportedTypes: this.getSupportedTypes(), // Now uses cached version
       initialized: this.initialized,
+      errorMetrics: {
+        totalErrors: this.errorMetrics.totalErrors,
+        errorsByType: { ...this.errorMetrics.errorsByType },
+        lastErrorTime: this.errorMetrics.lastErrorTime,
+      },
     };
+  }
+
+  /**
+   * Track errors for performance monitoring
+   * @private
+   */
+  private trackError(errorType: string, fieldType?: FieldTypeValue): void {
+    this.errorMetrics.totalErrors++;
+    this.errorMetrics.lastErrorTime = new Date();
+
+    const key = fieldType ? `${errorType}_${fieldType}` : errorType;
+    this.errorMetrics.errorsByType[key] = (this.errorMetrics.errorsByType[key] || 0) + 1;
+
+    // Log warning if error rate is high (more than 10 errors in recent activity)
+    if (this.errorMetrics.totalErrors % 10 === 0) {
+      this.logger.warn('High error rate detected in field processor registry', {
+        totalErrors: this.errorMetrics.totalErrors,
+        errorsByType: this.errorMetrics.errorsByType,
+      });
+    }
+  }
+
+  /**
+   * Reset error metrics (useful for testing or periodic cleanup)
+   */
+  resetErrorMetrics(): void {
+    this.errorMetrics.totalErrors = 0;
+    this.errorMetrics.errorsByType = {};
+    this.errorMetrics.lastErrorTime = undefined;
   }
 }
