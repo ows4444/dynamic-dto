@@ -5,9 +5,10 @@ import { ClassConstructor } from '../../core/types/common.types';
 import { IFieldProcessingMediator } from '../../core/interfaces/mediator/field-processing.mediator';
 import { LRUCache } from '../cache/lru-cache';
 import { CacheMonitorService } from '../monitoring/cache-monitor.service';
+import { isClassConstructor, isSchemaRecord, isStringArray } from '../../core/types/type-guards';
 
 export interface INestedClassGenerator {
-  generateNestedClass(properties: Record<string, FieldSchema>, required?: string[], exclude?: boolean): ClassConstructor<object>;
+  generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required?: string[], exclude?: boolean): ClassConstructor<{ [K in keyof T]: unknown }>;
 }
 
 @Injectable()
@@ -26,7 +27,15 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     this.processingMediator = mediator;
   }
 
-  generateNestedClass(properties: Record<string, FieldSchema>, required: string[] = [], exclude = false): ClassConstructor<object> {
+  generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required: string[] = [], exclude = false): ClassConstructor<{ [K in keyof T]: unknown }> {
+    // Type validation
+    if (!isSchemaRecord(properties)) {
+      throw new Error('Invalid properties: must be a record of field schemas');
+    }
+
+    if (!isStringArray(required)) {
+      throw new Error('Invalid required array: must be an array of strings');
+    }
     const cacheKey = this.generateCacheKey(properties, required, exclude);
 
     const cachedClass = this.generatedClasses.get(cacheKey);
@@ -76,14 +85,20 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     return DynamicClass;
   }
 
-  private createBaseClass(className: string, properties: Record<string, FieldSchema>): ClassConstructor<object> {
-    const DynamicClass = function (this: Record<string, unknown>) {
+  private createBaseClass<T extends Record<string, FieldSchema>>(className: string, properties: T): ClassConstructor<{ [K in keyof T]: unknown }> {
+    const DynamicClass = function (this: { [K in keyof T]: unknown }) {
       for (const propName of Object.keys(properties)) {
-        this[propName] = undefined;
+        this[propName as keyof T] = undefined;
       }
-    } as unknown as ClassConstructor<object>;
+    } as unknown as ClassConstructor<{ [K in keyof T]: unknown }>;
 
     Object.defineProperty(DynamicClass, 'name', { value: className });
+
+    // Type assertion to ensure class constructor is properly typed
+    if (!isClassConstructor(DynamicClass)) {
+      throw new Error(`Failed to create valid class constructor for ${className}`);
+    }
+
     return DynamicClass;
   }
 
@@ -103,7 +118,9 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     let hash = '';
     for (const key of keys) {
       const field = obj[key];
-      hash += `${key}:${field.type}:${field.nullable ?? false}:${field.exclude ?? false};`;
+      if (field?.type) {
+        hash += `${key}:${field.type}:${field.nullable ?? false}:${field.exclude ?? false};`;
+      }
     }
     return this.simpleHash(hash);
   }
@@ -123,11 +140,16 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     return Math.abs(hash).toString(36);
   }
 
-  private applyDecorators(targetClass: ClassConstructor<object>, propertyName: string, decorators: PropertyDecorator[]): void {
+  private applyDecorators<T extends Record<string, FieldSchema>>(targetClass: ClassConstructor<{ [K in keyof T]: unknown }>, propertyName: string, decorators: PropertyDecorator[]): void {
+    if (!Array.isArray(decorators)) {
+      throw new Error('Decorators must be an array');
+    }
+
     decorators.forEach((decorator) => {
-      if (typeof decorator === 'function') {
-        decorator(targetClass.prototype, propertyName);
+      if (typeof decorator !== 'function') {
+        throw new Error(`Invalid decorator: expected function, got ${typeof decorator}`);
       }
+      decorator(targetClass.prototype, propertyName);
     });
   }
 }

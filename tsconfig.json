@@ -12,11 +12,12 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "esModuleInterop": true,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "esModuleInterop": true
   }
 }

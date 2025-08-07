@@ -6,6 +6,8 @@ export const FieldType = {
 
   // Specialized Primitives
   date: 'date',
+  enum: 'enum',
+  union: 'union',
 
   // Complex/Structured
   array: 'array',
@@ -18,7 +20,7 @@ export type FieldTypeValue = (typeof FieldType)[keyof typeof FieldType];
 // Create type-safe field type groups
 export const FieldTypeGroups = {
   primitive: [FieldType.string, FieldType.number, FieldType.boolean] as const,
-  specialized_primitive: [FieldType.date] as const,
+  specialized_primitive: [FieldType.date, FieldType.enum, FieldType.union] as const,
   complex_structured: [FieldType.array, FieldType.object] as const,
 } as const;
 

@@ -1,10 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## Development Commands
 
 ### Build & Development
+
 ```bash
 npm run build                    # Build the project
 npm run start                    # Start the application
@@ -14,12 +16,14 @@ npm run start:prod              # Start production build
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint                    # Run ESLint with auto-fix
 npm run format                  # Format code with Prettier
 ```
 
 ### Testing
+
 ```bash
 npm test                        # Run all tests
 npm run test:unit               # Run unit tests only
@@ -31,47 +35,62 @@ npm run test:coverage          # Run comprehensive coverage analysis (all test t
 npm run test:debug             # Run tests in debug mode
 ```
 
-**Coverage Requirements**: This project enforces 99% code coverage for unit tests, 90% for integration tests, and 85% for e2e tests.
+**Coverage Requirements**: This project enforces 99% code coverage for unit
+tests, 90% for integration tests, and 85% for e2e tests.
 
 ## Architecture Overview
 
-This is a **Dynamic DTO Generation Library** built with NestJS that dynamically creates Data Transfer Object (DTO) classes from JSON schemas at runtime. The architecture follows clean architecture principles with clear separation of concerns.
+This is a **Dynamic DTO Generation Library** built with NestJS that dynamically
+creates Data Transfer Object (DTO) classes from JSON schemas at runtime. The
+architecture follows clean architecture principles with clear separation of
+concerns.
 
 ### Core Components
 
 #### 1. **DynamicDtoModule** (`src/modules/dynamic-dto/dynamic-dto.module.ts`)
+
 - Main module that orchestrates all services and dependencies
 - Uses factory pattern to avoid circular dependencies
 - Configurable through `DynamicDtoModuleOptions`
 - Can be registered globally or per-module
 
 #### 2. **Orchestration Layer** (`application/services/`)
-- **DtoOrchestratorService**: Main service for DTO generation and data validation
+
+- **DtoOrchestratorService**: Main service for DTO generation and data
+  validation
 - **SchemaOrchestratorService**: Manages schema operations and validation
 - Implements caching strategies and performance monitoring
 
 #### 3. **Pipeline Architecture** (`application/pipelines/`)
+
 - **DtoGenerationPipeline**: Handles the DTO class generation process
 - **ValidationPipeline**: Validates schemas before processing
 - **SchemaValidationPipeline**: Comprehensive schema structure validation
 
 #### 4. **Field Processing System** (`processors/` & `infrastructure/registries/`)
+
 - **FieldProcessorRegistry**: Central registry for all field processors
-- **Field Processors**: Handle different data types (string, number, boolean, date, array, object)
-- Each processor generates validation, transformation, and serialization decorators
-- Supports primitive types, complex types (arrays, objects), and specialized types (dates)
+- **Field Processors**: Handle different data types (string, number, boolean,
+  date, array, object)
+- Each processor generates validation, transformation, and serialization
+  decorators
+- Supports primitive types, complex types (arrays, objects), and specialized
+  types (dates)
 
 #### 5. **Validation System** (`validators/`)
+
 - **Field Validators**: Type-specific validation logic
 - **Schema Validators**: Structural validation of entire schemas
 - **FieldValidatorRegistry**: Central registry for validation components
 
 #### 6. **Infrastructure Layer** (`infrastructure/`)
+
 - **Cache Management**: Pluggable caching strategies (memory cache included)
 - **Factories**: Create and configure processors/validators
 - **NestedClassGeneratorService**: Handles complex nested object structures
 
 #### 7. **Domain Layer** (`domain/`)
+
 - **DynamicSchemaEntity**: Core domain entity representing a schema
 - **SchemaValidationResultEntity**: Validation result aggregation
 - **Value Objects**: Schema versioning and other domain concepts
@@ -79,14 +98,17 @@ This is a **Dynamic DTO Generation Library** built with NestJS that dynamically 
 ### Key Design Patterns
 
 1. **Registry Pattern**: Central registries for processors and validators
-2. **Factory Pattern**: Used to create and configure components without circular dependencies
+2. **Factory Pattern**: Used to create and configure components without circular
+   dependencies
 3. **Pipeline Pattern**: Sequential processing stages for DTO generation
 4. **Strategy Pattern**: Pluggable caching and validation strategies
-5. **Template Method Pattern**: Abstract base classes for processors and validators
+5. **Template Method Pattern**: Abstract base classes for processors and
+   validators
 
 ### Schema Structure
 
 The system works with JSON schemas that define:
+
 - Field types (primitive, complex, specialized)
 - Validation rules (required, min/max, patterns, etc.)
 - Nested object structures
@@ -98,7 +120,8 @@ The system works with JSON schemas that define:
 - **Specialized**: `date` (with parsing and validation)
 - **Complex**: `array`, `object` (with nested schemas)
 
-Each type has dedicated processors and validators that generate appropriate class-validator and class-transformer decorators.
+Each type has dedicated processors and validators that generate appropriate
+class-validator and class-transformer decorators.
 
 ### Caching Strategy
 
@@ -115,6 +138,7 @@ Each type has dedicated processors and validators that generate appropriate clas
 ## Development Guidelines
 
 ### Adding New Field Types
+
 1. Create processor in `processors/field-processors/`
 2. Create validator in `validators/field-validators/`
 3. Register both in respective factories
@@ -122,12 +146,14 @@ Each type has dedicated processors and validators that generate appropriate clas
 5. Update tests with 99% coverage requirement
 
 ### Testing Strategy
+
 - Unit tests for individual components (99% coverage)
 - Integration tests for module interactions (90% coverage)
 - E2E tests for complete workflows (85% coverage)
 - Comprehensive test fixtures in `test/fixtures/`
 
 ### Code Organization
+
 - Follow existing patterns for consistency
 - Use dependency injection throughout
 - Implement proper error handling and logging
