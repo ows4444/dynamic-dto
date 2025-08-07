@@ -14,7 +14,7 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
   /**
    * Type-safe schema validation that ensures schema conforms to expected structure
    */
-  protected validateSchemaStructure(schema: T): ValidatedFieldSchema<T> {
+  validateSchemaStructure(schema: T): ValidatedFieldSchema<T> {
     if (!schema.type || typeof schema.type !== 'string') {
       throw new Error(`Invalid schema: missing or invalid type property`);
     }
@@ -77,7 +77,7 @@ class ValidatorImpl<T extends FieldSchema> extends ValidationDecorator<T> {
 
   generateValidationDecorators(schema: T, isRequired: boolean, parentIsArray?: boolean): PropertyDecorator[] {
     // Validate schema structure before processing
-    const validatedSchema = this.parent['validateSchemaStructure'](schema);
+    const validatedSchema = this.parent.validateSchemaStructure(schema);
     return this.parent.generateValidationDecorators(validatedSchema, isRequired, parentIsArray);
   }
 }
@@ -96,7 +96,7 @@ class TransformerImpl<T extends FieldSchema> extends TransformationProcessor<T> 
 
   getTypeSpecificTransformations(schema: T): TransformationFunction[] {
     // Ensure type safety before processing transformations
-    const validatedSchema = this.parent['validateSchemaStructure'](schema);
+    const validatedSchema = this.parent.validateSchemaStructure(schema);
     return this.parent.getTypeSpecificTransformations(validatedSchema);
   }
 }
@@ -117,7 +117,7 @@ class SerializerImpl<T extends FieldSchema> extends SerializationProcessor<T> {
    * Override to include schema validation
    */
   override generateSerializationDecorators(schema: T, isRequired: boolean, excludeAll: boolean, context?: SerializationContext): PropertyDecorator[] {
-    const validatedSchema = this.parent['validateSchemaStructure'](schema);
+    const validatedSchema = this.parent.validateSchemaStructure(schema);
     return super.generateSerializationDecorators(validatedSchema, isRequired, excludeAll, context);
   }
 }

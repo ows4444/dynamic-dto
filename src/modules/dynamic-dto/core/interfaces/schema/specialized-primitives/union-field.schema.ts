@@ -1,6 +1,5 @@
 import type { FieldType } from '../../../types/field.types';
 import type { BaseFieldSchema } from '../base/base-field.schema';
-import type { DeepReadonly } from '../../../types/common.types';
 
 export interface UnionFieldSchema extends BaseFieldSchema {
   readonly type: typeof FieldType.union;
@@ -43,7 +42,9 @@ export interface TypeCondition {
   readonly property?: string; // For property-based conditions
   readonly value?: unknown; // Expected value
   readonly pattern?: string; // Regex pattern
-  readonly validator?: string; // Custom validator function name
+  readonly validator?: string; // Custom validator function name (deprecated, use validatorName)
+  readonly validatorName?: string; // Name of the custom validator to use
+  readonly validatorConfig?: any; // Configuration passed to the custom validator
 }
 
 export const UnionValidationStrategy = {
@@ -71,11 +72,11 @@ export interface StringOrNumberUnion extends Omit<UnionFieldSchema, 'unionTypes'
   readonly unionTypes: readonly [{ type: typeof FieldType.string }, { type: typeof FieldType.number }];
 }
 
-export interface NullableUnion<T extends any> extends Omit<UnionFieldSchema, 'unionTypes'> {
+export interface NullableUnion<T> extends Omit<UnionFieldSchema, 'unionTypes'> {
   readonly unionTypes: readonly [T, { type: 'null' }];
 }
 
-export interface OptionalUnion<T extends any> extends Omit<UnionFieldSchema, 'unionTypes'> {
+export interface OptionalUnion<T> extends Omit<UnionFieldSchema, 'unionTypes'> {
   readonly unionTypes: readonly [T, { type: 'undefined' }];
 }
 

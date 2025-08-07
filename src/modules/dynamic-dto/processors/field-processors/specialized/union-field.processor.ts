@@ -6,6 +6,15 @@ import { TypeCondition, TypeHint, UnionFieldSchema, UnionValidationStrategy } fr
 import { FieldType } from '../../../core/types/field.types';
 import type { FieldSchema } from '../../../core/interfaces/schema';
 
+/**
+ * Registry for custom validators used in union type conditions
+ */
+interface CustomValidatorRegistry {
+  readonly validators: Map<string, (value: any, config?: any) => boolean>;
+  register(name: string, validator: (value: any, config?: any) => boolean): void;
+  get(name: string): ((value: any, config?: any) => boolean) | undefined;
+}
+
 interface TypeMatchResult {
   typeIndex: number;
   confidence: number;
@@ -36,7 +45,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     decorators.push(this.createUnionValidator(schema, eachOption));
 
     // Discriminator validation if present
-    if (schema.discriminator && schema.discriminator.required) {
+    if (schema.discriminator?.required) {
       decorators.push(this.createDiscriminatorValidator(schema, eachOption));
     }
 
@@ -279,8 +288,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
         return condition.pattern ? new RegExp(condition.pattern).test(value) : false;
 
       case 'custom':
-        // TODO: Implement custom validator lookup
-        return true;
+        return this.evaluateCustomValidator(value, condition);
 
       default:
         return false;
@@ -376,5 +384,43 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
       default:
         return value;
     }
+  }
+
+  /**
+   * Evaluates custom validators for type conditions
+   */
+  private evaluateCustomValidator(value: any, condition: TypeCondition): boolean {
+    if (!condition.validatorName) {
+      return false;
+    }
+
+    const validator = UnionFieldProcessor.customValidatorRegistry.get(condition.validatorName);
+    if (!validator) {
+      console.warn(`Custom validator '${condition.validatorName}' not found`);
+      return false;
+    }
+
+    try {
+      return validator(value, condition.validatorConfig);
+    } catch (error) {
+      console.error(`Error executing custom validator '${condition.validatorName}':`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Registers a custom validator for use in type conditions
+   * @param name - The validator name
+   * @param validator - The validation function
+   */
+  static registerCustomValidator(name: string, validator: (value: any, config?: any) => boolean): void {
+    UnionFieldProcessor.customValidatorRegistry.register(name, validator);
+  }
+
+  /**
+   * Gets all registered custom validators
+   */
+  static getRegisteredValidators(): string[] {
+    return Array.from(UnionFieldProcessor.customValidatorRegistry.validators.keys());
   }
 }
