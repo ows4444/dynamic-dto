@@ -4,11 +4,11 @@ import type { ValidationIssue } from '../interfaces/validation/validation-issue.
 
 export class ValidationResultBuilder {
   private readonly issues: ValidationIssue[] = [];
-  private readonly fieldPath?: string;
+  private readonly fieldPath: string;
   private metadata?: Record<string, unknown>;
 
   constructor(fieldPath?: string) {
-    this.fieldPath = fieldPath;
+    this.fieldPath = fieldPath ?? '';
   }
 
   addError(code: string, message: string, value?: unknown, constraint?: string, metadata?: Record<string, unknown>): this {
@@ -16,10 +16,10 @@ export class ValidationResultBuilder {
       severity: ValidationSeverity.error,
       code,
       message,
-      fieldPath: this.fieldPath!,
+      fieldPath: this.fieldPath,
       value,
-      constraint,
-      metadata,
+      ...(constraint && { constraint }),
+      ...(metadata && { metadata }),
     });
     return this;
   }
@@ -29,9 +29,9 @@ export class ValidationResultBuilder {
       severity: ValidationSeverity.warning,
       code,
       message,
-      fieldPath: this.fieldPath!,
+      fieldPath: this.fieldPath,
       value,
-      metadata,
+      ...(metadata && { metadata }),
     });
     return this;
   }
@@ -41,8 +41,8 @@ export class ValidationResultBuilder {
       severity: ValidationSeverity.info,
       code,
       message,
-      fieldPath: this.fieldPath!,
-      metadata,
+      fieldPath: this.fieldPath,
+      ...(metadata && { metadata }),
     });
     return this;
   }
@@ -67,7 +67,7 @@ export class ValidationResultBuilder {
       isValid: !this.issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues: [...this.issues],
       fieldPath: this.fieldPath,
-      metadata: this.metadata,
+      ...(this.metadata && { metadata: this.metadata }),
       errors: this.issues.filter((issue) => issue.severity === ValidationSeverity.error),
       warnings: this.issues.filter((issue) => issue.severity === ValidationSeverity.warning),
       infos: this.issues.filter((issue) => issue.severity === ValidationSeverity.info),

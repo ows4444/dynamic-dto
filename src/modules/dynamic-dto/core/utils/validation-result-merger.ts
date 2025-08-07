@@ -13,7 +13,7 @@ export class ValidationResultMerger {
     }
 
     if (results.length === 1) {
-      return results[0];
+      return results[0] || this.createEmptyResult();
     }
 
     const aggregatedData = this.aggregateResults(results);
@@ -123,8 +123,8 @@ export class ValidationResultMerger {
     return {
       isValid,
       issues: uniqueIssues.map((issue) => this.cleanObject(issue)),
-      metadata: Object.keys(mergedMetadata).length > 0 ? mergedMetadata : undefined,
-      fieldPath,
+      ...(Object.keys(mergedMetadata).length > 0 && { metadata: mergedMetadata }),
+      fieldPath: fieldPath || '',
 
       get errors() {
         return uniqueIssues.filter((issue) => issue.severity === 'error');

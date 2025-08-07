@@ -60,10 +60,11 @@ export class DtoOrchestratorService {
     } catch (error) {
       const duration = Date.now() - startTime;
 
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('DTO generation failed', {
         schemaId: schema.id,
         duration,
-        error: error.message,
+        error: errorMessage,
       });
 
       throw error;
@@ -88,18 +89,19 @@ export class DtoOrchestratorService {
         errors: errors.map((error) => ({
           property: error.property,
           value: error.value,
-          constraints: error.constraints,
+          ...(error.constraints && { constraints: error.constraints }),
         })),
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Data validation failed', {
         schemaId: schema.id,
-        error: error.message,
+        error: errorMessage,
       });
 
       return {
         isValid: false,
-        errors: [{ message: error.message }],
+        errors: [{ message: errorMessage }],
       };
     }
   }

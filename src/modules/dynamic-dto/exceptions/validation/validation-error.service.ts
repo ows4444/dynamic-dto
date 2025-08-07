@@ -165,7 +165,7 @@ export class ValidationErrorService {
         [ValidationSeverity.info]: 1,
       };
 
-      const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
+      const severityDiff = (severityOrder[b.severity as keyof typeof severityOrder] || 0) - (severityOrder[a.severity as keyof typeof severityOrder] || 0);
       if (severityDiff !== 0) return severityDiff;
 
       // Then by error code priority
@@ -276,11 +276,12 @@ export class ValidationErrorService {
     requestId?: string,
   ): ValidationErrorAggregator {
     const context: ValidationErrorContext = {
-      schemaName,
-      schemaVersion,
-      userRoles,
-      operation,
-      requestId,
+      fieldPath: '',
+      ...(schemaName && { schemaName }),
+      ...(schemaVersion && { schemaVersion }),
+      ...(userRoles && { userRoles }),
+      ...(operation && { operation }),
+      ...(requestId && { requestId }),
       timestamp: new Date(),
     };
 

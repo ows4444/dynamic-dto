@@ -180,7 +180,7 @@ export class FieldProcessorRegistry implements OnModuleInit {
       errorMetrics: {
         totalErrors: this.errorMetrics.totalErrors,
         errorsByType: { ...this.errorMetrics.errorsByType },
-        lastErrorTime: this.errorMetrics.lastErrorTime,
+        ...(this.errorMetrics.lastErrorTime && { lastErrorTime: this.errorMetrics.lastErrorTime }),
       },
     };
   }

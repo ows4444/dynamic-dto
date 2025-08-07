@@ -133,7 +133,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
         name: 'isMinDate',
         target: target.constructor,
         propertyName: String(propertyName),
-        options,
+        ...(options && { options }),
         constraints: [min],
         validator: {
           validate(value: unknown, args: ValidationArguments): boolean {
@@ -162,7 +162,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
         name: 'isMaxDate',
         target: target.constructor,
         propertyName: String(propertyName),
-        options,
+        ...(options && { options }),
         constraints: [max],
         validator: {
           validate(value: unknown, args: ValidationArguments): boolean {
@@ -190,7 +190,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
         name: 'isFutureDate',
         target: target.constructor,
         propertyName: String(propertyName),
-        options,
+        ...(options && { options }),
         validator: {
           validate(value: unknown): boolean {
             if (!(value instanceof Date)) return false;
@@ -215,7 +215,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
         name: 'isPastDate',
         target: target.constructor,
         propertyName: String(propertyName),
-        options,
+        ...(options && { options }),
         validator: {
           validate(value: unknown): boolean {
             if (!(value instanceof Date)) return false;
@@ -240,7 +240,7 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
         name: 'isBusinessDay',
         target: target.constructor,
         propertyName: String(propertyName),
-        options,
+        ...(options && { options }),
         validator: {
           validate(value: unknown): boolean {
             if (!(value instanceof Date)) return false;

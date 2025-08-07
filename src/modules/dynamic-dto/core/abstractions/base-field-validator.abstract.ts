@@ -56,7 +56,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
     return {
       isValid: allIssues.every((issue) => issue.severity !== ValidationSeverity.error),
       issues: allIssues,
-      fieldPath: results[0]?.fieldPath,
+      fieldPath: results[0]?.fieldPath ?? '',
       errors: allIssues.filter((issue) => issue.severity === ValidationSeverity.error),
       warnings: allIssues.filter((issue) => issue.severity === ValidationSeverity.warning),
       infos: allIssues.filter((issue) => issue.severity === ValidationSeverity.info),
@@ -204,7 +204,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
       code,
       message,
       fieldPath: context.fieldPath,
-      metadata,
+      ...(metadata && { metadata }),
     };
   }
 
@@ -214,7 +214,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
       code,
       message,
       fieldPath: context.fieldPath,
-      metadata,
+      ...(metadata && { metadata }),
     };
   }
 
@@ -224,7 +224,7 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
       code,
       message,
       fieldPath: context.fieldPath,
-      metadata,
+      ...(metadata && { metadata }),
     };
   }
 }

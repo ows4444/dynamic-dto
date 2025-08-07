@@ -23,8 +23,8 @@ export class SchemaValidationPipeline {
 
     // Enhanced validation with context
     const context: Partial<ValidationContext> = {
-      userRoles,
-      schemaVersion,
+      ...(userRoles !== undefined && { userRoles }),
+      ...(schemaVersion !== undefined && { schemaVersion }),
     };
 
     const result = this.schemaOrchestrator.validateSchema(schemaProperties, context);

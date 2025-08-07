@@ -111,15 +111,15 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
             const defaultConfig = schema.default;
             switch (defaultConfig.type) {
               case 'first':
-                return this.getDefaultValueForType(schema.unionTypes[0]);
+                return this.getDefaultValueForType(schema.unionTypes[0]! as FieldSchema);
               case 'preferred':
                 if (defaultConfig.typeIndex !== undefined) {
-                  return this.getDefaultValueForType(schema.unionTypes[defaultConfig.typeIndex]);
+                  return this.getDefaultValueForType(schema.unionTypes[defaultConfig.typeIndex]! as FieldSchema);
                 }
                 return defaultConfig.value;
               case 'computed':
                 // TODO: Implement computed default evaluation
-                return this.getDefaultValueForType(schema.unionTypes[0]);
+                return this.getDefaultValueForType(schema.unionTypes[0]! as FieldSchema);
             }
           }
 
@@ -163,7 +163,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
         if (detectedType >= 0 && detectedType < schema.unionTypes.length) {
           const targetTypeSchema = schema.unionTypes[detectedType];
           // Apply transformations specific to the detected type
-          return this.transformValueForType(value, targetTypeSchema);
+          return this.transformValueForType(value, targetTypeSchema! as FieldSchema);
         }
 
         return value;
@@ -234,7 +234,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
             if (typeof value !== 'object' || value === null) return false;
 
             const discriminatorProp = schema.discriminator.property;
-            const discriminatorValue = value[discriminatorProp];
+            const discriminatorValue = (value as Record<string, unknown>)[discriminatorProp];
 
             if (discriminatorValue === undefined) {
               return !schema.discriminator.required;
@@ -261,7 +261,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
 
         // This is a simplified validation - in a real implementation,
         // you'd need to dynamically create validators for each union type
-        const confidence = this.calculateTypeConfidence(value, typeSchema, [...(schema.typeHints || [])]);
+        const confidence = this.calculateTypeConfidence(value, typeSchema! as FieldSchema, [...(schema.typeHints || [])]);
         const valid = confidence > 0.5; // Threshold for validity
 
         results.push({
@@ -375,7 +375,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     // Fall back to basic type detection
     for (let i = 0; i < schema.unionTypes.length; i++) {
       const typeSchema = schema.unionTypes[i];
-      const confidence = this.calculateTypeConfidence(value, typeSchema, []);
+      const confidence = this.calculateTypeConfidence(value, typeSchema! as FieldSchema, []);
       if (confidence > 0.5) {
         return i;
       }
@@ -389,8 +389,8 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
       return value;
     }
 
-    const discriminatorValue = value[schema.discriminator.property];
-    const typeIndex = schema.discriminator.mapping[discriminatorValue];
+    const discriminatorValue = (value as Record<string, unknown>)[schema.discriminator.property];
+    const typeIndex = schema.discriminator.mapping[discriminatorValue as string | number];
 
     if (typeIndex !== undefined && typeIndex >= 0 && typeIndex < schema.unionTypes.length) {
       // Store the resolved type index for validation
@@ -405,8 +405,8 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
       return false;
     }
 
-    const discriminatorValue = value[schema.discriminator.property];
-    const typeIndex = schema.discriminator.mapping[discriminatorValue];
+    const discriminatorValue = (value as Record<string, unknown>)[schema.discriminator.property];
+    const typeIndex = schema.discriminator.mapping[discriminatorValue as string | number];
 
     return typeIndex !== undefined && typeIndex >= 0 && typeIndex < schema.unionTypes.length;
   }

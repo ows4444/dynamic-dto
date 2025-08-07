@@ -176,7 +176,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
     const processedChunks: ArrayChunk<unknown>[] = [];
 
     for (let i = 0; i < Math.min(chunks.length, config.maxConcurrentChunks); i++) {
-      processedChunks.push(this.processChunk(chunks[i], schema));
+      processedChunks.push(this.processChunk(chunks[i]!, schema));
     }
 
     // Combine processed chunks back into single array
@@ -210,7 +210,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
 
     // Type-specific processing based on schema
     if (!Array.isArray(schema.items)) {
-      processedData = processedData.map((item) => this.processArrayItem(item, schema.items));
+      processedData = processedData.map((item) => this.processArrayItem(item, schema.items as FieldSchema));
     }
 
     return {

@@ -70,6 +70,7 @@ export class ValidationErrorRecoveryService {
     const riskLevel = this.assessRiskLevel(summary, recoverySteps);
 
     return {
+      sourceErrors: errors as readonly TError[],
       canAutoRecover,
       recoverySteps: this.deduplicateSteps(recoverySteps),
       manualSteps: this.prioritizeManualSteps(manualSteps),
@@ -94,12 +95,14 @@ export class ValidationErrorRecoveryService {
           id: `fix_type_${error.context?.fieldPath}`,
           action: 'fix_type',
           description: `Auto-convert field '${error.context?.fieldPath}' to expected type`,
-          targetField: error.context?.fieldPath,
+          ...(error.context?.fieldPath && { targetField: error.context.fieldPath }),
           parameters: {
             expectedType: error.metadata.expectedType,
             currentType: error.metadata.actualType,
           },
           autoExecutable: this.isTypeConversionSafe(error.metadata.actualType as string, error.metadata.expectedType as FieldTypeValue),
+          priority: 8,
+          estimatedDuration: 1,
         });
         break;
 
@@ -117,13 +120,15 @@ export class ValidationErrorRecoveryService {
           id: `fix_constraint_${error.context?.fieldPath}`,
           action: 'update_constraint',
           description: `Auto-adjust constraint for field '${error.context?.fieldPath}'`,
-          targetField: error.context?.fieldPath,
+          ...(error.context?.fieldPath && { targetField: error.context.fieldPath }),
           parameters: {
             constraintType: error.metadata.constraintType,
             expectedValue: error.metadata.constraintValue,
             actualValue: error.metadata.actualValue,
           },
           autoExecutable: this.isConstraintAdjustmentSafe(error.metadata.constraintType as string),
+          priority: 6,
+          estimatedDuration: 2,
         });
         break;
 
@@ -142,12 +147,14 @@ export class ValidationErrorRecoveryService {
           id: `replace_deprecated_${error.context?.fieldPath}`,
           action: 'remove_field',
           description: `Replace deprecated field '${error.context?.fieldPath}'`,
-          targetField: error.context?.fieldPath,
+          ...(error.context?.fieldPath && { targetField: error.context.fieldPath }),
           parameters: {
             replacedBy: error.metadata.replacedBy,
             migrationGuide: error.metadata.migrationGuide,
           },
           autoExecutable: !!error.metadata.replacedBy,
+          priority: 4,
+          estimatedDuration: 3,
         });
         break;
 
@@ -160,6 +167,8 @@ export class ValidationErrorRecoveryService {
             duplicateFields: error.metadata.duplicates,
           },
           autoExecutable: true,
+          priority: 7,
+          estimatedDuration: 2,
         });
         break;
 

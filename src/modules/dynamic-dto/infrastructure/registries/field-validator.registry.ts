@@ -109,13 +109,14 @@ export class FieldValidatorRegistry implements OnModuleInit {
 
       return validator.validate(schema, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Field validation failed', {
         fieldPath: context.fieldPath,
         fieldType: schema.type,
-        error: error.message,
+        error: errorMessage,
       });
 
-      return ValidationResultBuilder.error('VALIDATION_ERROR', `Validation failed for field '${context.fieldPath}': ${error.message}`, context.fieldPath, { error: error.message });
+      return ValidationResultBuilder.error('VALIDATION_ERROR', `Validation failed for field '${context.fieldPath}': ${errorMessage}`, context.fieldPath, { error: errorMessage });
     }
   }
 

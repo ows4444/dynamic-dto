@@ -76,7 +76,7 @@ export abstract class BaseValidationError extends Error {
       issue.severity,
       {
         ...context,
-        fieldPath: issue.fieldPath,
+        fieldPath: issue.fieldPath ?? '',
       },
       [],
       issue.metadata || {},
@@ -99,11 +99,11 @@ export abstract class BaseValidationError extends Error {
       code: this.code,
       message: this.message,
       severity: this.severity,
-      context: this.context,
+      context: this.context || { fieldPath: '' },
       suggestions: this.suggestions,
       metadata: this.metadata,
       timestamp: this.timestamp.toISOString(),
-      stack: this.stack,
+      ...(this.stack && { stack: this.stack }),
     };
   }
 

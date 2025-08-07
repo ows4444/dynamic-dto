@@ -41,7 +41,7 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
     // Validate each union type schema
     for (let i = 0; i < schema.unionTypes.length; i++) {
       const unionType = schema.unionTypes[i];
-      if (!unionType.type) {
+      if (!unionType || !unionType.type) {
         issues.push({
           code: 'UNION_INVALID_TYPE_SCHEMA',
           message: `Union type at index ${i} must have a type property`,
@@ -196,9 +196,9 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
   private analyzeTypeMatches(value: unknown, schema: UnionFieldSchema): TypeMatchAnalysis[] {
     return schema.unionTypes.map((typeSchema, index) => ({
       typeIndex: index,
-      typeSchema,
-      matches: this.checkTypeMatch(value, typeSchema),
-      confidence: this.calculateTypeConfidence(value, typeSchema),
+      typeSchema: typeSchema as FieldSchema,
+      matches: this.checkTypeMatch(value, typeSchema as FieldSchema),
+      confidence: this.calculateTypeConfidence(value, typeSchema as FieldSchema),
     }));
   }
 

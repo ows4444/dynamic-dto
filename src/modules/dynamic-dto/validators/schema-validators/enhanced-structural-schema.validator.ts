@@ -29,7 +29,7 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       const validationContext: ValidationContext = {
         fieldPath,
         depth: context.split('.').filter(Boolean).length,
-        parentType: undefined,
+        parentType: fieldSchema.type,
         data,
       };
 

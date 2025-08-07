@@ -23,25 +23,26 @@ export class ValidationPipeline {
       this.logger.debug(`Validation completed for schema: ${schema.name}. Valid: ${result.isValid}`);
       return result;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Validation failed for schema: ${schema.name}`, error);
       return {
         isValid: false,
         issues: [
           {
-            message: `Validation pipeline failed: ${error.message}`,
+            message: `Validation pipeline failed: ${errorMessage}`,
             code: 'VALIDATION_PIPELINE_ERROR',
             severity: ValidationSeverity.error,
             fieldPath: schema.name,
-            metadata: { error: error.message },
+            metadata: { error: errorMessage },
           },
         ],
         errors: [
           {
-            message: `Validation pipeline failed: ${error.message}`,
+            message: `Validation pipeline failed: ${errorMessage}`,
             code: 'VALIDATION_PIPELINE_ERROR',
             severity: ValidationSeverity.error,
             fieldPath: schema.name,
-            metadata: { error: error.message },
+            metadata: { error: errorMessage },
           },
         ],
         warnings: [],

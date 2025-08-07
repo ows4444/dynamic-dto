@@ -62,12 +62,13 @@ export class DtoGenerationPipeline {
 
         this.applyDecorators(DynamicClass, fieldName, decorators);
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         this.logger.error(`Failed to process field ${fieldName}`, {
           fieldName,
           fieldType: fieldSchema.type,
-          error: error.message,
+          error: errorMessage,
         });
-        throw new Error(`Field processing failed for ${fieldName}: ${error.message}`);
+        throw new Error(`Field processing failed for ${fieldName}: ${errorMessage}`);
       }
     }
 

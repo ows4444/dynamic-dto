@@ -16,10 +16,10 @@ export interface ValidationErrorSummary {
 
 export class ValidationErrorAggregator {
   private readonly errors: BaseValidationError[] = [];
-  private readonly context?: ValidationErrorContext;
+  private readonly context: ValidationErrorContext;
 
   constructor(context?: ValidationErrorContext) {
-    this.context = context;
+    this.context = context || { fieldPath: '' };
   }
 
   /**
@@ -115,7 +115,7 @@ export class ValidationErrorAggregator {
         if (!fieldErrors[error.context.fieldPath]) {
           fieldErrors[error.context.fieldPath] = [];
         }
-        fieldErrors[error.context.fieldPath].push(error);
+        fieldErrors[error.context.fieldPath]!.push(error);
       } else {
         schemaErrors.push(error);
       }
@@ -124,7 +124,7 @@ export class ValidationErrorAggregator {
       if (!errorsByCode[error.code]) {
         errorsByCode[error.code] = [];
       }
-      errorsByCode[error.code].push(error);
+      errorsByCode[error.code]!.push(error);
     }
 
     return {
@@ -245,7 +245,7 @@ export class ValidationErrorAggregator {
       message: error.message,
       code: error.code,
       severity: error.severity,
-      fieldPath: error.context?.fieldPath,
+      fieldPath: error.context?.fieldPath || '',
       metadata: error.metadata,
     }));
 
@@ -256,21 +256,21 @@ export class ValidationErrorAggregator {
         message: e.message,
         code: e.code,
         severity: e.severity,
-        fieldPath: e.context?.fieldPath,
+        fieldPath: e.context?.fieldPath || '',
         metadata: e.metadata,
       })),
       warnings: this.getErrorsBySeverity(ValidationSeverity.warning).map((e) => ({
         message: e.message,
         code: e.code,
         severity: e.severity,
-        fieldPath: e.context?.fieldPath,
+        fieldPath: e.context?.fieldPath || '',
         metadata: e.metadata,
       })),
       infos: this.getErrorsBySeverity(ValidationSeverity.info).map((e) => ({
         message: e.message,
         code: e.code,
         severity: e.severity,
-        fieldPath: e.context?.fieldPath,
+        fieldPath: e.context?.fieldPath || '',
         metadata: e.metadata,
       })),
     };

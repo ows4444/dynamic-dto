@@ -50,7 +50,7 @@ export abstract class BaseSchemaValidator {
       isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath,
-      metadata: schema.metadata,
+      ...(schema.metadata && { metadata: schema.metadata }),
       errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
       warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
       infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
@@ -209,7 +209,7 @@ export abstract class BaseSchemaValidator {
       isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath: fieldName,
-      metadata: schema.metadata,
+      ...(schema.metadata && { metadata: schema.metadata }),
       errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
       warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
       infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
@@ -302,7 +302,7 @@ export abstract class BaseSchemaValidator {
       isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath: fieldName,
-      metadata: schema.metadata,
+      ...(schema.metadata && { metadata: schema.metadata }),
       errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
       warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
       infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
@@ -338,8 +338,9 @@ export abstract class BaseSchemaValidator {
     const visited = new Set<string>();
 
     for (const fieldName of fieldNames) {
-      if (schema[fieldName].type === FieldType.object && schema[fieldName].properties) {
-        this.checkForSelfReference(fieldName, schema[fieldName], visited, issues, context);
+      const fieldSchema = schema[fieldName];
+      if (fieldSchema && fieldSchema.type === FieldType.object && 'properties' in fieldSchema) {
+        this.checkForSelfReference(fieldName, fieldSchema, visited, issues, context);
       }
     }
   }

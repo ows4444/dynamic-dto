@@ -25,7 +25,7 @@ export class SchemaOrchestratorService {
 
   validateSchemaWithUserRoles(schema: Record<string, FieldSchema>, userRoles?: string[]): ValidationResult {
     const context: Partial<ValidationContext> = {
-      userRoles,
+      ...(userRoles !== undefined && { userRoles }),
     };
 
     return this.validateSchema(schema, context);

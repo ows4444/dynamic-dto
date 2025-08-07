@@ -56,25 +56,25 @@ export class ValidationChain {
           isValid: false,
           issues: [
             {
-              message: `Strategy ${strategy.name} failed: ${error.message}`,
+              message: `Strategy ${strategy.name} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
               code: 'STRATEGY_EXECUTION_ERROR',
               severity: ValidationSeverity.error,
               fieldPath: schema.name,
               metadata: {
                 strategy: strategy.name,
-                error: error.message,
+                error: error instanceof Error ? error.message : 'Unknown error',
               },
             },
           ],
           errors: [
             {
-              message: `Strategy ${strategy.name} failed: ${error.message}`,
+              message: `Strategy ${strategy.name} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
               code: 'STRATEGY_EXECUTION_ERROR',
               severity: ValidationSeverity.error,
               fieldPath: schema.name,
               metadata: {
                 strategy: strategy.name,
-                error: error.message,
+                error: error instanceof Error ? error.message : 'Unknown error',
               },
             },
           ],
