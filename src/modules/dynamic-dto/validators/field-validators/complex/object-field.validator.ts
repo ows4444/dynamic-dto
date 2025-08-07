@@ -51,7 +51,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     return builder.build();
   }
 
-  protected validateSecurity(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
+  protected override validateSecurity(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateSensitiveDataHandling(schema, builder, context);
@@ -61,7 +61,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     return builder.build();
   }
 
-  protected validatePerformance(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
+  protected override validatePerformance(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateNestingDepth(schema, builder, context);

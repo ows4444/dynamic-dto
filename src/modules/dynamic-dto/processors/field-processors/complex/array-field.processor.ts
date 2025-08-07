@@ -123,22 +123,18 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
   /**
    * Optimizes array processing using virtualization for large datasets
    */
-  private optimizeArrayProcessing(
-    array: unknown[], 
-    schema: ArrayFieldSchema, 
-    config: VirtualizationConfig
-  ): unknown[] {
+  private optimizeArrayProcessing(array: unknown[], schema: ArrayFieldSchema, config: VirtualizationConfig): unknown[] {
     // For very large arrays, we implement virtual scrolling concepts
     // This method prepares the array for chunked processing
     const chunks = this.createArrayChunks(array, config.chunkSize);
-    
+
     // Process chunks concurrently up to maxConcurrentChunks
     const processedChunks: ArrayChunk[] = [];
-    
+
     for (let i = 0; i < Math.min(chunks.length, config.maxConcurrentChunks); i++) {
       processedChunks.push(this.processChunk(chunks[i], schema));
     }
-    
+
     // Combine processed chunks back into single array
     return processedChunks.reduce((acc, chunk) => [...acc, ...chunk.data], [] as unknown[]);
   }
@@ -148,16 +144,16 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
    */
   private createArrayChunks<T>(array: T[], chunkSize: number): ArrayChunk<T>[] {
     const chunks: ArrayChunk<T>[] = [];
-    
+
     for (let i = 0; i < array.length; i += chunkSize) {
       const endIndex = Math.min(i + chunkSize, array.length);
       chunks.push({
         data: array.slice(i, endIndex),
         startIndex: i,
-        endIndex: endIndex - 1
+        endIndex: endIndex - 1,
       });
     }
-    
+
     return chunks;
   }
 
@@ -167,15 +163,15 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
   private processChunk<T>(chunk: ArrayChunk<T>, schema: ArrayFieldSchema): ArrayChunk<T> {
     // Apply chunk-specific transformations
     let processedData = [...chunk.data];
-    
+
     // Type-specific processing based on schema
     if (!Array.isArray(schema.items)) {
-      processedData = processedData.map(item => this.processArrayItem(item, schema.items));
+      processedData = processedData.map((item) => this.processArrayItem(item, schema.items));
     }
-    
+
     return {
       ...chunk,
-      data: processedData
+      data: processedData,
     };
   }
 
@@ -212,11 +208,11 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
       // Use Set for small arrays (fast and simple)
       return [...new Set(array)];
     }
-    
+
     // Use Map for large arrays with complex objects
     const seen = new Map<string, T>();
     const result: T[] = [];
-    
+
     for (const item of array) {
       const key = this.generateItemKey(item);
       if (!seen.has(key)) {
@@ -224,7 +220,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
         result.push(item);
       }
     }
-    
+
     return result;
   }
 
@@ -234,7 +230,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
   private generateItemKey<T>(item: T): string {
     if (item === null) return 'null';
     if (item === undefined) return 'undefined';
-    
+
     if (typeof item === 'object') {
       try {
         return JSON.stringify(item);
@@ -243,7 +239,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
         return `[object_${typeof item}]_${Date.now()}_${Math.random()}`;
       }
     }
-    
+
     return String(item);
   }
 
@@ -255,9 +251,9 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
     const lazyContext: LazyValidationContext = {
       isLazyMode: true,
       validatedIndices: new Set(),
-      deferredValidations: []
+      deferredValidations: [],
     };
-    
+
     // Create a validation proxy that validates items when accessed
     const arrayProxy = new Proxy(array, {
       get: (target, prop) => {
@@ -268,27 +264,22 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
           }
         }
         return target[prop as keyof T[]];
-      }
+      },
     });
-    
+
     return arrayProxy;
   }
 
   /**
    * Validates array item lazily when accessed
    */
-  private validateItemLazily<T>(
-    array: T[], 
-    index: number, 
-    schema: ArrayFieldSchema, 
-    context: LazyValidationContext
-  ): void {
+  private validateItemLazily<T>(array: T[], index: number, schema: ArrayFieldSchema, context: LazyValidationContext): void {
     if (context.validatedIndices.has(index) || index >= array.length) {
       return;
     }
-    
+
     const item = array[index];
-    
+
     // Perform basic validation based on item schema
     if (!Array.isArray(schema.items)) {
       const isValid = this.validateSingleItem(item, schema.items);
@@ -296,7 +287,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
         throw new Error(`Invalid item at index ${index}: does not match schema type ${schema.items.type}`);
       }
     }
-    
+
     context.validatedIndices.add(index);
   }
 
@@ -306,21 +297,21 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
   private validateItemsInChunks<T>(array: T[], schema: ArrayFieldSchema): T[] {
     const config = ArrayFieldProcessor.DEFAULT_VIRTUALIZATION_CONFIG;
     const chunks = this.createArrayChunks(array, config.chunkSize);
-    
-    const validatedChunks = chunks.map(chunk => {
-      const validatedData = chunk.data.filter(item => {
+
+    const validatedChunks = chunks.map((chunk) => {
+      const validatedData = chunk.data.filter((item) => {
         if (!Array.isArray(schema.items)) {
           return this.validateSingleItem(item, schema.items);
         }
         return true; // Skip validation for array items schema
       });
-      
+
       return {
         ...chunk,
-        data: validatedData
+        data: validatedData,
       };
     });
-    
+
     return validatedChunks.reduce((acc, chunk) => [...acc, ...chunk.data], [] as T[]);
   }
 

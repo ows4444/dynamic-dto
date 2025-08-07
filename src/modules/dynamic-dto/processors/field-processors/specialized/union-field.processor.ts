@@ -122,18 +122,18 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
   }
 
   private createUnionValidator(schema: UnionFieldSchema, validationOptions?: ValidationOptions): PropertyDecorator {
-    return (target: any, propertyName: string) => {
+    return (target: object, propertyName: string | symbol) => {
       registerDecorator({
         name: 'isUnion',
         target: target.constructor,
-        propertyName,
-        options: validationOptions,
+        propertyName: String(propertyName),
+        options: validationOptions ?? {},
         validator: {
-          validate: async (value: any) => {
+          validate: (value: unknown) => {
             if (value === undefined || value === null) return true;
 
-            const strategy = schema.strategy || UnionValidationStrategy.first_match;
-            const matchResults = await this.validateAgainstAllTypes(value, schema);
+            const strategy = schema.strategy ?? UnionValidationStrategy.first_match;
+            const matchResults = this.validateAgainstAllTypes(value, schema);
 
             switch (strategy) {
               case UnionValidationStrategy.strict: {
@@ -168,14 +168,14 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
   }
 
   private createDiscriminatorValidator(schema: UnionFieldSchema, validationOptions?: ValidationOptions): PropertyDecorator {
-    return (target: any, propertyName: string) => {
+    return (target: object, propertyName: string | symbol) => {
       registerDecorator({
         name: 'hasDiscriminator',
         target: target.constructor,
-        propertyName,
-        options: validationOptions,
+        propertyName: String(propertyName),
+        options: validationOptions ?? {},
         validator: {
-          validate(value: any) {
+          validate: (value: any) => {
             if (!schema.discriminator) return true;
 
             if (typeof value !== 'object' || value === null) return false;
@@ -197,7 +197,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     };
   }
 
-  private async validateAgainstAllTypes(value: any, schema: UnionFieldSchema): Promise<TypeMatchResult[]> {
+  private validateAgainstAllTypes(value: any, schema: UnionFieldSchema): TypeMatchResult[] {
     const results: TypeMatchResult[] = [];
 
     for (let i = 0; i < schema.unionTypes.length; i++) {

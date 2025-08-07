@@ -95,7 +95,7 @@ export class StringFieldValidator extends BaseFieldValidator<StringFieldSchema> 
     return builder.build();
   }
 
-  protected validateSecurity(schema: StringFieldSchema, context: ValidationContext): ValidationResult {
+  protected override validateSecurity(schema: StringFieldSchema, context: ValidationContext): ValidationResult {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     // Check for potentially sensitive formats without security config

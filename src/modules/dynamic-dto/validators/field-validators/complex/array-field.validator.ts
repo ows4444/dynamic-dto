@@ -47,7 +47,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
     return builder.build();
   }
 
-  protected validateSecurity(schema: ArrayFieldSchema, context: ValidationContext): ValidationResult {
+  protected override validateSecurity(schema: ArrayFieldSchema, context: ValidationContext): ValidationResult {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateSecurityConstraints(schema, builder);
@@ -56,7 +56,7 @@ export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
     return builder.build();
   }
 
-  protected validatePerformance(schema: ArrayFieldSchema, context: ValidationContext): ValidationResult {
+  protected override validatePerformance(schema: ArrayFieldSchema, context: ValidationContext): ValidationResult {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validatePerformanceConstraints(schema, builder);

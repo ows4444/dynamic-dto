@@ -14,7 +14,7 @@ export interface INestedClassGenerator {
 @Injectable()
 export class NestedClassGeneratorService implements INestedClassGenerator {
   private readonly logger = new Logger(NestedClassGeneratorService.name);
-  private readonly generatedClasses = new LRUCache<string, ClassConstructor<object>>(300); // Max 300 nested classes
+  private readonly generatedClasses = new LRUCache<string, ClassConstructor<any>>(300); // Max 300 nested classes
   private classCounter = 0;
   private processingMediator?: IFieldProcessingMediator;
 
