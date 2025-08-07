@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IsDate, IsDateString, IsDefined, IsOptional } from 'class-validator';
+import { IsDate, IsDateString, IsDefined, IsOptional, registerDecorator, ValidationArguments } from 'class-validator';
 import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
 import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
 import { FieldSchema } from '../../../core/interfaces/schema';
@@ -31,6 +31,29 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
         break;
       default:
         decorators.push(IsDate(options));
+    }
+
+    // Min/Max date validation
+    if (schema.min !== undefined) {
+      decorators.push(this.createMinDateValidator(schema.min, parentIsArray));
+    }
+
+    if (schema.max !== undefined) {
+      decorators.push(this.createMaxDateValidator(schema.max, parentIsArray));
+    }
+
+    // Future/Past validation
+    if (schema.validateFuture === true) {
+      decorators.push(this.createFutureDateValidator(parentIsArray));
+    }
+
+    if (schema.validatePast === true) {
+      decorators.push(this.createPastDateValidator(parentIsArray));
+    }
+
+    // Business days validation
+    if (schema.validateBusinessDays === true) {
+      decorators.push(this.createBusinessDayValidator(parentIsArray));
     }
 
     return decorators;
@@ -96,5 +119,139 @@ export class DateFieldProcessor extends BaseFieldProcessor<DateFieldSchema> {
     }
 
     return functions;
+  }
+
+  /**
+   * Creates validator for minimum date constraint
+   */
+  private createMinDateValidator(minDate: Date | string, parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+    const min = typeof minDate === 'string' ? new Date(minDate) : minDate;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isMinDate',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options,
+        constraints: [min],
+        validator: {
+          validate(value: unknown, args: ValidationArguments): boolean {
+            if (!(value instanceof Date)) return false;
+            const [minDate] = args.constraints;
+            return value >= minDate;
+          },
+          defaultMessage(args: ValidationArguments): string {
+            const [minDate] = args.constraints;
+            return `${args.property} must not be earlier than ${minDate.toISOString()}`;
+          },
+        },
+      });
+    };
+  }
+
+  /**
+   * Creates validator for maximum date constraint
+   */
+  private createMaxDateValidator(maxDate: Date | string, parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+    const max = typeof maxDate === 'string' ? new Date(maxDate) : maxDate;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isMaxDate',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options,
+        constraints: [max],
+        validator: {
+          validate(value: unknown, args: ValidationArguments): boolean {
+            if (!(value instanceof Date)) return false;
+            const [maxDate] = args.constraints;
+            return value <= maxDate;
+          },
+          defaultMessage(args: ValidationArguments): string {
+            const [maxDate] = args.constraints;
+            return `${args.property} must not be later than ${maxDate.toISOString()}`;
+          },
+        },
+      });
+    };
+  }
+
+  /**
+   * Creates validator for future dates
+   */
+  private createFutureDateValidator(parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isFutureDate',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options,
+        validator: {
+          validate(value: unknown): boolean {
+            if (!(value instanceof Date)) return false;
+            return value > new Date();
+          },
+          defaultMessage(args: ValidationArguments): string {
+            return `${args.property} must be a future date`;
+          },
+        },
+      });
+    };
+  }
+
+  /**
+   * Creates validator for past dates
+   */
+  private createPastDateValidator(parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isPastDate',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options,
+        validator: {
+          validate(value: unknown): boolean {
+            if (!(value instanceof Date)) return false;
+            return value < new Date();
+          },
+          defaultMessage(args: ValidationArguments): string {
+            return `${args.property} must be a past date`;
+          },
+        },
+      });
+    };
+  }
+
+  /**
+   * Creates validator for business days (Monday-Friday)
+   */
+  private createBusinessDayValidator(parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isBusinessDay',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options,
+        validator: {
+          validate(value: unknown): boolean {
+            if (!(value instanceof Date)) return false;
+            const dayOfWeek = value.getDay();
+            return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday = 1, Friday = 5
+          },
+          defaultMessage(args: ValidationArguments): string {
+            return `${args.property} must be a business day (Monday-Friday)`;
+          },
+        },
+      });
+    };
   }
 }

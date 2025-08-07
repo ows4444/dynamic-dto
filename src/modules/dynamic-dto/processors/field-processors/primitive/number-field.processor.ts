@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IsDefined, IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { IsDefined, IsInt, IsNegative, IsNumber, IsOptional, IsPositive, Max, Min, registerDecorator, ValidationArguments } from 'class-validator';
 import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
 import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
 import type { FieldSchema } from '../../../core/interfaces/schema';
@@ -30,6 +30,39 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
     }
     if (schema.max !== undefined) {
       decorators.push(Max(schema.max, parentIsArray ? { each: true } : undefined));
+    }
+
+    // Integer validation
+    if (schema.integer === true) {
+      decorators.push(IsInt(parentIsArray ? { each: true } : undefined));
+    }
+
+    // Positive/Negative validation
+    if (schema.positive === true) {
+      decorators.push(IsPositive(parentIsArray ? { each: true } : undefined));
+    }
+
+    if (schema.negative === true) {
+      decorators.push(IsNegative(parentIsArray ? { each: true } : undefined));
+    }
+
+    // Exclusive min/max validation
+    if (schema.exclusiveMin !== undefined) {
+      decorators.push(this.createExclusiveMinValidator(schema.exclusiveMin, parentIsArray));
+    }
+
+    if (schema.exclusiveMax !== undefined) {
+      decorators.push(this.createExclusiveMaxValidator(schema.exclusiveMax, parentIsArray));
+    }
+
+    // Multiple of validation
+    if (schema.multipleOf !== undefined) {
+      decorators.push(this.createMultipleOfValidator(schema.multipleOf, parentIsArray));
+    }
+
+    // Decimal validation (if not integer)
+    if (schema.integer === false && schema.scale !== undefined) {
+      decorators.push(this.createDecimalValidator(schema.scale, parentIsArray));
     }
 
     return decorators;
@@ -106,5 +139,118 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
     }
 
     return functions;
+  }
+
+  /**
+   * Creates validator for exclusive minimum constraint
+   */
+  private createExclusiveMinValidator(exclusiveMin: number, parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isExclusiveMin',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options: { ...options },
+        constraints: [exclusiveMin],
+        validator: {
+          validate(value: unknown, args: ValidationArguments): boolean {
+            if (typeof value !== 'number') return false;
+            const [min] = args.constraints;
+            return value > min;
+          },
+          defaultMessage(args: ValidationArguments): string {
+            const [min] = args.constraints;
+            return `${args.property} must be greater than ${min}`;
+          },
+        },
+      });
+    };
+  }
+
+  /**
+   * Creates validator for exclusive maximum constraint
+   */
+  private createExclusiveMaxValidator(exclusiveMax: number, parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isExclusiveMax',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options: { ...options },
+        constraints: [exclusiveMax],
+        validator: {
+          validate(value: unknown, args: ValidationArguments): boolean {
+            if (typeof value !== 'number') return false;
+            const [max] = args.constraints;
+            return value < max;
+          },
+          defaultMessage(args: ValidationArguments): string {
+            const [max] = args.constraints;
+            return `${args.property} must be less than ${max}`;
+          },
+        },
+      });
+    };
+  }
+
+  /**
+   * Creates validator for multipleOf constraint
+   */
+  private createMultipleOfValidator(multipleOf: number, parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isMultipleOf',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options: { ...options },
+        constraints: [multipleOf],
+        validator: {
+          validate(value: unknown, args: ValidationArguments): boolean {
+            if (typeof value !== 'number') return false;
+            const [divisor] = args.constraints;
+            return Number.isInteger(value / divisor);
+          },
+          defaultMessage(args: ValidationArguments): string {
+            const [divisor] = args.constraints;
+            return `${args.property} must be a multiple of ${divisor}`;
+          },
+        },
+      });
+    };
+  }
+
+  /**
+   * Creates validator for decimal places constraint
+   */
+  private createDecimalValidator(maxDecimalPlaces: number, parentIsArray?: boolean): PropertyDecorator {
+    const options = parentIsArray ? { each: true } : undefined;
+
+    return (target: object, propertyName: string | symbol) => {
+      registerDecorator({
+        name: 'isDecimal',
+        target: target.constructor,
+        propertyName: String(propertyName),
+        options: { ...options },
+        constraints: [maxDecimalPlaces],
+        validator: {
+          validate(value: unknown, args: ValidationArguments): boolean {
+            if (typeof value !== 'number') return false;
+            const [maxPlaces] = args.constraints;
+            const decimalPlaces = (value.toString().split('.')[1] || '').length;
+            return decimalPlaces <= maxPlaces;
+          },
+          defaultMessage(args: ValidationArguments): string {
+            const [maxPlaces] = args.constraints;
+            return `${args.property} must have at most ${maxPlaces} decimal places`;
+          },
+        },
+      });
+    };
   }
 }

@@ -15,16 +15,60 @@ interface CustomValidatorRegistry {
   get(name: string): ((value: any, config?: any) => boolean) | undefined;
 }
 
+interface ValidationError {
+  readonly property: string;
+  readonly constraints: Record<string, string>;
+  readonly value: unknown;
+  readonly message: string;
+}
+
 interface TypeMatchResult {
-  typeIndex: number;
-  confidence: number;
-  valid: boolean;
-  errors: any[];
+  readonly typeIndex: number;
+  readonly confidence: number;
+  readonly valid: boolean;
+  readonly errors: ValidationError[];
 }
 
 @Injectable()
 export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
   readonly supportedType = FieldType.union;
+
+  /**
+   * Registry for custom validators
+   */
+  private static readonly customValidatorRegistry: CustomValidatorRegistry = {
+    validators: new Map([
+      ['isEmail', (value: unknown) => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)],
+      ['isUrl', (value: unknown) => typeof value === 'string' && /^https?:\/\/.+/.test(value)],
+      ['isUuid', (value: unknown) => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)],
+      [
+        'hasLength',
+        (value: unknown, config?: Record<string, unknown>) => {
+          if (typeof value === 'string' || Array.isArray(value)) {
+            const { min = 0, max = Infinity } = config ?? {};
+            return value.length >= (min as number) && value.length <= (max as number);
+          }
+          return false;
+        },
+      ],
+      [
+        'isInRange',
+        (value: unknown, config?: Record<string, unknown>) => {
+          if (typeof value === 'number') {
+            const { min = -Infinity, max = Infinity } = config ?? {};
+            return value >= (min as number) && value <= (max as number);
+          }
+          return false;
+        },
+      ],
+    ]),
+    register(name: string, validator: (value: unknown, config?: Record<string, unknown>) => boolean): void {
+      this.validators.set(name, validator);
+    },
+    get(name: string): ((value: unknown, config?: Record<string, unknown>) => boolean) | undefined {
+      return this.validators.get(name);
+    },
+  };
 
   canProcess(schema: FieldSchema): schema is UnionFieldSchema {
     return schema.type === FieldType.union;
@@ -131,14 +175,14 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
   }
 
   private createUnionValidator(schema: UnionFieldSchema, validationOptions?: ValidationOptions): PropertyDecorator {
-    return (target: object, propertyName: string | symbol) => {
+    return <T extends object>(target: T, propertyName: string | symbol) => {
       registerDecorator({
         name: 'isUnion',
         target: target.constructor,
         propertyName: String(propertyName),
         options: validationOptions ?? {},
         validator: {
-          validate: (value: unknown) => {
+          validate: (value: unknown): boolean => {
             if (value === undefined || value === null) return true;
 
             const strategy = schema.strategy ?? UnionValidationStrategy.first_match;
@@ -177,14 +221,14 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
   }
 
   private createDiscriminatorValidator(schema: UnionFieldSchema, validationOptions?: ValidationOptions): PropertyDecorator {
-    return (target: object, propertyName: string | symbol) => {
+    return <T extends object>(target: T, propertyName: string | symbol) => {
       registerDecorator({
         name: 'hasDiscriminator',
         target: target.constructor,
         propertyName: String(propertyName),
         options: validationOptions ?? {},
         validator: {
-          validate: (value: any) => {
+          validate: (value: unknown): boolean => {
             if (!schema.discriminator) return true;
 
             if (typeof value !== 'object' || value === null) return false;
@@ -224,14 +268,30 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
           typeIndex: i,
           confidence,
           valid,
-          errors: valid ? [] : ['Type mismatch'],
+          errors: valid
+            ? []
+            : [
+                {
+                  property: 'unionType',
+                  constraints: { unionType: 'Type does not match expected union type' },
+                  value,
+                  message: `Value does not match union type at index ${i}`,
+                },
+              ],
         });
       } catch (error) {
         results.push({
           typeIndex: i,
           confidence: 0,
           valid: false,
-          errors: [error],
+          errors: [
+            {
+              property: 'unionType',
+              constraints: { validationError: 'Validation failed during type checking' },
+              value,
+              message: error instanceof Error ? error.message : String(error),
+            },
+          ],
         });
       }
     }
@@ -239,7 +299,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     return results;
   }
 
-  private calculateTypeConfidence(value: any, typeSchema: FieldSchema, typeHints: TypeHint[]): number {
+  private calculateTypeConfidence(value: unknown, typeSchema: FieldSchema, typeHints: TypeHint[]): number {
     let confidence = 0;
 
     // Basic type matching
@@ -274,7 +334,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     return confidence;
   }
 
-  private matchesTypeCondition(value: any, condition: TypeCondition): boolean {
+  private matchesTypeCondition(value: unknown, condition: TypeCondition): boolean {
     switch (condition.type) {
       case 'property':
         if (typeof value !== 'object' || value === null) return false;
@@ -324,7 +384,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     return -1; // No type detected
   }
 
-  private resolveDiscriminatedUnion(value: any, schema: UnionFieldSchema): any {
+  private resolveDiscriminatedUnion(value: unknown, schema: UnionFieldSchema): unknown {
     if (!schema.discriminator || typeof value !== 'object' || value === null) {
       return value;
     }
@@ -340,7 +400,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     return value;
   }
 
-  private validateDiscriminatedUnion(value: any, schema: UnionFieldSchema): boolean {
+  private validateDiscriminatedUnion(value: unknown, schema: UnionFieldSchema): boolean {
     if (!schema.discriminator || typeof value !== 'object' || value === null) {
       return false;
     }
@@ -351,7 +411,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     return typeIndex !== undefined && typeIndex >= 0 && typeIndex < schema.unionTypes.length;
   }
 
-  private getDefaultValueForType(typeSchema: FieldSchema): any {
+  private getDefaultValueForType(typeSchema: FieldSchema): unknown {
     switch (typeSchema.type) {
       case FieldType.string:
         return '';
@@ -368,7 +428,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     }
   }
 
-  private transformValueForType(value: any, typeSchema: FieldSchema): any {
+  private transformValueForType(value: unknown, typeSchema: FieldSchema): unknown {
     // This is a simplified transformation
     // In a real implementation, you'd apply the full transformation pipeline for the specific type
     switch (typeSchema.type) {
@@ -389,21 +449,27 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
   /**
    * Evaluates custom validators for type conditions
    */
-  private evaluateCustomValidator(value: any, condition: TypeCondition): boolean {
+  private evaluateCustomValidator(value: unknown, condition: TypeCondition): boolean {
     if (!condition.validatorName) {
       return false;
     }
 
     const validator = UnionFieldProcessor.customValidatorRegistry.get(condition.validatorName);
     if (!validator) {
-      console.warn(`Custom validator '${condition.validatorName}' not found`);
+      // Log warning in development only
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Custom validator '${condition.validatorName}' not found`);
+      }
       return false;
     }
 
     try {
       return validator(value, condition.validatorConfig);
     } catch (error) {
-      console.error(`Error executing custom validator '${condition.validatorName}':`, error);
+      // Log error in development only
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Error executing custom validator '${condition.validatorName}':`, error);
+      }
       return false;
     }
   }
@@ -413,7 +479,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
    * @param name - The validator name
    * @param validator - The validation function
    */
-  static registerCustomValidator(name: string, validator: (value: any, config?: any) => boolean): void {
+  static registerCustomValidator(name: string, validator: (value: unknown, config?: Record<string, unknown>) => boolean): void {
     UnionFieldProcessor.customValidatorRegistry.register(name, validator);
   }
 

@@ -1,9 +1,14 @@
 import type { FieldType } from '../../../types/field.types';
 import type { BaseFieldSchema } from '../base/base-field.schema';
 
+// Forward declaration to avoid circular dependency
+type FieldSchemaUnion = BaseFieldSchema & {
+  readonly type: string;
+};
+
 export interface UnionFieldSchema extends BaseFieldSchema {
   readonly type: typeof FieldType.union;
-  readonly unionTypes: readonly any[]; // Will be FieldSchema[] after circular import is resolved
+  readonly unionTypes: readonly FieldSchemaUnion[];
   readonly discriminator?: UnionDiscriminator;
   readonly default?: UnionDefaultValue;
 
@@ -44,7 +49,7 @@ export interface TypeCondition {
   readonly pattern?: string; // Regex pattern
   readonly validator?: string; // Custom validator function name (deprecated, use validatorName)
   readonly validatorName?: string; // Name of the custom validator to use
-  readonly validatorConfig?: any; // Configuration passed to the custom validator
+  readonly validatorConfig?: Record<string, unknown>; // Configuration passed to the custom validator
 }
 
 export const UnionValidationStrategy = {

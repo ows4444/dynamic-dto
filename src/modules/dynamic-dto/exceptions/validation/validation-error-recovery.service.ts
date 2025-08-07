@@ -4,22 +4,35 @@ import { FieldTypeValue } from '../../core/types/field.types';
 import { BaseValidationError } from './base-validation.error';
 import { ValidationErrorAggregator } from './validation-error-aggregator';
 
-export interface RecoveryPlan {
+export interface RecoveryPlan<TError = BaseValidationError> {
   readonly canAutoRecover: boolean;
   readonly recoverySteps: RecoveryStep[];
   readonly manualSteps: ManualStep[];
   readonly estimatedRecoveryTime: number; // in minutes
   readonly riskLevel: 'low' | 'medium' | 'high';
+  readonly sourceErrors: readonly TError[];
+  readonly metadata?: RecoveryMetadata;
 }
 
-export interface RecoveryStep {
+export interface RecoveryMetadata {
+  readonly generatedAt: Date;
+  readonly strategy: 'conservative' | 'aggressive' | 'balanced';
+  readonly confidence: number; // 0-1
+}
+
+export interface RecoveryStep<TParams = Record<string, unknown>> {
   readonly id: string;
-  readonly action: 'fix_type' | 'add_field' | 'remove_field' | 'update_constraint' | 'fix_permission';
+  readonly action: RecoveryAction;
   readonly description: string;
   readonly targetField?: string;
-  readonly parameters: Record<string, unknown>;
+  readonly parameters: TParams;
   readonly autoExecutable: boolean;
+  readonly priority: number; // 1-10, higher = more important
+  readonly estimatedDuration: number; // minutes
+  readonly dependencies?: readonly string[]; // IDs of steps that must complete first
 }
+
+export type RecoveryAction = 'fix_type' | 'add_field' | 'remove_field' | 'update_constraint' | 'fix_permission' | 'normalize_value' | 'set_default' | 'validate_schema';
 
 export interface ManualStep {
   readonly id: string;
@@ -36,7 +49,7 @@ export class ValidationErrorRecoveryService {
   /**
    * Generate recovery plan for validation errors
    */
-  generateRecoveryPlan(aggregator: ValidationErrorAggregator): RecoveryPlan {
+  generateRecoveryPlan<TError extends BaseValidationError = BaseValidationError>(aggregator: ValidationErrorAggregator): RecoveryPlan<TError> {
     const errors = aggregator.getErrors();
     const summary = aggregator.getSummary();
 
@@ -239,12 +252,12 @@ export class ValidationErrorRecoveryService {
    */
   private assessRiskLevel(summary: any, recoverySteps: RecoveryStep[]): 'low' | 'medium' | 'high' {
     // High risk if many critical errors or risky operations
-    if (summary.criticalErrors > 10 || recoverySteps.some((s) => s.action === 'remove_field')) {
+    if ((summary.criticalErrors as number) > 10 || recoverySteps.some((s) => s.action === 'remove_field')) {
       return 'high';
     }
 
     // Medium risk if moderate errors or some auto-operations
-    if (summary.criticalErrors > 3 || recoverySteps.length > 5) {
+    if ((summary.criticalErrors as number) > 3 || recoverySteps.length > 5) {
       return 'medium';
     }
 
