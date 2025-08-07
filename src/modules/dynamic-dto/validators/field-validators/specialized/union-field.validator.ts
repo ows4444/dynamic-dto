@@ -81,7 +81,7 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
     if (schema.typeHints) {
       for (let i = 0; i < schema.typeHints.length; i++) {
         const hint = schema.typeHints[i];
-        if (hint.typeIndex < 0 || hint.typeIndex >= schema.unionTypes.length) {
+        if (hint && (hint.typeIndex < 0 || hint.typeIndex >= schema.unionTypes.length)) {
           issues.push({
             code: 'UNION_INVALID_TYPE_HINT_INDEX',
             message: `Type hint ${i} references invalid type index: ${hint.typeIndex}`,

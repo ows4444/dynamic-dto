@@ -116,7 +116,7 @@ class SerializerImpl<T extends FieldSchema> extends SerializationProcessor<T> {
   /**
    * Override to include schema validation
    */
-  generateSerializationDecorators(schema: T, isRequired: boolean, excludeAll: boolean, context?: SerializationContext): PropertyDecorator[] {
+  override generateSerializationDecorators(schema: T, isRequired: boolean, excludeAll: boolean, context?: SerializationContext): PropertyDecorator[] {
     const validatedSchema = this.parent['validateSchemaStructure'](schema);
     return super.generateSerializationDecorators(validatedSchema, isRequired, excludeAll, context);
   }

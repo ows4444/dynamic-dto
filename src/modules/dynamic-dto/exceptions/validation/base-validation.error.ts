@@ -51,7 +51,9 @@ export abstract class BaseValidationError extends Error {
     this.name = this.constructor.name;
     this.timestamp = new Date();
     this.severity = severity;
-    this.context = context;
+    if (context && typeof context == 'object') {
+      this.context = context;
+    }
     this.suggestions = suggestions;
     this.metadata = Object.freeze(metadata);
 

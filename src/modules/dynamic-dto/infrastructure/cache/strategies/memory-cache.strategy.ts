@@ -23,7 +23,7 @@ export class MemoryCacheStrategy implements ICacheStrategy {
   set<T>(key: string, value: T, ttl?: number): void {
     const entry = {
       value,
-      expires: ttl ? Date.now() + ttl * 1000 : undefined,
+      expires: ttl ? Date.now() + ttl * 1000 : 0,
     };
 
     this.cache.set(key, entry);
