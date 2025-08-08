@@ -10,6 +10,8 @@ import { BooleanFieldProcessor } from '../../processors/field-processors/primiti
 import { DateFieldProcessor } from '../../processors/field-processors/specialized/date-field.processor';
 import { ArrayFieldProcessor } from '../../processors/field-processors/complex/array-field.processor';
 import { ObjectFieldProcessor } from '../../processors/field-processors/complex/object-field.processor';
+import { EnumFieldProcessor } from '../../processors/field-processors/specialized/enum-field.processor';
+import { UnionFieldProcessor } from '../../processors/field-processors/specialized/union-field.processor';
 
 interface ProcessorStats {
   totalProcessors: number;
@@ -46,6 +48,8 @@ export class FieldProcessorRegistry implements OnModuleInit {
     private readonly dateProcessor: DateFieldProcessor,
     private readonly arrayProcessor: ArrayFieldProcessor,
     private readonly objectProcessor: ObjectFieldProcessor,
+    private readonly enumProcessor: EnumFieldProcessor,
+    private readonly unionProcessor: UnionFieldProcessor,
   ) {}
 
   onModuleInit(): void {
@@ -59,6 +63,8 @@ export class FieldProcessorRegistry implements OnModuleInit {
       this.registerProcessor(this.dateProcessor);
       this.registerProcessor(this.arrayProcessor);
       this.registerProcessor(this.objectProcessor);
+      this.registerProcessor(this.enumProcessor);
+      this.registerProcessor(this.unionProcessor);
 
       this.initialized = true;
       this.logger.log(`Initialized ${this.processors.size} field processors`);

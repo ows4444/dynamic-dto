@@ -12,6 +12,14 @@ export interface ValidationErrorSummary {
   readonly schemaErrors: BaseValidationError[];
   readonly hasBlockingErrors: boolean;
   readonly errorsByCode: Record<string, BaseValidationError[]>;
+  readonly errorsByField: Record<string, BaseValidationError[]>;
+  readonly mostCommonErrors: { code: string; count: number; message: string }[];
+  readonly affectedFieldPaths: string[];
+  readonly errorContext: {
+    timestamp: string;
+    totalValidationAttempts: number;
+    failureRate: number;
+  };
 }
 
 export class ValidationErrorAggregator {
@@ -43,7 +51,23 @@ export class ValidationErrorAggregator {
    */
   addFromValidationResult(result: ValidationResult): this {
     if (result.issues) {
-      const errors = BaseValidationError.fromValidationIssues(result.issues, this.context);
+      // Enhanced context with validation result metadata
+      const enhancedContext = {
+        ...this.context,
+        ...(result.fieldPath && { fieldPath: result.fieldPath }),
+        ...(result.metadata && { metadata: result.metadata }),
+        ...(result.summary && {
+          validationSummary: {
+            totalIssues: result.summary.totalIssues,
+            errorCount: result.summary.errorCount,
+            warningCount: result.summary.warningCount,
+            infoCount: result.summary.infoCount,
+          },
+        }),
+        timestamp: new Date(),
+      };
+
+      const errors = BaseValidationError.fromValidationIssues(result.issues, enhancedContext);
       this.addErrors(errors);
     }
     return this;
@@ -105,17 +129,26 @@ export class ValidationErrorAggregator {
    */
   getSummary(): ValidationErrorSummary {
     const fieldErrors: Record<string, BaseValidationError[]> = {};
+    const errorsByField: Record<string, BaseValidationError[]> = {};
     const schemaErrors: BaseValidationError[] = [];
     const errorsByCode: Record<string, BaseValidationError[]> = {};
+    const errorCounts: Record<string, { count: number; message: string }> = {};
+    const affectedFieldPaths = new Set<string>();
 
-    // Group errors by field and code
+    // Group errors by field and code, collect statistics
     for (const error of this.errors) {
       // Group by field
       if (error.context?.fieldPath) {
-        if (!fieldErrors[error.context.fieldPath]) {
-          fieldErrors[error.context.fieldPath] = [];
+        const fieldPath = error.context.fieldPath;
+        if (!fieldErrors[fieldPath]) {
+          fieldErrors[fieldPath] = [];
         }
-        fieldErrors[error.context.fieldPath]!.push(error);
+        if (!errorsByField[fieldPath]) {
+          errorsByField[fieldPath] = [];
+        }
+        fieldErrors[fieldPath].push(error);
+        errorsByField[fieldPath].push(error);
+        affectedFieldPaths.add(fieldPath);
       } else {
         schemaErrors.push(error);
       }
@@ -125,17 +158,41 @@ export class ValidationErrorAggregator {
         errorsByCode[error.code] = [];
       }
       errorsByCode[error.code]!.push(error);
+
+      // Count error occurrences
+      if (!errorCounts[error.code]) {
+        errorCounts[error.code] = { count: 0, message: error.message };
+      }
+      errorCounts[error.code]!.count++;
     }
+
+    // Generate most common errors
+    const mostCommonErrors = Object.entries(errorCounts)
+      .sort(([, a], [, b]) => b.count - a.count)
+      .slice(0, 5)
+      .map(([code, { count, message }]) => ({ code, count, message }));
+
+    const totalValidationAttempts = this.errors.length > 0 ? this.errors.length : 1;
+    const criticalErrorCount = this.getErrorsBySeverity(ValidationSeverity.error).length;
+    const failureRate = (criticalErrorCount / totalValidationAttempts) * 100;
 
     return {
       totalErrors: this.errors.length,
-      criticalErrors: this.getErrorsBySeverity(ValidationSeverity.error).length,
+      criticalErrors: criticalErrorCount,
       warnings: this.getErrorsBySeverity(ValidationSeverity.warning).length,
       infos: this.getErrorsBySeverity(ValidationSeverity.info).length,
       fieldErrors,
+      errorsByField,
       schemaErrors,
       hasBlockingErrors: this.hasCriticalErrors(),
       errorsByCode,
+      mostCommonErrors,
+      affectedFieldPaths: Array.from(affectedFieldPaths),
+      errorContext: {
+        timestamp: new Date().toISOString(),
+        totalValidationAttempts,
+        failureRate: Math.round(failureRate * 100) / 100,
+      },
     };
   }
 
@@ -158,22 +215,47 @@ export class ValidationErrorAggregator {
    */
   getErrorReport(): string {
     const summary = this.getSummary();
-    let report = `Validation Summary:\n`;
+    let report = `🚨 Validation Summary (${summary.errorContext.timestamp}):\n`;
     report += `- Total Errors: ${summary.totalErrors}\n`;
     report += `- Critical: ${summary.criticalErrors}\n`;
     report += `- Warnings: ${summary.warnings}\n`;
     report += `- Info: ${summary.infos}\n`;
-    report += `- Blocking: ${summary.hasBlockingErrors ? 'Yes' : 'No'}\n\n`;
+    report += `- Failure Rate: ${summary.errorContext.failureRate}%\n`;
+    report += `- Blocking: ${summary.hasBlockingErrors ? 'Yes' : 'No'}\n`;
+    report += `- Affected Fields: ${summary.affectedFieldPaths.length}\n\n`;
 
+    // Most common errors section
+    if (summary.mostCommonErrors.length > 0) {
+      report += `🔥 Most Common Errors:\n`;
+      summary.mostCommonErrors.forEach((error, index) => {
+        report += `${index + 1}. ${error.code} (${error.count}x): ${error.message}\n`;
+      });
+      report += `\n`;
+    }
+
+    // Field-specific errors
+    if (summary.affectedFieldPaths.length > 0) {
+      report += `📍 Errors by Field:\n`;
+      summary.affectedFieldPaths.forEach((fieldPath) => {
+        const fieldErrors = summary.errorsByField[fieldPath] || [];
+        const criticalCount = fieldErrors.filter((e) => e.severity === ValidationSeverity.error).length;
+        const warningCount = fieldErrors.filter((e) => e.severity === ValidationSeverity.warning).length;
+        report += `- ${fieldPath}: ${criticalCount} errors, ${warningCount} warnings\n`;
+      });
+      report += `\n`;
+    }
+
+    // Critical errors detail
     if (summary.criticalErrors > 0) {
-      report += `Critical Errors:\n`;
+      report += `❌ Critical Errors:\n`;
       this.getErrorsBySeverity(ValidationSeverity.error).forEach((error, index) => {
         report += `${index + 1}. ${error.getErrorWithSuggestions()}\n\n`;
       });
     }
 
+    // Warnings detail
     if (summary.warnings > 0) {
-      report += `Warnings:\n`;
+      report += `⚠️ Warnings:\n`;
       this.getErrorsBySeverity(ValidationSeverity.warning).forEach((error, index) => {
         report += `${index + 1}. ${error.getErrorWithSuggestions()}\n\n`;
       });

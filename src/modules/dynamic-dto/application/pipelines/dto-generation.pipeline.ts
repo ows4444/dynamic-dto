@@ -20,18 +20,21 @@ export class DtoGenerationPipeline {
   }
 
   generate(schema: DynamicSchemaEntity): ClassConstructor<object> {
-    const className = this.generateClassName(schema.name, schema.version.toString());
+    const cacheKey = this.generateOptimizedCacheKey(schema);
 
-    // Check if already generated
-    const cachedClass = this.generatedClasses.get(className);
+    // Check if already generated with improved cache key
+    const cachedClass = this.generatedClasses.get(cacheKey);
     if (cachedClass) {
+      this.logger.debug('Cache hit for DTO class', { cacheKey });
       return cachedClass;
     }
 
+    const className = this.generateClassName(schema.name, schema.version.toString());
     const DynamicClass = this.generateWithRuntimeApproach(className, schema);
 
-    // Cache the generated class
-    this.generatedClasses.set(className, DynamicClass);
+    // Cache the generated class with optimized key
+    this.generatedClasses.set(cacheKey, DynamicClass);
+    this.logger.debug('Generated and cached new DTO class', { className, cacheKey });
 
     // Log cache statistics if approaching capacity
     if (this.generatedClasses.isNearCapacity()) {
@@ -43,6 +46,53 @@ export class DtoGenerationPipeline {
     }
 
     return DynamicClass;
+  }
+
+  generateBatch(schemas: DynamicSchemaEntity[]): Map<string, ClassConstructor<object>> {
+    const results = new Map<string, ClassConstructor<object>>();
+    const uncachedSchemas: DynamicSchemaEntity[] = [];
+
+    // First pass: check cache for all schemas
+    for (const schema of schemas) {
+      const cacheKey = this.generateOptimizedCacheKey(schema);
+      const cachedClass = this.generatedClasses.get(cacheKey);
+
+      if (cachedClass) {
+        results.set(cacheKey, cachedClass);
+      } else {
+        uncachedSchemas.push(schema);
+      }
+    }
+
+    // Second pass: generate missing DTOs in batch
+    const startTime = Date.now();
+    for (const schema of uncachedSchemas) {
+      const cacheKey = this.generateOptimizedCacheKey(schema);
+      const className = this.generateClassName(schema.name, schema.version.toString());
+
+      try {
+        const DynamicClass = this.generateWithRuntimeApproach(className, schema);
+        this.generatedClasses.set(cacheKey, DynamicClass);
+        results.set(cacheKey, DynamicClass);
+      } catch (error) {
+        this.logger.error('Failed to generate DTO in batch', {
+          schema: schema.name,
+          version: schema.version.toString(),
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        throw error;
+      }
+    }
+
+    const generationTime = Date.now() - startTime;
+    this.logger.debug('Batch DTO generation completed', {
+      totalSchemas: schemas.length,
+      cacheHits: schemas.length - uncachedSchemas.length,
+      generated: uncachedSchemas.length,
+      generationTimeMs: generationTime,
+    });
+
+    return results;
   }
 
   private generateWithRuntimeApproach(className: string, schema: DynamicSchemaEntity): ClassConstructor<object> {
@@ -93,6 +143,34 @@ export class DtoGenerationPipeline {
 
   private generateClassName(name: string, version: string): string {
     return `${name}_v${version.replace(/\./g, '_')}`;
+  }
+
+  private generateOptimizedCacheKey(schema: DynamicSchemaEntity): string {
+    // Create a more efficient cache key that includes schema structure hash
+    const fieldsHash = this.generateFieldsHash(schema);
+    const versionString = schema.version.toString();
+    return `${schema.name}:${versionString}:${fieldsHash}`;
+  }
+
+  private generateFieldsHash(schema: DynamicSchemaEntity): string {
+    // Generate a hash based on field structure for better cache differentiation
+    const fieldSignature = Object.entries(schema.properties)
+      .sort(([a], [b]) => a.localeCompare(b)) // Sort for consistency
+      .map(([fieldName, fieldSchema]) => {
+        const isRequired = schema.getRequiredFields().includes(fieldName);
+        return `${fieldName}:${fieldSchema.type}:${isRequired}`;
+      })
+      .join('|');
+
+    // Simple hash function for field signature
+    let hash = 0;
+    for (let i = 0; i < fieldSignature.length; i++) {
+      const char = fieldSignature.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    return Math.abs(hash).toString(16);
   }
 
   private applyDecorators(targetClass: ClassConstructor<object>, propertyName: string, decorators: PropertyDecorator[]): void {

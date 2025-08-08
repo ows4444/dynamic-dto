@@ -12,26 +12,42 @@ export class ValidationResultBuilder {
   }
 
   addError(code: string, message: string, value?: unknown, constraint?: string, metadata?: Record<string, unknown>): this {
+    const enhancedMessage = this.enhanceErrorMessage(message, this.fieldPath, value, constraint);
     this.issues.push({
       severity: ValidationSeverity.error,
       code,
-      message,
+      message: enhancedMessage,
       fieldPath: this.fieldPath,
       value,
       ...(constraint && { constraint }),
-      ...(metadata && { metadata }),
+      ...(metadata && {
+        metadata: {
+          ...metadata,
+          timestamp: new Date().toISOString(),
+          fieldType: typeof value,
+          hasValue: value !== undefined && value !== null,
+        },
+      }),
     });
     return this;
   }
 
   addWarning(code: string, message: string, value?: unknown, metadata?: Record<string, unknown>): this {
+    const enhancedMessage = this.enhanceErrorMessage(message, this.fieldPath, value);
     this.issues.push({
       severity: ValidationSeverity.warning,
       code,
-      message,
+      message: enhancedMessage,
       fieldPath: this.fieldPath,
       value,
-      ...(metadata && { metadata }),
+      ...(metadata && {
+        metadata: {
+          ...metadata,
+          timestamp: new Date().toISOString(),
+          fieldType: typeof value,
+          hasValue: value !== undefined && value !== null,
+        },
+      }),
     });
     return this;
   }
@@ -63,14 +79,24 @@ export class ValidationResultBuilder {
   }
 
   build(): ValidationResult {
+    const errors = this.issues.filter((issue) => issue.severity === ValidationSeverity.error);
+    const warnings = this.issues.filter((issue) => issue.severity === ValidationSeverity.warning);
+    const infos = this.issues.filter((issue) => issue.severity === ValidationSeverity.info);
+
     return {
-      isValid: !this.issues.some((issue) => issue.severity === ValidationSeverity.error),
+      isValid: errors.length === 0,
       issues: [...this.issues],
       fieldPath: this.fieldPath,
+      summary: {
+        totalIssues: this.issues.length,
+        errorCount: errors.length,
+        warningCount: warnings.length,
+        infoCount: infos.length,
+      },
       ...(this.metadata && { metadata: this.metadata }),
-      errors: this.issues.filter((issue) => issue.severity === ValidationSeverity.error),
-      warnings: this.issues.filter((issue) => issue.severity === ValidationSeverity.warning),
-      infos: this.issues.filter((issue) => issue.severity === ValidationSeverity.info),
+      errors,
+      warnings,
+      infos,
     };
   }
 
@@ -80,5 +106,48 @@ export class ValidationResultBuilder {
 
   static error(code: string, message: string, fieldPath: string, value?: unknown): ValidationResult {
     return new ValidationResultBuilder(fieldPath).addError(code, message, value).build();
+  }
+
+  private enhanceErrorMessage(message: string, fieldPath: string, value?: unknown, constraint?: string): string {
+    const parts: string[] = [];
+
+    // Add field path if available and not already in message
+    if (fieldPath && !message.toLowerCase().includes('field') && !message.toLowerCase().includes(fieldPath.toLowerCase())) {
+      parts.push(`Field '${fieldPath}'`);
+    }
+
+    // Add the original message
+    parts.push(message);
+
+    // Add value context if meaningful
+    if (value !== undefined && value !== null) {
+      const valueStr = this.formatValue(value);
+      if (valueStr && !message.includes(valueStr)) {
+        parts.push(`(received: ${valueStr})`);
+      }
+    }
+
+    // Add constraint context
+    if (constraint && !message.includes(constraint)) {
+      parts.push(`(constraint: ${constraint})`);
+    }
+
+    return parts.join(' ');
+  }
+
+  private formatValue(value: unknown): string {
+    if (typeof value === 'string') {
+      return value.length > 50 ? `"${value.substring(0, 47)}..."` : `"${value}"`;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    if (Array.isArray(value)) {
+      return `[${value.length} items]`;
+    }
+    if (value && typeof value === 'object') {
+      return `{${Object.keys(value).length} properties}`;
+    }
+    return String(value);
   }
 }

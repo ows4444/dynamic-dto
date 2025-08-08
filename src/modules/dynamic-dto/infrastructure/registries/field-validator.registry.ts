@@ -18,6 +18,8 @@ import { StringFieldValidator } from '../../validators/field-validators/primitiv
 import { ArrayFieldValidator } from '../../validators/field-validators/complex/array-field.validator';
 import { ObjectFieldValidator } from '../../validators/field-validators/complex/object-field.validator';
 import { DateFieldValidator } from '../../validators/field-validators/specialized/date-field.validator';
+import { EnumFieldValidator } from '../../validators/field-validators/specialized/enum-field.validator';
+import { UnionFieldValidator } from '../../validators/field-validators/specialized/union-field.validator';
 
 @Injectable()
 export class FieldValidatorRegistry implements OnModuleInit {
@@ -32,6 +34,8 @@ export class FieldValidatorRegistry implements OnModuleInit {
     private readonly arrayValidator: ArrayFieldValidator,
     private readonly objectValidator: ObjectFieldValidator,
     private readonly dateValidator: DateFieldValidator,
+    private readonly enumValidator: EnumFieldValidator,
+    private readonly unionValidator: UnionFieldValidator,
   ) {}
 
   onModuleInit(): void {
@@ -55,6 +59,8 @@ export class FieldValidatorRegistry implements OnModuleInit {
       { type: FieldType.array, validator: this.arrayValidator },
       { type: FieldType.object, validator: this.objectValidator },
       { type: FieldType.date, validator: this.dateValidator },
+      { type: FieldType.enum, validator: this.enumValidator },
+      { type: FieldType.union, validator: this.unionValidator },
     ];
 
     for (const { type, validator } of validatorMappings) {

@@ -6,6 +6,12 @@ export interface ValidationResult {
   readonly issues: ValidationIssue[];
   readonly fieldPath?: string;
   readonly metadata?: DeepReadonly<Record<string, unknown>>;
+  readonly summary?: {
+    totalIssues: number;
+    errorCount: number;
+    warningCount: number;
+    infoCount: number;
+  };
 
   // Convenience getters
   readonly errors?: ValidationIssue[];
