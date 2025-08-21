@@ -4,29 +4,69 @@ import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.ent
 import { ValidationContext, ValidationResult } from '../../../core/interfaces/validation';
 import { ValidationIssue } from '../../../core/interfaces/validation/validation-issue.interface';
 import { ValidationSeverity } from '../../../core/enums/validation.enums';
+import { FieldValidatorRegistry } from '../../../infrastructure/registries/field-validator.registry';
+import { ValidationResultMerger } from '../../../core/utils/validation-result-merger';
 
+/**
+ * Consolidated field validation strategy that combines:
+ * - Field registry validation
+ * - Business rules validation
+ * This eliminates duplicate validation patterns and simplifies the architecture
+ */
 @Injectable()
-export class BusinessRulesValidationStrategy extends ValidationStrategy {
-  readonly name = 'BusinessRulesValidation';
-  readonly order = 40;
+export class FieldValidationStrategy extends ValidationStrategy {
+  readonly name = 'FieldValidation';
+  readonly order = 20;
 
-  private readonly logger = new Logger(BusinessRulesValidationStrategy.name);
+  private readonly logger = new Logger(FieldValidationStrategy.name);
 
-  execute(schema: DynamicSchemaEntity, _context?: ValidationContext): ValidationResult {
+  constructor(private readonly fieldValidatorRegistry: FieldValidatorRegistry) {
+    super();
+  }
+
+  execute(schema: DynamicSchemaEntity, context?: ValidationContext): ValidationResult {
     this.logger.debug(`Executing ${this.name} for schema: ${schema.name}`);
 
     try {
-      return this.validateBusinessRules(schema);
+      const results: ValidationResult[] = [];
+
+      // Field registry validation
+      const fieldValidationResult = this.validateFieldsWithRegistry(schema, context);
+      results.push(fieldValidationResult);
+
+      // Business rules validation
+      const businessRulesResult = this.validateBusinessRules(schema);
+      results.push(businessRulesResult);
+
+      return ValidationResultMerger.mergeResults(results);
     } catch (error) {
       this.logger.error(`${this.name} failed for schema: ${schema.name}`, error);
       throw error;
     }
   }
 
+  private validateFieldsWithRegistry(schema: DynamicSchemaEntity, context?: ValidationContext): ValidationResult {
+    const results: ValidationResult[] = [];
+
+    for (const [fieldName, fieldSchema] of Object.entries(schema.properties)) {
+      const fieldContext: ValidationContext = {
+        fieldPath: fieldName,
+        depth: 0,
+        parentType: 'schema',
+        schemaName: schema.name,
+        ...(context?.userRoles !== undefined && { userRoles: context.userRoles }),
+        data: context?.data,
+      };
+
+      const result = this.fieldValidatorRegistry.validateField(fieldSchema, fieldContext);
+      results.push(result);
+    }
+
+    return ValidationResultMerger.mergeResults(results);
+  }
+
   private validateBusinessRules(schema: DynamicSchemaEntity): ValidationResult {
     const issues: ValidationIssue[] = [];
-
-    // Enhanced business rules validation
 
     // Rule 1: Required fields must exist and have valid types
     for (const requiredField of schema.getRequiredFields()) {

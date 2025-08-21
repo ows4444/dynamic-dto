@@ -124,8 +124,18 @@ The module uses organized provider factories for maintainable configuration:
 - **Registries**: `createRegistryProviders()` - Field processor and validator registries
 - **Field Processing**: `createFieldProcessorProviders()` / `createFieldValidatorProviders()`
 - **Schema Validation**: `createSchemaValidationProviders()` - Schema structure validation
-- **Validation Strategies**: `createValidationStrategyProviders()` - Pluggable validation logic
+- **Validation Strategies**: `createValidationStrategyProviders()` - Consolidated validation logic (3 strategies)
 - **Error Handling**: `createErrorHandlingProviders()` - Error recovery services
+
+#### Validation Strategy Architecture
+
+The system uses **3 consolidated validation strategies** instead of multiple over-engineered abstractions:
+
+1. **StructuralValidationStrategy** - Combines enhanced and base schema validation
+2. **FieldValidationStrategy** - Integrates field registry and business rules validation  
+3. **CrossFieldValidationStrategy** - Handles cross-field dependency validation
+
+This consolidation reduces complexity while maintaining all validation functionality.
 
 ### Caching Strategy
 
