@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { FieldTypeValue } from '../../core/types/field.types';
@@ -200,7 +200,7 @@ export class FieldProcessorRegistry implements OnModuleInit {
     this.errorMetrics.lastErrorTime = new Date();
 
     const key = fieldType ? `${errorType}_${fieldType}` : errorType;
-    this.errorMetrics.errorsByType[key] = (this.errorMetrics.errorsByType[key] || 0) + 1;
+    this.errorMetrics.errorsByType[key] = (this.errorMetrics.errorsByType[key] ?? 0) + 1;
 
     // Log warning if error rate is high (more than 10 errors in recent activity)
     if (this.errorMetrics.totalErrors % 10 === 0) {

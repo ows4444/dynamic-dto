@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## Development Commands
 
@@ -33,14 +34,18 @@ npm run test:debug             # Run tests in debug mode
 **Coverage Requirements**: This project enforces strict coverage thresholds:
 
 - Unit tests: 99% coverage
-- Integration tests: 90% coverage  
+- Integration tests: 90% coverage
 - E2E tests: 85% coverage
 
-The `npm run test:coverage` command runs all test suites and combines coverage reports, enforcing these thresholds via `scripts/test-coverage.js`.
+The `npm run test:coverage` command runs all test suites and combines coverage
+reports, enforcing these thresholds via `scripts/test-coverage.js`.
 
 ## Architecture Overview
 
-This is a **Dynamic DTO Generation Library** built with NestJS that creates Data Transfer Object (DTO) classes from JSON schemas at runtime. The architecture follows **Clean Architecture principles** with clear separation of concerns across four layers:
+This is a **Dynamic DTO Generation Library** built with NestJS that creates Data
+Transfer Object (DTO) classes from JSON schemas at runtime. The architecture
+follows **Clean Architecture principles** with clear separation of concerns
+across four layers:
 
 ### Core Architecture Layers
 
@@ -69,7 +74,8 @@ This is a **Dynamic DTO Generation Library** built with NestJS that creates Data
 #### 3. **Infrastructure Layer** (`infrastructure/`)
 
 - **Cache Management**: Pluggable caching strategies with memory monitoring
-- **Registries**: Central registries for processors and validators using the Registry pattern
+- **Registries**: Central registries for processors and validators using the
+  Registry pattern
 - **Factories**: Create and configure components without circular dependencies
 - **Monitoring**: Cache performance and memory usage tracking
 
@@ -81,7 +87,8 @@ This is a **Dynamic DTO Generation Library** built with NestJS that creates Data
 
 ### Field Processing System
 
-The system uses a **Registry + Factory pattern** for extensible field processing:
+The system uses a **Registry + Factory pattern** for extensible field
+processing:
 
 #### Field Types
 
@@ -91,64 +98,80 @@ The system uses a **Registry + Factory pattern** for extensible field processing
 
 #### Processing Components
 
-- **Field Processors** (`processors/field-processors/`): Generate validation decorators and class properties
-- **Field Validators** (`validators/field-validators/`): Type-specific validation logic
-- **Registries** (`infrastructure/registries/`): Central registration of processors and validators
+- **Field Processors** (`processors/field-processors/`): Generate validation
+  decorators and class properties
+- **Field Validators** (`validators/field-validators/`): Type-specific
+  validation logic
+- **Registries** (`infrastructure/registries/`): Central registration of
+  processors and validators
 
 ### Module Configuration
 
-The `DynamicDtoModule` uses NestJS ConfigurableModuleBuilder pattern with organized provider factories:
+The `DynamicDtoModule` uses NestJS ConfigurableModuleBuilder pattern with
+organized provider factories:
 
 ```typescript
 DynamicDtoModule.forRoot({
   cache: {
-    ttl: 3600,        // Cache TTL in seconds
-    maxSize: 1000,    // Maximum cache entries
+    ttl: 3600, // Cache TTL in seconds
+    maxSize: 1000, // Maximum cache entries
   },
   validation: {
     enableCrossFieldValidation: true,
-    performanceMode: 'strict',  // 'strict' | 'balanced' | 'fast'
+    performanceMode: 'strict', // 'strict' | 'balanced' | 'fast'
     maxNestingDepth: 10,
   },
   isGlobal: true,
-})
+});
 ```
 
 #### Provider Factory Organization
 
 The module uses organized provider factories for maintainable configuration:
 
-- **Core Services**: `createCoreServiceProviders()` - Main orchestration services
-- **Pipelines**: `createPipelineProviders()` - Processing workflows  
+- **Core Services**: `createCoreServiceProviders()` - Main orchestration
+  services
+- **Pipelines**: `createPipelineProviders()` - Processing workflows
 - **Infrastructure**: `createInfrastructureProviders()` - Caching and utilities
-- **Registries**: `createRegistryProviders()` - Field processor and validator registries
-- **Field Processing**: `createFieldProcessorProviders()` / `createFieldValidatorProviders()`
-- **Schema Validation**: `createSchemaValidationProviders()` - Schema structure validation
-- **Validation Strategies**: `createValidationStrategyProviders()` - Consolidated validation logic (3 strategies)
+- **Registries**: `createRegistryProviders()` - Field processor and validator
+  registries
+- **Field Processing**: `createFieldProcessorProviders()` /
+  `createFieldValidatorProviders()`
+- **Schema Validation**: `createSchemaValidationProviders()` - Schema structure
+  validation
+- **Validation Strategies**: `createValidationStrategyProviders()` -
+  Consolidated validation logic (3 strategies)
 - **Error Handling**: `createErrorHandlingProviders()` - Error recovery services
 
 #### Validation Strategy Architecture
 
-The system uses **3 consolidated validation strategies** instead of multiple over-engineered abstractions:
+The system uses **3 consolidated validation strategies** instead of multiple
+over-engineered abstractions:
 
-1. **StructuralValidationStrategy** - Combines enhanced and base schema validation
-2. **FieldValidationStrategy** - Integrates field registry and business rules validation  
+1. **StructuralValidationStrategy** - Combines enhanced and base schema
+   validation
+2. **FieldValidationStrategy** - Integrates field registry and business rules
+   validation
 3. **CrossFieldValidationStrategy** - Handles cross-field dependency validation
 
-This consolidation reduces complexity while maintaining all validation functionality.
+This consolidation reduces complexity while maintaining all validation
+functionality.
 
 ### Caching Strategy
 
 - **Adaptive TTL**: Cache duration adjusts based on usage patterns
 - **Memory Monitoring**: Built-in cleanup when memory thresholds exceeded
 - **Cache Keys**: Generated using schema name + version + hash for uniqueness
-- **Pluggable Strategies**: Memory cache included, extensible for Redis/external caches
+- **Pluggable Strategies**: Memory cache included, extensible for Redis/external
+  caches
 
 ### Error Handling Architecture
 
-- **Validation Error Aggregation**: Collects and contextualizes validation failures
+- **Validation Error Aggregation**: Collects and contextualizes validation
+  failures
 - **Error Recovery Services**: Attempts to fix common validation issues
-- **Structured Error Types**: Hierarchical error types extending `BaseValidationError`
+- **Structured Error Types**: Hierarchical error types extending
+  `BaseValidationError`
 
 ## Key Design Patterns
 
@@ -156,7 +179,8 @@ This consolidation reduces complexity while maintaining all validation functiona
 2. **Factory Pattern**: Component creation without circular dependencies
 3. **Pipeline Pattern**: Sequential processing stages
 4. **Strategy Pattern**: Pluggable validation and caching strategies
-5. **Template Method Pattern**: Abstract base classes for consistent implementation
+5. **Template Method Pattern**: Abstract base classes for consistent
+   implementation
 6. **Mediator Pattern**: Field processing coordination
 
 ## Important Implementation Notes
@@ -172,10 +196,11 @@ This consolidation reduces complexity while maintaining all validation functiona
 
 ### Schema Structure
 
-Schemas define field types, validation rules, nested structures, and array configurations. The `DynamicSchemaEntity` constructor takes:
+Schemas define field types, validation rules, nested structures, and array
+configurations. The `DynamicSchemaEntity` constructor takes:
 
 - Schema ID and name
-- Field definitions object  
+- Field definitions object
 - Schema version (using `SchemaVersion` value object)
 - Required fields array
 - Exposure flag for validation
@@ -197,9 +222,10 @@ Schemas define field types, validation rules, nested structures, and array confi
 ## Testing Strategy
 
 - **Unit Tests**: Individual component testing with mocks (99% coverage)
-- **Integration Tests**: Module interaction testing (90% coverage)  
+- **Integration Tests**: Module interaction testing (90% coverage)
 - **E2E Tests**: Complete workflow validation (85% coverage)
 - **Test Fixtures**: Reusable test data in `test/` directory
 - **Coverage Enforcement**: Automated via `scripts/test-coverage.js`
 
-The test configuration uses separate Jest configs for each test type to enable targeted coverage reporting and threshold enforcement.
+The test configuration uses separate Jest configs for each test type to enable
+targeted coverage reporting and threshold enforcement.

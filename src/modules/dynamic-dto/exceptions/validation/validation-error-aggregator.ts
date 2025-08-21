@@ -27,7 +27,7 @@ export class ValidationErrorAggregator {
   private readonly context: ValidationErrorContext;
 
   constructor(context?: ValidationErrorContext) {
-    this.context = context || { fieldPath: '' };
+    this.context = context ?? { fieldPath: '' };
   }
 
   /**
@@ -140,12 +140,8 @@ export class ValidationErrorAggregator {
       // Group by field
       if (error.context?.fieldPath) {
         const fieldPath = error.context.fieldPath;
-        if (!fieldErrors[fieldPath]) {
-          fieldErrors[fieldPath] = [];
-        }
-        if (!errorsByField[fieldPath]) {
-          errorsByField[fieldPath] = [];
-        }
+        fieldErrors[fieldPath] ??= [];
+        errorsByField[fieldPath] ??= [];
         fieldErrors[fieldPath].push(error);
         errorsByField[fieldPath].push(error);
         affectedFieldPaths.add(fieldPath);
@@ -154,15 +150,11 @@ export class ValidationErrorAggregator {
       }
 
       // Group by code
-      if (!errorsByCode[error.code]) {
-        errorsByCode[error.code] = [];
-      }
+      errorsByCode[error.code] ??= [];
       errorsByCode[error.code]!.push(error);
 
       // Count error occurrences
-      if (!errorCounts[error.code]) {
-        errorCounts[error.code] = { count: 0, message: error.message };
-      }
+      errorCounts[error.code] ??= { count: 0, message: error.message };
       errorCounts[error.code]!.count++;
     }
 
@@ -237,7 +229,7 @@ export class ValidationErrorAggregator {
     if (summary.affectedFieldPaths.length > 0) {
       report += `📍 Errors by Field:\n`;
       summary.affectedFieldPaths.forEach((fieldPath) => {
-        const fieldErrors = summary.errorsByField[fieldPath] || [];
+        const fieldErrors = summary.errorsByField[fieldPath] ?? [];
         const criticalCount = fieldErrors.filter((e) => e.severity === ValidationSeverity.error).length;
         const warningCount = fieldErrors.filter((e) => e.severity === ValidationSeverity.warning).length;
         report += `- ${fieldPath}: ${criticalCount} errors, ${warningCount} warnings\n`;
@@ -327,7 +319,7 @@ export class ValidationErrorAggregator {
       message: error.message,
       code: error.code,
       severity: error.severity,
-      fieldPath: error.context?.fieldPath || '',
+      fieldPath: error.context?.fieldPath ?? '',
       metadata: error.metadata,
     }));
 
@@ -338,21 +330,21 @@ export class ValidationErrorAggregator {
         message: e.message,
         code: e.code,
         severity: e.severity,
-        fieldPath: e.context?.fieldPath || '',
+        fieldPath: e.context?.fieldPath ?? '',
         metadata: e.metadata,
       })),
       warnings: this.getErrorsBySeverity(ValidationSeverity.warning).map((e) => ({
         message: e.message,
         code: e.code,
         severity: e.severity,
-        fieldPath: e.context?.fieldPath || '',
+        fieldPath: e.context?.fieldPath ?? '',
         metadata: e.metadata,
       })),
       infos: this.getErrorsBySeverity(ValidationSeverity.info).map((e) => ({
         message: e.message,
         code: e.code,
         severity: e.severity,
-        fieldPath: e.context?.fieldPath || '',
+        fieldPath: e.context?.fieldPath ?? '',
         metadata: e.metadata,
       })),
     };

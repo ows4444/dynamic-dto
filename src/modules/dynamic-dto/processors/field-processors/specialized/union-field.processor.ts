@@ -323,7 +323,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     // Apply type hints
     for (const hint of typeHints) {
       if (this.matchesTypeCondition(value, hint.condition)) {
-        const hintWeight = (hint.weight || 1) * 0.2;
+        const hintWeight = (hint.weight ?? 1) * 0.2;
         confidence = Math.min(1, confidence + hintWeight);
       }
     }

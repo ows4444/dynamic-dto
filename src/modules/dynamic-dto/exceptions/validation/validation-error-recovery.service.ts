@@ -276,16 +276,16 @@ export class ValidationErrorRecoveryService {
   /**
    * Execute automated recovery steps
    */
-  async executeRecoveryPlan(
+  executeRecoveryPlan(
     plan: RecoveryPlan,
     schema: any,
     dryRun = true,
-  ): Promise<{
+  ): {
     success: boolean;
     executedSteps: string[];
     remainingIssues: string[];
     modifiedSchema?: any;
-  }> {
+  } {
     if (!plan.canAutoRecover) {
       this.logger.warn('Recovery plan cannot be auto-executed');
       return {
@@ -307,7 +307,7 @@ export class ValidationErrorRecoveryService {
 
       try {
         if (!dryRun) {
-          modifiedSchema = await this.executeRecoveryStep(step, modifiedSchema);
+          modifiedSchema = this.executeRecoveryStep(step, modifiedSchema);
         }
         executedSteps.push(step.description);
         this.logger.debug(`Executed recovery step: ${step.description}`);
@@ -331,7 +331,7 @@ export class ValidationErrorRecoveryService {
   /**
    * Execute individual recovery step
    */
-  private executeRecoveryStep(step: RecoveryStep, schema: any): Promise<any> {
+  private executeRecoveryStep(step: RecoveryStep, schema: any): any {
     switch (step.action) {
       case 'fix_type':
         return this.fixFieldType(schema, step);

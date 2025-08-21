@@ -130,7 +130,7 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
     }
 
     // Validate based on strategy
-    const strategy = schema.strategy || UnionValidationStrategy.first_match;
+    const strategy = schema.strategy ?? UnionValidationStrategy.first_match;
     const typeMatchResults = this.analyzeTypeMatches(value, schema);
 
     switch (strategy) {
