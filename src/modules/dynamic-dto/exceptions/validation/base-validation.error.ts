@@ -44,7 +44,7 @@ export abstract class BaseValidationError extends Error {
     severity: ValidationSeverity = ValidationSeverity.error,
     context?: ValidationErrorContext,
     suggestions: ValidationErrorSuggestion[] = [],
-    metadata: Record<string, unknown> = {},
+    metadata: Record<string, unknown> = {}
   ) {
     super(message);
 
@@ -79,7 +79,7 @@ export abstract class BaseValidationError extends Error {
         fieldPath: issue.fieldPath ?? '',
       },
       [],
-      issue.metadata || {},
+      issue.metadata || {}
     );
   }
 
@@ -180,7 +180,7 @@ export class ValidationFieldError extends BaseValidationError {
     severity: ValidationSeverity = ValidationSeverity.error,
     context?: ValidationErrorContext,
     suggestions: ValidationErrorSuggestion[] = [],
-    metadata: Record<string, unknown> = {},
+    metadata: Record<string, unknown> = {}
   ) {
     super(code, message, severity, context, suggestions, metadata);
   }

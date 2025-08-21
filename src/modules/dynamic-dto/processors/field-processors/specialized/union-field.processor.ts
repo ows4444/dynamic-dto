@@ -142,7 +142,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
         }
 
         // Use type hints and strategy for resolution
-        const _detectedType = this.detectUnionType(value, schema);
+        this.detectUnionType(value, schema);
         // Note: In a full implementation, we'd store detected type for validation
         // For now, we'll just perform basic type resolution
 
@@ -256,9 +256,6 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     for (let i = 0; i < schema.unionTypes.length; i++) {
       const typeSchema = schema.unionTypes[i];
       try {
-        // Create a temporary object to validate against the type schema
-        const _tempObject = { field: value };
-
         // This is a simplified validation - in a real implementation,
         // you'd need to dynamically create validators for each union type
         const confidence = this.calculateTypeConfidence(value, typeSchema! as FieldSchema, [...(schema.typeHints || [])]);

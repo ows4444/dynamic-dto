@@ -1,4 +1,4 @@
-import type { ValidationSeverity, ValidationStrategy } from '../../../../core/enums/validation.enums';
+import type { ValidationSeverity, ValidationStrategy } from '../../../enums/validation.enums';
 import type { DeepReadonly } from '../../../types/common.types';
 import type { FieldTypeValue } from '../../../types/field.types';
 

@@ -2,6 +2,9 @@ import { DynamicModule, Module, Provider } from '@nestjs/common';
 
 // Core services
 import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';
+import { DtoCacheService } from './application/services/dto-cache.service';
+import { DtoValidationService } from './application/services/dto-validation.service';
+import { DtoBatchProcessor } from './application/services/dto-batch-processor.service';
 import { SchemaOrchestratorService } from './application/services/schema-orchestrator.service';
 
 // Pipelines
@@ -12,6 +15,7 @@ import { SchemaValidationPipeline } from './application/pipelines/schema-validat
 // Infrastructure
 import { CacheManagerService } from './infrastructure/cache/cache-manager.service';
 import { MemoryCacheStrategy } from './infrastructure/cache/strategies/memory-cache.strategy';
+import { EnhancedCacheMonitorService } from './infrastructure/monitoring/enhanced-cache-monitor.service';
 
 // Registries (refactored to avoid circular dependencies)
 import { FieldProcessorRegistry } from './infrastructure/registries/field-processor.registry';
@@ -64,6 +68,9 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         },
 
         // Core Application Services
+        DtoCacheService,
+        DtoValidationService,
+        DtoBatchProcessor,
         DtoOrchestratorService,
         SchemaOrchestratorService,
 
@@ -74,6 +81,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
 
         // Infrastructure Services
         ...cacheProviders,
+        EnhancedCacheMonitorService,
 
         // Registries
         FieldProcessorRegistry,
@@ -109,7 +117,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         ValidationErrorService,
         ValidationErrorRecoveryService,
       ],
-      exports: [DtoOrchestratorService, NestedClassGeneratorService, SchemaOrchestratorService, FieldProcessorRegistry, FieldValidatorRegistry, SchemaValidationPipeline],
+      exports: [DtoOrchestratorService, DtoCacheService, DtoValidationService, DtoBatchProcessor, NestedClassGeneratorService, SchemaOrchestratorService, FieldProcessorRegistry, FieldValidatorRegistry, SchemaValidationPipeline, EnhancedCacheMonitorService],
     };
   }
 

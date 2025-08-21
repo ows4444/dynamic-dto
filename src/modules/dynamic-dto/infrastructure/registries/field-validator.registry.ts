@@ -35,7 +35,7 @@ export class FieldValidatorRegistry implements OnModuleInit {
     private readonly objectValidator: ObjectFieldValidator,
     private readonly dateValidator: DateFieldValidator,
     private readonly enumValidator: EnumFieldValidator,
-    private readonly unionValidator: UnionFieldValidator,
+    private readonly unionValidator: UnionFieldValidator
   ) {}
 
   onModuleInit(): void {

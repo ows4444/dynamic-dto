@@ -1,4 +1,4 @@
-import type { StringFormat } from '../../../../core/enums/string.enums';
+import type { StringFormat } from '../../../enums/string.enums';
 import type { FieldType } from '../../../types/field.types';
 import type { BaseFieldSchema } from '../base/base-field.schema';
 

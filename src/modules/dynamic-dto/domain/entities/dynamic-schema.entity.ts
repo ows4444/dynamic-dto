@@ -9,7 +9,7 @@ export class DynamicSchemaEntity {
     public readonly version: SchemaVersion,
     public readonly required: string[] = [],
     public readonly excludeAll = false,
-    public readonly metadata?: Record<string, unknown>,
+    public readonly metadata?: Record<string, unknown>
   ) {}
 
   public evolve(newProperties: Record<string, FieldSchema>, newVersion: SchemaVersion): DynamicSchemaEntity {

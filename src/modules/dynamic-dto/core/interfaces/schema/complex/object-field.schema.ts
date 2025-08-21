@@ -1,8 +1,8 @@
-import type { DeepReadonly } from '../../../../core/types/common.types';
+import type { DeepReadonly } from '../../../types/common.types';
 import type { FieldSchema } from '..';
 import type { BaseFieldSchema, SerializableCondition } from '../base/base-field.schema';
-import type { FieldType } from '../../../../core/types/field.types';
-import type { ValidationSeverity } from '../../../../core/enums/validation.enums';
+import type { FieldType } from '../../../types/field.types';
+import type { ValidationSeverity } from '../../../enums/validation.enums';
 
 export interface ObjectFieldSchema extends BaseFieldSchema {
   readonly type: typeof FieldType.object;

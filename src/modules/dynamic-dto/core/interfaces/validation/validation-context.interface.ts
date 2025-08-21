@@ -1,4 +1,4 @@
-import type { FieldTypeValue } from '../../../core/types/field.types';
+import type { FieldTypeValue } from '../../types/field.types';
 import type { DeepReadonly } from '../../types/common.types';
 
 export interface ValidationContext {

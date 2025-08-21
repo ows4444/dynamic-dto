@@ -1,4 +1,4 @@
-import type { ValidationSeverity } from '../../../../core/enums/validation.enums';
+import type { ValidationSeverity } from '../../../enums/validation.enums';
 import type { FieldSchema } from '..';
 import type { FieldType } from '../../../types/field.types';
 import type { BaseFieldSchema, ValidationRule } from '../base/base-field.schema';
