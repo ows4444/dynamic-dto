@@ -14,7 +14,7 @@ export { SchemaVersion } from './modules/dynamic-dto/domain/value-objects/schema
 
 // Core types and interfaces
 export { FieldType, FieldTypeValue } from './modules/dynamic-dto/core/types/field.types';
-export type { ClassConstructor } from './modules/dynamic-dto/core/types/common.types';
+export type { classConstructor } from './modules/dynamic-dto/core/types/common.types';
 
 // Schema interfaces
 export type { BaseFieldSchema } from './modules/dynamic-dto/core/interfaces/schema/base/base-field.schema';

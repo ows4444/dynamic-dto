@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'crypto';
 import type { ICacheManager } from '../../core/interfaces/cache/cache-manager.interface';
 import type { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
-import type { ClassConstructor } from '../../core/types/common.types';
+import type { classConstructor } from '../../core/types/common.types';
 import { MODULE_OPTIONS_TOKEN } from '../../dynamic-dto.module-definition';
 import type { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
 
@@ -15,12 +15,12 @@ export class DtoCacheService {
     @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions,
   ) {}
 
-  async get<T = ClassConstructor<object>>(schema: DynamicSchemaEntity): Promise<T | null> {
+  async get<T = classConstructor<object>>(schema: DynamicSchemaEntity): Promise<T | null> {
     const cacheKey = this.generateCacheKey(schema);
     return await this.cacheManager.get<T>(cacheKey);
   }
 
-  async set<T = ClassConstructor<object>>(schema: DynamicSchemaEntity, value: T, adaptiveTtl?: number): Promise<void> {
+  async set<T = classConstructor<object>>(schema: DynamicSchemaEntity, value: T, adaptiveTtl?: number): Promise<void> {
     const cacheKey = this.generateCacheKey(schema);
 
     // Use adaptive TTL if provided, otherwise use configured or default TTL

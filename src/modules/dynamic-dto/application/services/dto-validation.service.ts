@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
-import type { ClassConstructor } from '../../core/types/common.types';
+import type { classConstructor } from '../../core/types/common.types';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { ValidationPipeline } from '../pipelines/validation.pipeline';
@@ -62,9 +62,9 @@ export class DtoValidationService {
     return { validSchemas, invalidCount };
   }
 
-  async validateData(data: unknown, DtoClass: ClassConstructor<object>, schemaId: string): Promise<ValidationResult> {
+  async validateData(data: unknown, dtoClass: classConstructor<object>, schemaId: string): Promise<ValidationResult> {
     try {
-      const dto = plainToInstance(DtoClass, data);
+      const dto = plainToInstance(dtoClass, data);
       const errors = await validate(dto);
 
       return {

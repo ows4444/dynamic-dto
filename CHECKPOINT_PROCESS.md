@@ -16,7 +16,7 @@ This guide outlines the recommended process for implementing architectural TODO 
 ### 2. **Type Safety and Interface Contracts**
 
 - **Schema Interfaces**: Ensure field schema types in `core/interfaces/schema/` remain consistent
-- **Generic Type Constraints**: Verify `ClassConstructor<T>` and field processor generics maintain type safety
+- **Generic Type Constraints**: Verify `classConstructor<T>` and field processor generics maintain type safety
 - **Validation Contracts**: Check `ValidationResult` and error aggregation interfaces
 - **Cache Key Contracts**: Ensure cache key generation maintains consistency across services
 

@@ -1,20 +1,20 @@
 import { forwardRef, Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
 import { FieldSchema } from '../../core/interfaces/schema';
-import { ClassConstructor } from '../../core/types/common.types';
+import { classConstructor } from '../../core/types/common.types';
 import { LRUCache } from '../cache/lru-cache';
 import { CacheMonitorService } from '../monitoring/cache-monitor.service';
-import { isClassConstructor, isSchemaRecord, isStringArray } from '../../core/types/type-guards';
+import { isclassConstructor, isSchemaRecord, isStringArray } from '../../core/types/type-guards';
 import type { FieldProcessorRegistry } from '../registries/field-processor.registry';
 
 export interface INestedClassGenerator {
-  generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required?: string[], exclude?: boolean): ClassConstructor<{ [K in keyof T]: unknown }>;
+  generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required?: string[], exclude?: boolean): classConstructor<{ [K in keyof T]: unknown }>;
 }
 
 @Injectable()
 export class NestedClassGeneratorService implements INestedClassGenerator {
   private readonly logger = new Logger(NestedClassGeneratorService.name);
-  private readonly generatedClasses = new LRUCache<string, ClassConstructor<any>>(300); // Max 300 nested classes
+  private readonly generatedClasses = new LRUCache<string, classConstructor<any>>(300); // Max 300 nested classes
   private classCounter = 0;
 
   constructor(
@@ -26,7 +26,7 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     this.cacheMonitor?.registerCache('nested-class-generator', this.generatedClasses);
   }
 
-  generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required: string[] = [], exclude = false): ClassConstructor<{ [K in keyof T]: unknown }> {
+  generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required: string[] = [], exclude = false): classConstructor<{ [K in keyof T]: unknown }> {
     // Type validation
     if (!isSchemaRecord(properties)) {
       throw new Error('Invalid properties: must be a record of field schemas');
@@ -80,17 +80,17 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     return DynamicClass;
   }
 
-  private createBaseClass<T extends Record<string, FieldSchema>>(className: string, properties: T): ClassConstructor<{ [K in keyof T]: unknown }> {
+  private createBaseClass<T extends Record<string, FieldSchema>>(className: string, properties: T): classConstructor<{ [K in keyof T]: unknown }> {
     const DynamicClass = function (this: { [K in keyof T]: unknown }) {
       for (const propName of Object.keys(properties)) {
         this[propName as keyof T] = undefined;
       }
-    } as unknown as ClassConstructor<{ [K in keyof T]: unknown }>;
+    } as unknown as classConstructor<{ [K in keyof T]: unknown }>;
 
     Object.defineProperty(DynamicClass, 'name', { value: className });
 
     // Type assertion to ensure class constructor is properly typed
-    if (!isClassConstructor(DynamicClass)) {
+    if (!isclassConstructor(DynamicClass)) {
       throw new Error(`Failed to create valid class constructor for ${className}`);
     }
 
@@ -135,7 +135,7 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     return Math.abs(hash).toString(36);
   }
 
-  private applyDecorators<T extends Record<string, FieldSchema>>(targetClass: ClassConstructor<{ [K in keyof T]: unknown }>, propertyName: string, decorators: PropertyDecorator[]): void {
+  private applyDecorators<T extends Record<string, FieldSchema>>(targetClass: classConstructor<{ [K in keyof T]: unknown }>, propertyName: string, decorators: PropertyDecorator[]): void {
     if (!Array.isArray(decorators)) {
       throw new Error('Decorators must be an array');
     }

@@ -2,14 +2,14 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldProcessorRegistry } from '../../infrastructure/registries/field-processor.registry';
-import { ClassConstructor } from '../../core/types/common.types';
+import { classConstructor } from '../../core/types/common.types';
 import { LRUCache } from '../../infrastructure/cache/lru-cache';
 import { CacheMonitorService } from '../../infrastructure/monitoring/cache-monitor.service';
 
 @Injectable()
 export class DtoGenerationPipeline {
   private readonly logger = new Logger(DtoGenerationPipeline.name);
-  private readonly generatedClasses = new LRUCache<string, ClassConstructor<object>>(500); // Max 500 generated classes
+  private readonly generatedClasses = new LRUCache<string, classConstructor<object>>(500); // Max 500 generated classes
 
   constructor(
     private readonly fieldProcessorRegistry: FieldProcessorRegistry,
@@ -19,7 +19,7 @@ export class DtoGenerationPipeline {
     this.cacheMonitor?.registerCache('dto-generation-pipeline', this.generatedClasses);
   }
 
-  generate(schema: DynamicSchemaEntity): ClassConstructor<object> {
+  generate(schema: DynamicSchemaEntity): classConstructor<object> {
     const cacheKey = this.generateOptimizedCacheKey(schema);
 
     // Check if already generated with improved cache key
@@ -48,8 +48,8 @@ export class DtoGenerationPipeline {
     return DynamicClass;
   }
 
-  generateBatch(schemas: DynamicSchemaEntity[]): Map<string, ClassConstructor<object>> {
-    const results = new Map<string, ClassConstructor<object>>();
+  generateBatch(schemas: DynamicSchemaEntity[]): Map<string, classConstructor<object>> {
+    const results = new Map<string, classConstructor<object>>();
     const uncachedSchemas: DynamicSchemaEntity[] = [];
 
     // First pass: check cache for all schemas
@@ -95,7 +95,7 @@ export class DtoGenerationPipeline {
     return results;
   }
 
-  private generateWithRuntimeApproach(className: string, schema: DynamicSchemaEntity): ClassConstructor<object> {
+  private generateWithRuntimeApproach(className: string, schema: DynamicSchemaEntity): classConstructor<object> {
     const DynamicClass = this.createBaseClass(className, schema);
 
     // Process each field
@@ -130,12 +130,12 @@ export class DtoGenerationPipeline {
     return DynamicClass;
   }
 
-  private createBaseClass(className: string, schema: DynamicSchemaEntity): ClassConstructor<object> {
+  private createBaseClass(className: string, schema: DynamicSchemaEntity): classConstructor<object> {
     const DynamicClass = function (this: Record<string, unknown>) {
       for (const propName of Object.keys(schema.properties)) {
         this[propName] = undefined;
       }
-    } as unknown as ClassConstructor<object>;
+    } as unknown as classConstructor<object>;
 
     Object.defineProperty(DynamicClass, 'name', { value: className });
     return DynamicClass;
@@ -173,7 +173,7 @@ export class DtoGenerationPipeline {
     return Math.abs(hash).toString(16);
   }
 
-  private applyDecorators(targetClass: ClassConstructor<object>, propertyName: string, decorators: PropertyDecorator[]): void {
+  private applyDecorators(targetClass: classConstructor<object>, propertyName: string, decorators: PropertyDecorator[]): void {
     decorators.forEach((decorator) => {
       if (typeof decorator === 'function') {
         decorator(targetClass.prototype, propertyName);

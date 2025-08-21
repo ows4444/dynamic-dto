@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
-import type { ClassConstructor } from '../../core/types/common.types';
+import type { classConstructor } from '../../core/types/common.types';
 import { DtoGenerationPipeline } from '../pipelines/dto-generation.pipeline';
 import { DtoCacheService } from './dto-cache.service';
 import { DtoValidationService } from './dto-validation.service';
@@ -18,7 +18,7 @@ export class DtoOrchestratorService {
     private readonly batchProcessor: DtoBatchProcessor,
   ) {}
 
-  private async generateDto(schema: DynamicSchemaEntity): Promise<ClassConstructor<object>> {
+  private async generateDto(schema: DynamicSchemaEntity): Promise<classConstructor<object>> {
     const startTime = Date.now();
 
     try {
@@ -26,7 +26,7 @@ export class DtoOrchestratorService {
       await this.cacheService.checkMemoryAndCleanup();
 
       // Check cache first
-      const cached = await this.cacheService.get<ClassConstructor<object>>(schema);
+      const cached = await this.cacheService.get<classConstructor<object>>(schema);
       if (cached) {
         return cached;
       }
@@ -72,7 +72,7 @@ export class DtoOrchestratorService {
     return await this.validationService.validateData(data, DtoClass, schema.id);
   }
 
-  async generateDtoBatch(schemas: DynamicSchemaEntity[]): Promise<Map<string, ClassConstructor<object>>> {
+  async generateDtoBatch(schemas: DynamicSchemaEntity[]): Promise<Map<string, classConstructor<object>>> {
     const { results } = await this.batchProcessor.processBatch(schemas);
     return results;
   }
