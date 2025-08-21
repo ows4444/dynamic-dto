@@ -1,11 +1,11 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { ClassConstructor } from '../../core/types/common.types';
-import { IFieldProcessingMediator } from '../../core/interfaces/mediator/field-processing.mediator';
 import { LRUCache } from '../cache/lru-cache';
 import { CacheMonitorService } from '../monitoring/cache-monitor.service';
 import { isClassConstructor, isSchemaRecord, isStringArray } from '../../core/types/type-guards';
+import type { FieldProcessorRegistry } from '../registries/field-processor.registry';
 
 export interface INestedClassGenerator {
   generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required?: string[], exclude?: boolean): ClassConstructor<{ [K in keyof T]: unknown }>;
@@ -16,15 +16,14 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
   private readonly logger = new Logger(NestedClassGeneratorService.name);
   private readonly generatedClasses = new LRUCache<string, ClassConstructor<any>>(300); // Max 300 nested classes
   private classCounter = 0;
-  private processingMediator?: IFieldProcessingMediator;
 
-  constructor(@Optional() private readonly cacheMonitor?: CacheMonitorService) {
+  constructor(
+    @Optional() private readonly cacheMonitor: CacheMonitorService | undefined,
+    @Inject(forwardRef(() => 'FieldProcessorRegistry'))
+    private readonly fieldProcessorRegistry: FieldProcessorRegistry,
+  ) {
     // Register cache for monitoring if service is available
     this.cacheMonitor?.registerCache('nested-class-generator', this.generatedClasses);
-  }
-
-  setProcessingMediator(mediator: IFieldProcessingMediator): void {
-    this.processingMediator = mediator;
   }
 
   generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required: string[] = [], exclude = false): ClassConstructor<{ [K in keyof T]: unknown }> {
@@ -49,12 +48,8 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     // Process each field
     for (const [fieldName, fieldSchema] of Object.entries(properties)) {
       try {
-        if (!this.processingMediator) {
-          throw new Error('ProcessingMediator not initialized in NestedClassGeneratorService');
-        }
-
         const isRequired = required.includes(fieldName);
-        const decorators = this.processingMediator.processField(fieldSchema, isRequired, false);
+        const decorators = this.fieldProcessorRegistry.processField(fieldSchema, isRequired, false);
 
         this.applyDecorators(DynamicClass, fieldName, decorators);
       } catch (error) {

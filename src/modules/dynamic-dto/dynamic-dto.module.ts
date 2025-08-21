@@ -37,10 +37,6 @@ import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.mod
 import { ValidationErrorRecoveryService, ValidationErrorService } from './exceptions/validation';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 
-// Mediator and dependency resolution
-import { FieldProcessingMediator } from './core/mediators/field-processing.mediator';
-import { DependencyResolverService } from './infrastructure/initialization/dependency-resolver.service';
-
 // Validation strategies
 import { ValidationStrategyFactory } from './infrastructure/factories/validation-strategy.factory';
 import { EnhancedSchemaValidationStrategy } from './application/strategies/validation/enhanced-schema-validation.strategy';
@@ -83,17 +79,17 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         ...cacheProviders,
         EnhancedCacheMonitorService,
 
-        // Registries
+        // Registries with forward reference token
+        {
+          provide: 'FieldProcessorRegistry',
+          useClass: FieldProcessorRegistry,
+        },
         FieldProcessorRegistry,
         FieldValidatorRegistry,
 
         // Field Processors and Validators (after registries)
         ...fieldProcessorProviders,
         ...fieldValidatorProviders,
-
-        // Mediator pattern to resolve circular dependencies
-        FieldProcessingMediator,
-        DependencyResolverService,
 
         // Infrastructure services (after processors)
         NestedClassGeneratorService,

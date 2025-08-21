@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { FieldTypeValue } from '../../core/types/field.types';

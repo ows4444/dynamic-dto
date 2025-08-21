@@ -1,23 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsOptional, ValidateNested } from 'class-validator';
 import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
 import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
 import { FieldSchema } from '../../../core/interfaces/schema';
-import { IFieldProcessingMediator } from '../../../core/interfaces/mediator/field-processing.mediator';
 import { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';
 import { FieldType } from '../../../core/types/field.types';
+import type { FieldProcessorRegistry } from '../../../infrastructure/registries/field-processor.registry';
 
 @Injectable()
 export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
   readonly supportedType = FieldType.array;
-  private processingMediator?: IFieldProcessingMediator;
 
-  constructor() {
+  constructor(
+    @Inject(forwardRef(() => 'FieldProcessorRegistry'))
+    private readonly fieldProcessorRegistry: FieldProcessorRegistry,
+  ) {
     super();
-  }
-
-  setProcessingMediator(mediator: IFieldProcessingMediator): void {
-    this.processingMediator = mediator;
   }
 
   canProcess(schema: FieldSchema): schema is ArrayFieldSchema {
@@ -49,10 +47,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
     if (!Array.isArray(schema.items) && schema.items.type === FieldType.object) {
       decorators.push(ValidateNested({ each: true }));
     } else if (!Array.isArray(schema.items)) {
-      if (!this.processingMediator) {
-        throw new Error('ProcessingMediator not initialized in ArrayFieldProcessor');
-      }
-      const itemDecorators = this.processingMediator.processField(schema.items, true, true);
+      const itemDecorators = this.fieldProcessorRegistry.processField(schema.items, true, true);
       decorators.push(...itemDecorators);
     }
     // If schema.items is an array, handle accordingly if needed
