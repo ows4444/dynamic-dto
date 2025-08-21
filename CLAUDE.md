@@ -97,7 +97,7 @@ The system uses a **Registry + Factory pattern** for extensible field processing
 
 ### Module Configuration
 
-The `DynamicDtoModule` uses NestJS ConfigurableModuleBuilder pattern:
+The `DynamicDtoModule` uses NestJS ConfigurableModuleBuilder pattern with organized provider factories:
 
 ```typescript
 DynamicDtoModule.forRoot({
@@ -113,6 +113,19 @@ DynamicDtoModule.forRoot({
   isGlobal: true,
 })
 ```
+
+#### Provider Factory Organization
+
+The module uses organized provider factories for maintainable configuration:
+
+- **Core Services**: `createCoreServiceProviders()` - Main orchestration services
+- **Pipelines**: `createPipelineProviders()` - Processing workflows  
+- **Infrastructure**: `createInfrastructureProviders()` - Caching and utilities
+- **Registries**: `createRegistryProviders()` - Field processor and validator registries
+- **Field Processing**: `createFieldProcessorProviders()` / `createFieldValidatorProviders()`
+- **Schema Validation**: `createSchemaValidationProviders()` - Schema structure validation
+- **Validation Strategies**: `createValidationStrategyProviders()` - Pluggable validation logic
+- **Error Handling**: `createErrorHandlingProviders()` - Error recovery services
 
 ### Caching Strategy
 

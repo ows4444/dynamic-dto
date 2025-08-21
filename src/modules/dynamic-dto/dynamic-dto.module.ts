@@ -1,57 +1,37 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Module, Type } from '@nestjs/common';
 
-// Core services
+// Import services needed for exports
 import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';
 import { DtoCacheService } from './application/services/dto-cache.service';
 import { DtoValidationService } from './application/services/dto-validation.service';
 import { DtoBatchProcessor } from './application/services/dto-batch-processor.service';
 import { SchemaOrchestratorService } from './application/services/schema-orchestrator.service';
-
-// Pipelines
-import { DtoGenerationPipeline } from './application/pipelines/dto-generation.pipeline';
-import { ValidationPipeline } from './application/pipelines/validation.pipeline';
-import { SchemaValidationPipeline } from './application/pipelines/schema-validation.pipeline';
-
-// Infrastructure
-import { CacheManagerService } from './infrastructure/cache/cache-manager.service';
-import { MemoryCacheStrategy } from './infrastructure/cache/strategies/memory-cache.strategy';
-import { EnhancedCacheMonitorService } from './infrastructure/monitoring/enhanced-cache-monitor.service';
-
-// Registries (refactored to avoid circular dependencies)
+import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 import { FieldProcessorRegistry } from './infrastructure/registries/field-processor.registry';
 import { FieldValidatorRegistry } from './infrastructure/registries/field-validator.registry';
+import { SchemaValidationPipeline } from './application/pipelines/schema-validation.pipeline';
+import { EnhancedCacheMonitorService } from './infrastructure/monitoring/enhanced-cache-monitor.service';
 
-// Schema Validators
-import { EnhancedStructuralSchemaValidator } from './validators/schema-validators/enhanced-structural-schema.validator';
-import { BaseSchemaValidator } from './core/abstractions/base-schema-validator.abstract';
-
-// Field Processors - Factory pattern to handle circular deps
-import { createFieldProcessorProviders } from './infrastructure/factories/field-processor.factory';
-import { createFieldValidatorProviders } from './infrastructure/factories/field-validator.factory';
+// Provider factories for organized module configuration
+import {
+  createCoreServiceProviders,
+  createErrorHandlingProviders,
+  createFieldProcessorProviders,
+  createFieldValidatorProviders,
+  createInfrastructureProviders,
+  createPipelineProviders,
+  createRegistryProviders,
+  createSchemaValidationProviders,
+  createValidationStrategyProviders,
+} from './infrastructure/factories';
 
 // Configuration
 import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
 import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.module-definition';
 
-// Services
-import { ValidationErrorRecoveryService, ValidationErrorService } from './exceptions/validation';
-import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
-
-// Validation strategies
-import { ValidationStrategyFactory } from './infrastructure/factories/validation-strategy.factory';
-import { EnhancedSchemaValidationStrategy } from './application/strategies/validation/enhanced-schema-validation.strategy';
-import { BaseSchemaValidationStrategy } from './application/strategies/validation/base-schema-validation.strategy';
-import { FieldRegistryValidationStrategy } from './application/strategies/validation/field-registry-validation.strategy';
-import { BusinessRulesValidationStrategy } from './application/strategies/validation/business-rules-validation.strategy';
-import { CrossFieldValidationStrategy } from './application/strategies/validation/cross-field-validation.strategy';
-
 @Module({})
 export class DynamicDtoModule extends ConfigurableModuleClass {
   static forRoot(options: DynamicDtoModuleOptions = {}): DynamicModule {
-    const cacheProviders = this.createCacheProviders(options);
-    const fieldProcessorProviders = createFieldProcessorProviders();
-    const fieldValidatorProviders = createFieldValidatorProviders();
-
     return {
       module: DynamicDtoModule,
       global: options.isGlobal ?? false,
@@ -63,82 +43,36 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
           useValue: options,
         },
 
-        // Core Application Services
-        DtoCacheService,
-        DtoValidationService,
-        DtoBatchProcessor,
-        DtoOrchestratorService,
-        SchemaOrchestratorService,
-
-        // Pipelines
-        DtoGenerationPipeline,
-        ValidationPipeline,
-        SchemaValidationPipeline,
-
-        // Infrastructure Services
-        ...cacheProviders,
-        EnhancedCacheMonitorService,
-
-        // Registries with forward reference token
-        {
-          provide: 'FieldProcessorRegistry',
-          useClass: FieldProcessorRegistry,
-        },
-        FieldProcessorRegistry,
-        FieldValidatorRegistry,
-
-        // Field Processors and Validators (after registries)
-        ...fieldProcessorProviders,
-        ...fieldValidatorProviders,
-
-        // Infrastructure services (after processors)
-        NestedClassGeneratorService,
-
-        // Schema Validators
-        EnhancedStructuralSchemaValidator,
-        {
-          provide: BaseSchemaValidator,
-          useClass: EnhancedStructuralSchemaValidator,
-        },
-
-        // Validation strategies
-        ValidationStrategyFactory,
-        EnhancedSchemaValidationStrategy,
-        BaseSchemaValidationStrategy,
-        FieldRegistryValidationStrategy,
-        BusinessRulesValidationStrategy,
-        CrossFieldValidationStrategy,
-
-        // Validation services
-        ValidationErrorService,
-        ValidationErrorRecoveryService,
+        // Organized provider groups
+        ...createCoreServiceProviders(),
+        ...createPipelineProviders(),
+        ...createInfrastructureProviders(options),
+        ...createRegistryProviders(),
+        ...createFieldProcessorProviders(),
+        ...createFieldValidatorProviders(),
+        ...createSchemaValidationProviders(),
+        ...createValidationStrategyProviders(),
+        ...createErrorHandlingProviders(),
       ],
-      exports: [
-        DtoOrchestratorService,
-        DtoCacheService,
-        DtoValidationService,
-        DtoBatchProcessor,
-        NestedClassGeneratorService,
-        SchemaOrchestratorService,
-        FieldProcessorRegistry,
-        FieldValidatorRegistry,
-        SchemaValidationPipeline,
-        EnhancedCacheMonitorService,
-      ],
+      exports: this.createExports(),
     };
   }
 
-  private static createCacheProviders(_options: DynamicDtoModuleOptions): Provider[] {
+  /**
+   * Creates the exports array for the module
+   */
+  private static createExports(): Type[] {
     return [
-      {
-        provide: 'ICacheStrategy',
-        useClass: MemoryCacheStrategy,
-      },
-      CacheManagerService,
-      {
-        provide: 'ICacheManager',
-        useClass: CacheManagerService,
-      },
+      DtoOrchestratorService,
+      DtoCacheService,
+      DtoValidationService,
+      DtoBatchProcessor,
+      NestedClassGeneratorService,
+      SchemaOrchestratorService,
+      FieldProcessorRegistry,
+      FieldValidatorRegistry,
+      SchemaValidationPipeline,
+      EnhancedCacheMonitorService,
     ];
   }
 }
