@@ -25,7 +25,7 @@ export class DtoBatchProcessor {
   constructor(
     private readonly generationPipeline: DtoGenerationPipeline,
     private readonly cacheService: DtoCacheService,
-    private readonly validationService: DtoValidationService
+    private readonly validationService: DtoValidationService,
   ) {}
 
   async processBatch(schemas: DynamicSchemaEntity[]): Promise<BatchResult> {
@@ -78,7 +78,7 @@ export class DtoBatchProcessor {
     const adaptiveTtl = await this.cacheService.calculateAdaptiveTtl();
     const cachePromises2 = Array.from(generatedClasses.entries()).map(([cacheKey, generatedClass]) => {
       // Find the schema for this cache key to use the proper caching method
-      const schema = validSchemas.find(s => this.cacheService.generateCacheKey(s) === cacheKey);
+      const schema = validSchemas.find((s) => this.cacheService.generateCacheKey(s) === cacheKey);
       if (schema) {
         return this.cacheService.set(schema, generatedClass, adaptiveTtl);
       }

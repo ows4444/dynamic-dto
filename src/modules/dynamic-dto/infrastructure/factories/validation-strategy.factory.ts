@@ -14,7 +14,7 @@ export class ValidationStrategyFactory {
     private readonly baseSchemaStrategy: BaseSchemaValidationStrategy,
     private readonly fieldRegistryStrategy: FieldRegistryValidationStrategy,
     private readonly businessRulesStrategy: BusinessRulesValidationStrategy,
-    private readonly crossFieldStrategy: CrossFieldValidationStrategy
+    private readonly crossFieldStrategy: CrossFieldValidationStrategy,
   ) {}
 
   createValidationChain(): ValidationChain {

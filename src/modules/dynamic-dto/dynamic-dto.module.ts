@@ -117,7 +117,18 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         ValidationErrorService,
         ValidationErrorRecoveryService,
       ],
-      exports: [DtoOrchestratorService, DtoCacheService, DtoValidationService, DtoBatchProcessor, NestedClassGeneratorService, SchemaOrchestratorService, FieldProcessorRegistry, FieldValidatorRegistry, SchemaValidationPipeline, EnhancedCacheMonitorService],
+      exports: [
+        DtoOrchestratorService,
+        DtoCacheService,
+        DtoValidationService,
+        DtoBatchProcessor,
+        NestedClassGeneratorService,
+        SchemaOrchestratorService,
+        FieldProcessorRegistry,
+        FieldValidatorRegistry,
+        SchemaValidationPipeline,
+        EnhancedCacheMonitorService,
+      ],
     };
   }
 

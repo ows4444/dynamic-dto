@@ -12,7 +12,7 @@ export class DtoCacheService {
 
   constructor(
     @Inject('ICacheManager') private readonly cacheManager: ICacheManager,
-    @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions
+    @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions,
   ) {}
 
   async get<T = ClassConstructor<object>>(schema: DynamicSchemaEntity): Promise<T | null> {
@@ -20,18 +20,14 @@ export class DtoCacheService {
     return await this.cacheManager.get<T>(cacheKey);
   }
 
-  async set<T = ClassConstructor<object>>(
-    schema: DynamicSchemaEntity, 
-    value: T, 
-    adaptiveTtl?: number
-  ): Promise<void> {
+  async set<T = ClassConstructor<object>>(schema: DynamicSchemaEntity, value: T, adaptiveTtl?: number): Promise<void> {
     const cacheKey = this.generateCacheKey(schema);
-    
+
     // Use adaptive TTL if provided, otherwise use configured or default TTL
     const ttl = adaptiveTtl ?? this.options.cache?.ttl ?? 3600; // 1 hour default
-    
+
     await this.cacheManager.set(cacheKey, value, ttl);
-    
+
     this.logger.debug('Cached DTO', {
       schemaId: schema.id,
       cacheKey,
@@ -42,11 +38,9 @@ export class DtoCacheService {
   async calculateAdaptiveTtl(): Promise<number> {
     const memoryInfo = await this.cacheManager.getMemoryUsage();
     const baseTtl = this.options.cache?.ttl ?? 3600; // 1 hour default
-    
+
     // Reduce TTL if memory utilization is high
-    const adaptiveTtl = memoryInfo.utilizationRate > 0.8 
-      ? Math.floor(baseTtl * 0.5) 
-      : baseTtl;
+    const adaptiveTtl = memoryInfo.utilizationRate > 0.8 ? Math.floor(baseTtl * 0.5) : baseTtl;
 
     return adaptiveTtl;
   }
@@ -90,19 +84,17 @@ export class DtoCacheService {
             ...(fieldSchema.deprecated && { deprecated: fieldSchema.deprecated }),
             ...(fieldSchema.experimental !== undefined && { experimental: fieldSchema.experimental }),
             ...(fieldSchema.expose !== undefined && { expose: fieldSchema.expose }),
-            ...(fieldSchema.exclude !== undefined && { exclude: fieldSchema.exclude })
+            ...(fieldSchema.exclude !== undefined && { exclude: fieldSchema.exclude }),
           };
         }),
       required: schema.required.sort(), // Sort for consistency
       excludeAll: schema.excludeAll,
       // Include schema metadata in hash calculation for complete cache differentiation
-      ...(schema.metadata && { metadata: schema.metadata })
+      ...(schema.metadata && { metadata: schema.metadata }),
     };
 
     // Use crypto.createHash for robust hash generation
-    const hash = createHash('sha256')
-      .update(JSON.stringify(schemaSignature))
-      .digest('hex');
+    const hash = createHash('sha256').update(JSON.stringify(schemaSignature)).digest('hex');
 
     // Return first 16 characters for reasonable cache key length
     return hash.substring(0, 16);

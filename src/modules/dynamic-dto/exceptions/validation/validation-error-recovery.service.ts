@@ -279,7 +279,7 @@ export class ValidationErrorRecoveryService {
   async executeRecoveryPlan(
     plan: RecoveryPlan,
     schema: any,
-    dryRun = true
+    dryRun = true,
   ): Promise<{
     success: boolean;
     executedSteps: string[];

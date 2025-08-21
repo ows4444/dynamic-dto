@@ -1,0 +1,38 @@
+# Development files
+src/
+test/
+scripts/
+coverage/
+.vscode/
+.claude/
+
+# Configuration files
+.prettierrc
+.prettierignore
+.nvmrc
+.watchmanconfig
+eslint.config.mjs
+jest.*.config.js
+nest-cli.json
+tsconfig.json
+tsconfig.build.json
+
+# Documentation (development)
+CHECKPOINT_PROCESS.md
+CLAUDE.md
+TASK.md
+
+# Git and CI
+.git/
+.gitignore
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build artifacts (keep dist/ as it's needed)
+# dist/ - keep this for the built library
+
+# Logs
+*.log
+npm-debug.log*

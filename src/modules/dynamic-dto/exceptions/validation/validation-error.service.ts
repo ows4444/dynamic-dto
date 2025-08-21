@@ -53,7 +53,7 @@ export class ValidationErrorService {
     errorType: 'TYPE_MISMATCH' | 'REQUIRED' | 'CONSTRAINT' | 'PERMISSION' | 'DEPRECATED' | 'SECURITY',
     fieldName: string,
     details: any,
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
   ): BaseValidationError {
     switch (errorType) {
       case 'TYPE_MISMATCH':
@@ -80,7 +80,7 @@ export class ValidationErrorService {
     errorType: 'STRUCTURE' | 'VERSION' | 'CIRCULAR_REFERENCE' | 'FIELD_NAMING' | 'BUSINESS_RULE' | 'CROSS_FIELD',
     schemaName: string,
     details: any,
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
   ): BaseValidationError {
     switch (errorType) {
       case 'STRUCTURE':
@@ -273,7 +273,7 @@ export class ValidationErrorService {
     schemaVersion?: string,
     userRoles?: readonly string[],
     operation?: 'create' | 'read' | 'update' | 'delete',
-    requestId?: string
+    requestId?: string,
   ): ValidationErrorAggregator {
     const context: ValidationErrorContext = {
       fieldPath: '',

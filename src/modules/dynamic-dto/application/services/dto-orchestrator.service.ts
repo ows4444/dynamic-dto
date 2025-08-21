@@ -15,7 +15,7 @@ export class DtoOrchestratorService {
     private readonly generationPipeline: DtoGenerationPipeline,
     private readonly cacheService: DtoCacheService,
     private readonly validationService: DtoValidationService,
-    private readonly batchProcessor: DtoBatchProcessor
+    private readonly batchProcessor: DtoBatchProcessor,
   ) {}
 
   private async generateDto(schema: DynamicSchemaEntity): Promise<ClassConstructor<object>> {
@@ -56,7 +56,7 @@ export class DtoOrchestratorService {
     } catch (error) {
       const duration = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+
       this.logger.error('DTO generation failed', {
         schemaId: schema.id,
         duration,
@@ -76,5 +76,4 @@ export class DtoOrchestratorService {
     const { results } = await this.batchProcessor.processBatch(schemas);
     return results;
   }
-
 }

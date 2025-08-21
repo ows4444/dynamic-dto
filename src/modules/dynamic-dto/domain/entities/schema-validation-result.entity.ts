@@ -7,7 +7,7 @@ export class SchemaValidationResultEntity {
     public readonly validatedAt: Date,
     public readonly validatorType: string,
     public readonly schemaVersion?: string,
-    public readonly userId?: string
+    public readonly userId?: string,
   ) {}
 
   get isValid(): boolean {

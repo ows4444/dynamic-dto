@@ -11,7 +11,10 @@ export class DtoGenerationPipeline {
   private readonly logger = new Logger(DtoGenerationPipeline.name);
   private readonly generatedClasses = new LRUCache<string, ClassConstructor<object>>(500); // Max 500 generated classes
 
-  constructor(private readonly fieldProcessorRegistry: FieldProcessorRegistry, @Optional() private readonly cacheMonitor?: CacheMonitorService) {
+  constructor(
+    private readonly fieldProcessorRegistry: FieldProcessorRegistry,
+    @Optional() private readonly cacheMonitor?: CacheMonitorService,
+  ) {
     // Register cache for monitoring if service is available
     this.cacheMonitor?.registerCache('dto-generation-pipeline', this.generatedClasses);
   }

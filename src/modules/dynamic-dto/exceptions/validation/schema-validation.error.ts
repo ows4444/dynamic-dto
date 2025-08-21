@@ -187,7 +187,7 @@ export class SchemaCrossFieldValidationError extends BaseValidationError {
     conflictType: 'FIELD_VISIBILITY_CONFLICT' | 'MISSING_DEPENDENT_FIELD' | 'INCOMPATIBLE_FIELDS',
     fields: string[],
     description: string,
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
   ) {
     const message = `Schema '${schemaName}' has cross-field validation error: ${description}`;
 

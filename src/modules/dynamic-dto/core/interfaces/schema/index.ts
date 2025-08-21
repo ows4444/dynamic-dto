@@ -26,20 +26,20 @@ export type FieldSchema =
 export type FieldSchemaOfType<T extends FieldTypeValue> = T extends typeof FieldType.string
   ? StringFieldSchema
   : T extends typeof FieldType.number
-  ? NumberFieldSchema
-  : T extends typeof FieldType.boolean
-  ? BooleanFieldSchema
-  : T extends typeof FieldType.date
-  ? DateFieldSchema
-  : T extends typeof FieldType.enum
-  ? EnumFieldSchema
-  : T extends typeof FieldType.union
-  ? UnionFieldSchema
-  : T extends typeof FieldType.array
-  ? ArrayFieldSchema
-  : T extends typeof FieldType.object
-  ? ObjectFieldSchema
-  : never;
+    ? NumberFieldSchema
+    : T extends typeof FieldType.boolean
+      ? BooleanFieldSchema
+      : T extends typeof FieldType.date
+        ? DateFieldSchema
+        : T extends typeof FieldType.enum
+          ? EnumFieldSchema
+          : T extends typeof FieldType.union
+            ? UnionFieldSchema
+            : T extends typeof FieldType.array
+              ? ArrayFieldSchema
+              : T extends typeof FieldType.object
+                ? ObjectFieldSchema
+                : never;
 
 // Utility type for stricter schema validation
 export type ValidatedFieldSchema<T extends FieldSchema = FieldSchema> = T & {

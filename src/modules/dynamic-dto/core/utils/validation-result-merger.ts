@@ -84,14 +84,17 @@ export class ValidationResultMerger {
   }
 
   private static groupIssuesBySeverity(issues: ValidationIssue[]): Record<SeverityType, ValidationIssue[]> {
-    const grouped = issues.reduce((acc, issue) => {
-      const severity = issue.severity as SeverityType;
-      if (!acc[severity]) {
-        acc[severity] = [];
-      }
-      acc[severity].push(this.cleanObject(issue));
-      return acc;
-    }, {} as Record<SeverityType, ValidationIssue[]>);
+    const grouped = issues.reduce(
+      (acc, issue) => {
+        const severity = issue.severity as SeverityType;
+        if (!acc[severity]) {
+          acc[severity] = [];
+        }
+        acc[severity].push(this.cleanObject(issue));
+        return acc;
+      },
+      {} as Record<SeverityType, ValidationIssue[]>,
+    );
 
     return {
       error: grouped.error ?? [],

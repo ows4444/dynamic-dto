@@ -283,14 +283,17 @@ export class ValidationErrorAggregator {
    * Group errors by a key function
    */
   groupBy<K extends string | number>(keyFn: (error: BaseValidationError) => K): Record<K, BaseValidationError[]> {
-    return this.errors.reduce((groups: Record<K, BaseValidationError[]>, error) => {
-      const key = keyFn(error);
-      if (!groups[key]) {
-        groups[key] = [];
-      }
-      groups[key].push(error);
-      return groups;
-    }, {} as Record<K, BaseValidationError[]>);
+    return this.errors.reduce(
+      (groups: Record<K, BaseValidationError[]>, error) => {
+        const key = keyFn(error);
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+        groups[key].push(error);
+        return groups;
+      },
+      {} as Record<K, BaseValidationError[]>,
+    );
   }
 
   /**

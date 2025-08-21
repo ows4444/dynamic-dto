@@ -6,7 +6,10 @@ import { EnhancedStructuralSchemaValidator } from '../../validators/schema-valid
 
 @Injectable()
 export class SchemaOrchestratorService {
-  constructor(private readonly fieldValidatorRegistry: FieldValidatorRegistry, private readonly enhancedValidator: EnhancedStructuralSchemaValidator) {}
+  constructor(
+    private readonly fieldValidatorRegistry: FieldValidatorRegistry,
+    private readonly enhancedValidator: EnhancedStructuralSchemaValidator,
+  ) {}
 
   validateSchema(schema: Record<string, FieldSchema>, context?: Partial<ValidationContext>): ValidationResult {
     if (context) {

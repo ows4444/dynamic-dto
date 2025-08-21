@@ -91,7 +91,7 @@ export class FieldDeprecationValidationError extends BaseValidationError {
       removeInVersion?: string;
       migrationGuide?: string;
     },
-    context?: ValidationErrorContext
+    context?: ValidationErrorContext,
   ) {
     const message = `Field '${fieldName}' is deprecated${deprecationInfo.since ? ` since ${deprecationInfo.since}` : ''}`;
 

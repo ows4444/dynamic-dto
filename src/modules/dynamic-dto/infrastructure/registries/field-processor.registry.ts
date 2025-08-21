@@ -49,7 +49,7 @@ export class FieldProcessorRegistry implements OnModuleInit {
     private readonly arrayProcessor: ArrayFieldProcessor,
     private readonly objectProcessor: ObjectFieldProcessor,
     private readonly enumProcessor: EnumFieldProcessor,
-    private readonly unionProcessor: UnionFieldProcessor
+    private readonly unionProcessor: UnionFieldProcessor,
   ) {}
 
   onModuleInit(): void {
@@ -132,7 +132,7 @@ export class FieldProcessorRegistry implements OnModuleInit {
 
   processFieldSeparated(
     schema: FieldSchema,
-    isRequired: boolean
+    isRequired: boolean,
   ): {
     validationDecorators: PropertyDecorator[];
     transformationDecorators: PropertyDecorator[];
