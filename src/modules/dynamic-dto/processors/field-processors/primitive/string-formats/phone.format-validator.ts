@@ -6,7 +6,7 @@ export class PhoneFormatValidator extends BaseStringFormatValidator {
   readonly format = StringFormat.phone;
   readonly validatorName = 'isPhone';
 
-  private static readonly PHONE_CLEANUP = /[^+\d]/g;
+  private static readonly phoneCleanup = /[^+\d]/g;
 
   validate(value: unknown): boolean {
     if (typeof value !== 'string') return false;
@@ -18,6 +18,6 @@ export class PhoneFormatValidator extends BaseStringFormatValidator {
   }
 
   override transform(value: string): string {
-    return value.replace(PhoneFormatValidator.PHONE_CLEANUP, '');
+    return value.replace(PhoneFormatValidator.phoneCleanup, '');
   }
 }

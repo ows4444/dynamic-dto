@@ -3,7 +3,7 @@ import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor
 import { BaseFieldValidator } from '../../core/abstractions/base-field-validator.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
-import { FieldTypeValue, FieldType } from '../../core/types/field.types';
+import { FieldType, FieldTypeValue } from '../../core/types/field.types';
 import { ValidationResultBuilder } from '../../core/utils/validation-result.builder';
 import { FieldProcessorDiscoveryService } from '../services/field-processor-discovery.service';
 

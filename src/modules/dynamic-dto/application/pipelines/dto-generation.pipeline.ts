@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
+import { createHash } from 'crypto';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldHandlerRegistry } from '../../infrastructure/registries/field-handler.registry';
 import { classConstructor } from '../../core/types/common.types';
@@ -13,6 +14,8 @@ interface WeakClassReference {
   ref: WeakRef<classConstructor<object>>;
   propertyNames: string[];
   timestamp: number;
+  lastAccessed: number;
+  accessCount: number;
 }
 
 /**
@@ -28,6 +31,9 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
   private readonly logger = new Logger(DtoGenerationPipeline.name);
   private readonly generatedClasses = new LRUCache<string, WeakClassReference>(500); // Max 500 weak references
   private readonly cleanupInterval: NodeJS.Timeout;
+  private readonly memoryPressureThreshold = 0.8; // 80% cache utilization
+  private readonly ttlMs = 10 * 60 * 1000; // 10 minutes TTL
+  private readonly maxIdleTimeMs = 5 * 60 * 1000; // 5 minutes max idle time
 
   constructor(
     private readonly fieldHandlerRegistry: FieldHandlerRegistry,
@@ -36,10 +42,10 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
     // Register cache for monitoring if service is available
     this.cacheMonitor?.registerCache('dto-generation-pipeline', this.generatedClasses);
 
-    // Set up periodic cleanup of dead weak references
+    // Set up periodic cleanup with deterministic TTL-based eviction
     this.cleanupInterval = setInterval(() => {
-      this.cleanupDeadReferences();
-    }, 30000); // Clean up every 30 seconds
+      this.performDeterministicCleanup();
+    }, 15000); // Clean up every 15 seconds for more aggressive memory management
   }
 
   /**
@@ -59,13 +65,16 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
     const cachedRef = this.generatedClasses.get(cacheKey);
     if (cachedRef) {
       const cachedClass = cachedRef.ref.deref();
-      if (cachedClass) {
-        this.logger.debug('Cache hit for DTO class', { cacheKey });
+      if (cachedClass && this.isReferenceValid(cachedRef)) {
+        // Update access tracking
+        cachedRef.lastAccessed = Date.now();
+        cachedRef.accessCount++;
+        this.logger.debug('Cache hit for DTO class', { cacheKey, accessCount: cachedRef.accessCount });
         return cachedClass;
       } else {
-        // Class was garbage collected, remove dead reference
+        // Class was garbage collected or expired, remove reference
         this.generatedClasses.delete(cacheKey);
-        this.logger.debug('Removed dead reference from cache', { cacheKey });
+        this.logger.debug('Removed expired/dead reference from cache', { cacheKey });
       }
     }
 
@@ -73,10 +82,13 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
     const DynamicClass = this.generateWithRuntimeApproach(className, schema);
 
     // Cache with weak reference to prevent memory leaks
+    const now = Date.now();
     const weakRef: WeakClassReference = {
       ref: new WeakRef(DynamicClass),
       propertyNames: Object.keys(schema.properties),
-      timestamp: Date.now(),
+      timestamp: now,
+      lastAccessed: now,
+      accessCount: 1,
     };
 
     this.generatedClasses.set(cacheKey, weakRef);
@@ -85,6 +97,9 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
     classCleanupRegistry.register(DynamicClass, className);
 
     this.logger.debug('Generated and cached new DTO class with weak reference', { className, cacheKey });
+
+    // Check memory pressure and trigger cleanup if needed
+    this.checkMemoryPressureAndCleanup();
 
     // Log cache statistics if approaching capacity
     if (this.generatedClasses.isNearCapacity()) {
@@ -133,10 +148,13 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
         const DynamicClass = this.generateWithRuntimeApproach(className, schema);
 
         // Cache with weak reference
+        const now = Date.now();
         const weakRef: WeakClassReference = {
           ref: new WeakRef(DynamicClass),
           propertyNames: Object.keys(schema.properties),
-          timestamp: Date.now(),
+          timestamp: now,
+          lastAccessed: now,
+          accessCount: 1,
         };
 
         this.generatedClasses.set(cacheKey, weakRef);
@@ -220,31 +238,43 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
   }
 
   private generateOptimizedCacheKey(schema: DynamicSchemaEntity): string {
-    // Create a more efficient cache key that includes schema structure hash
-    const fieldsHash = this.generateFieldsHash(schema);
+    // Create a highly efficient cache key using crypto hashing
+    const schemaFingerprint = this.generateSchemaFingerprint(schema);
     const versionString = schema.version.toString();
-    return `${schema.name}:${versionString}:${fieldsHash}`;
+    return `${schema.name}:${versionString}:${schemaFingerprint}`;
   }
 
-  private generateFieldsHash(schema: DynamicSchemaEntity): string {
-    // Generate a hash based on field structure for better cache differentiation
-    const fieldSignature = Object.entries(schema.properties)
+  private generateSchemaFingerprint(schema: DynamicSchemaEntity): string {
+    // Generate a cryptographic hash for efficient and collision-resistant cache keys
+    const fieldsData = Object.entries(schema.properties)
       .sort(([a], [b]) => a.localeCompare(b)) // Sort for consistency
       .map(([fieldName, fieldSchema]) => {
         const isRequired = schema.getRequiredFields().includes(fieldName);
-        return `${fieldName}:${fieldSchema.type}:${isRequired}`;
-      })
-      .join('|');
+        // Include all relevant field properties for accurate differentiation
+        return {
+          name: fieldName,
+          type: fieldSchema.type,
+          required: isRequired,
+          expose: fieldSchema.expose,
+          ...((fieldSchema as any).items && { items: (fieldSchema as any).items }),
+          ...((fieldSchema as any).properties && { nestedProps: Object.keys((fieldSchema as any).properties).sort() }),
+          ...((fieldSchema as any).enum && { enumValues: (fieldSchema as any).enum.sort() }),
+        };
+      });
 
-    // Simple hash function for field signature
-    let hash = 0;
-    for (let i = 0; i < fieldSignature.length; i++) {
-      const char = fieldSignature.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
+    // Create a deterministic JSON representation
+    const schemaData = {
+      properties: fieldsData,
+      requiredFields: schema.getRequiredFields().sort(),
+      excludeAll: schema.excludeAll,
+    };
 
-    return Math.abs(hash).toString(16);
+    // Use SHA-256 for fast and collision-resistant hashing
+    const hash = createHash('sha256');
+    hash.update(JSON.stringify(schemaData));
+
+    // Return first 16 characters for compact but unique fingerprint
+    return hash.digest('hex').substring(0, 16);
   }
 
   private applyDecorators(targetClass: classConstructor<object>, propertyName: string, decorators: PropertyDecorator[]): void {
@@ -256,33 +286,109 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
   }
 
   /**
-   * Clean up dead weak references from cache
+   * Perform deterministic cleanup with TTL-based eviction and memory pressure detection
    */
-  private cleanupDeadReferences(): void {
+  private performDeterministicCleanup(): void {
     const keysToDelete: string[] = [];
     const currentTime = Date.now();
-    const maxAge = 5 * 60 * 1000; // 5 minutes
 
-    // Iterate through cache to find dead references
+    // Iterate through cache to find expired, dead, or idle references
     for (const [key, weakRef] of this.generatedClasses.entries()) {
-      const isExpired = currentTime - weakRef.timestamp > maxAge;
+      const age = currentTime - weakRef.timestamp;
+      const idleTime = currentTime - weakRef.lastAccessed;
+      const isExpired = age > this.ttlMs;
+      const isIdle = idleTime > this.maxIdleTimeMs;
       const isDeadRef = !weakRef.ref.deref();
 
-      if (isExpired || isDeadRef) {
+      if (isExpired || isDeadRef || isIdle) {
         keysToDelete.push(key);
       }
     }
 
-    // Remove dead references
+    // Remove expired/dead/idle references
     keysToDelete.forEach((key) => {
       this.generatedClasses.delete(key);
     });
 
     if (keysToDelete.length > 0) {
-      this.logger.debug('Cleaned up dead references from cache', {
+      this.logger.debug('Deterministic cleanup completed', {
         removedCount: keysToDelete.length,
         remainingSize: this.generatedClasses.size(),
+        memoryUsageBytes: this.generatedClasses.getApproximateMemoryUsage(),
       });
     }
+  }
+
+  /**
+   * Check if a cached reference is still valid based on TTL and idle time
+   */
+  private isReferenceValid(weakRef: WeakClassReference): boolean {
+    const currentTime = Date.now();
+    const age = currentTime - weakRef.timestamp;
+    const idleTime = currentTime - weakRef.lastAccessed;
+
+    return age <= this.ttlMs && idleTime <= this.maxIdleTimeMs;
+  }
+
+  /**
+   * Check memory pressure and trigger aggressive cleanup if needed
+   */
+  private checkMemoryPressureAndCleanup(): void {
+    const utilization = this.generatedClasses.size() / this.generatedClasses.getMaxSize();
+
+    if (utilization > this.memoryPressureThreshold) {
+      this.logger.warn('Memory pressure detected, triggering aggressive cleanup', {
+        utilization: `${Math.round(utilization * 100)}%`,
+        currentSize: this.generatedClasses.size(),
+        capacity: this.generatedClasses.getMaxSize(),
+      });
+
+      // Perform immediate cleanup and reduce TTL temporarily
+      this.performAggressiveCleanup();
+    }
+  }
+
+  /**
+   * Perform aggressive cleanup by removing least recently used and low-access items
+   */
+  private performAggressiveCleanup(): void {
+    const keysToDelete: string[] = [];
+    const currentTime = Date.now();
+
+    // Collect all entries with their access patterns
+    const entries = Array.from(this.generatedClasses.entries())
+      .map(([key, weakRef]) => ({
+        key,
+        weakRef,
+        idleTime: currentTime - weakRef.lastAccessed,
+        accessRate: weakRef.accessCount / Math.max(1, (currentTime - weakRef.timestamp) / 60000), // per minute
+      }))
+      .sort((a, b) => {
+        // Sort by access rate (ascending) then by idle time (descending)
+        const rateDiff = a.accessRate - b.accessRate;
+        return rateDiff !== 0 ? rateDiff : b.idleTime - a.idleTime;
+      });
+
+    // Remove bottom 25% of entries or until we're under threshold
+    const targetSize = Math.floor(this.generatedClasses.getMaxSize() * (this.memoryPressureThreshold - 0.1));
+    const itemsToRemove = Math.min(Math.max(1, entries.length - targetSize), Math.ceil(entries.length * 0.25));
+
+    for (let i = 0; i < itemsToRemove; i++) {
+      const entry = entries[i];
+      if (entry) {
+        keysToDelete.push(entry.key);
+      }
+    }
+
+    // Remove selected references
+    keysToDelete.forEach((key) => {
+      this.generatedClasses.delete(key);
+    });
+
+    this.logger.warn('Aggressive cleanup completed', {
+      removedCount: keysToDelete.length,
+      remainingSize: this.generatedClasses.size(),
+      newUtilization: `${Math.round((this.generatedClasses.size() / this.generatedClasses.getMaxSize()) * 100)}%`,
+    });
   }
 }
