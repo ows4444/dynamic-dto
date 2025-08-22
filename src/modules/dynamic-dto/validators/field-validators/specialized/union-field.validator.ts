@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { FieldValidator } from '../../../core/decorators/field-validator.decorator';
 import { BaseFieldValidator } from '../../../core/abstractions/base-field-validator.abstract';
 import { UnionFieldSchema, UnionValidationStrategy } from '../../../core/interfaces/schema/specialized-primitives/union-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import type { FieldSchema } from '../../../core/interfaces/schema';
 import type { ValidationContext, ValidationIssue, ValidationResult } from '../../../core/interfaces/validation';
 
+@FieldValidator({ type: FieldType.union, priority: 1, category: 'specialized' })
 @Injectable()
 export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
   readonly supportedType = FieldType.union;

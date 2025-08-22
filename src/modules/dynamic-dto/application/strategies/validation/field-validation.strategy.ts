@@ -4,7 +4,7 @@ import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.ent
 import { ValidationContext, ValidationResult } from '../../../core/interfaces/validation';
 import { ValidationIssue } from '../../../core/interfaces/validation/validation-issue.interface';
 import { ValidationSeverity } from '../../../core/enums/validation.enums';
-import { FieldValidatorRegistry } from '../../../infrastructure/registries/field-validator.registry';
+import { FieldHandlerRegistry } from '../../../infrastructure/registries/field-handler.registry';
 import { ValidationResultMerger } from '../../../core/utils/validation-result-merger';
 
 /**
@@ -20,7 +20,7 @@ export class FieldValidationStrategy extends ValidationStrategy {
 
   private readonly logger = new Logger(FieldValidationStrategy.name);
 
-  constructor(private readonly fieldValidatorRegistry: FieldValidatorRegistry) {
+  constructor(private readonly fieldHandlerRegistry: FieldHandlerRegistry) {
     super();
   }
 
@@ -58,7 +58,7 @@ export class FieldValidationStrategy extends ValidationStrategy {
         data: context?.data,
       };
 
-      const result = this.fieldValidatorRegistry.validateField(fieldSchema, fieldContext);
+      const result = this.fieldHandlerRegistry.validateField(fieldSchema, fieldContext);
       results.push(result);
     }
 

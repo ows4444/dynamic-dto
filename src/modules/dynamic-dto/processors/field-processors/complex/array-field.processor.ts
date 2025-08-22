@@ -1,12 +1,13 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { FieldProcessor } from '../../../core/decorators/field-processor.decorator';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsOptional, ValidateNested } from 'class-validator';
-import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
-import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
+import { BaseFieldProcessor, type TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../../core/interfaces/schema';
 import { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import type { FieldProcessorRegistry } from '../../../infrastructure/registries/field-processor.registry';
 
+@FieldProcessor({ type: FieldType.array, priority: 2, category: 'complex' })
 @Injectable()
 export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
   readonly supportedType = FieldType.array;

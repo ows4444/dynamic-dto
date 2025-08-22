@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { FieldValidator } from '../../../core/decorators/field-validator.decorator';
 import {
   BaseFieldSchema,
   BaseFieldValidator,
@@ -15,6 +16,7 @@ import {
 import { FieldType } from '../../../core/types/field.types';
 import { DeepReadonly } from '../../../core/types/common.types';
 
+@FieldValidator({ type: FieldType.object, priority: 1, category: 'complex' })
 @Injectable()
 export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> {
   readonly supportedType = FieldType.object;

@@ -7,23 +7,12 @@ import { DtoValidationService } from './application/services/dto-validation.serv
 import { DtoBatchProcessor } from './application/services/dto-batch-processor.service';
 import { SchemaOrchestratorService } from './application/services/schema-orchestrator.service';
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
-import { FieldProcessorRegistry } from './infrastructure/registries/field-processor.registry';
-import { FieldValidatorRegistry } from './infrastructure/registries/field-validator.registry';
+import { FieldHandlerRegistry } from './infrastructure/registries/field-handler.registry';
 import { SchemaValidationPipeline } from './application/pipelines/schema-validation.pipeline';
 import { EnhancedCacheMonitorService } from './infrastructure/monitoring/enhanced-cache-monitor.service';
 
-// Provider factories for organized module configuration
-import {
-  createCoreServiceProviders,
-  createErrorHandlingProviders,
-  createFieldProcessorProviders,
-  createFieldValidatorProviders,
-  createInfrastructureProviders,
-  createPipelineProviders,
-  createRegistryProviders,
-  createSchemaValidationProviders,
-  createValidationStrategyProviders,
-} from './infrastructure/factories';
+// Consolidated provider factories for simplified module configuration
+import { createCoreServicesProviders, createFieldProcessingProviders, createInfrastructureProviders, createValidationProviders } from './infrastructure/factories/consolidated';
 
 // Configuration
 import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
@@ -43,16 +32,11 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
           useValue: options,
         },
 
-        // Organized provider groups
-        ...createCoreServiceProviders(),
-        ...createPipelineProviders(),
+        // Consolidated provider groups (reduced from 9 factories to 4)
+        ...createCoreServicesProviders(),
+        ...createFieldProcessingProviders(),
         ...createInfrastructureProviders(options),
-        ...createRegistryProviders(),
-        ...createFieldProcessorProviders(),
-        ...createFieldValidatorProviders(),
-        ...createSchemaValidationProviders(),
-        ...createValidationStrategyProviders(),
-        ...createErrorHandlingProviders(),
+        ...createValidationProviders(),
       ],
       exports: this.createExports(),
     };
@@ -69,8 +53,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
       DtoBatchProcessor,
       NestedClassGeneratorService,
       SchemaOrchestratorService,
-      FieldProcessorRegistry,
-      FieldValidatorRegistry,
+      FieldHandlerRegistry,
       SchemaValidationPipeline,
       EnhancedCacheMonitorService,
     ];

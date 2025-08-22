@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { BaseSchemaValidator } from '../../core/abstractions/base-schema-validator.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
-import { FieldValidatorRegistry } from '../../infrastructure/registries/field-validator.registry';
+import { FieldHandlerRegistry } from '../../infrastructure/registries/field-handler.registry';
 import { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
 import { ValidationResultMerger } from '../../core/utils/validation-result-merger';
 
 @Injectable()
 export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
-  constructor(private readonly fieldValidatorRegistry: FieldValidatorRegistry) {
+  constructor(private readonly fieldHandlerRegistry: FieldHandlerRegistry) {
     super();
   }
 
@@ -38,7 +38,7 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       results.push(baseValidationResult);
 
       // Use field-specific validation from registry
-      const registryResult = this.fieldValidatorRegistry.validateField(fieldSchema, validationContext);
+      const registryResult = this.fieldHandlerRegistry.validateField(fieldSchema, validationContext);
       results.push(registryResult);
     }
 
@@ -86,7 +86,7 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
         ...validationContext,
       };
 
-      const result = this.fieldValidatorRegistry.validateField(fieldSchema, context);
+      const result = this.fieldHandlerRegistry.validateField(fieldSchema, context);
       if (result.errors) errors.push(...result.errors);
       if (result.warnings) warnings.push(...result.warnings);
       if (result.infos) infos.push(...result.infos);

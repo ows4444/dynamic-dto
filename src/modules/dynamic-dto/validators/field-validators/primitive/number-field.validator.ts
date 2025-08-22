@@ -5,7 +5,9 @@ import { ValidationContext, ValidationResult } from '../../../core/interfaces/va
 import { ValidationResultBuilder } from '../../../core/utils/validation-result.builder';
 import { NumberFieldSchema } from '../../../core/interfaces/schema/primitive/number-field.schema';
 import { Injectable } from '@nestjs/common';
+import { FieldValidator } from '../../../core/decorators/field-validator.decorator';
 
+@FieldValidator({ type: FieldType.number, priority: 1, category: 'primitive' })
 @Injectable()
 export class NumberFieldValidator extends BaseFieldValidator<NumberFieldSchema> {
   readonly supportedType = FieldType.number;

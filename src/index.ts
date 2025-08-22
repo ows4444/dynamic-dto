@@ -7,6 +7,12 @@ export { DtoValidationService } from './modules/dynamic-dto/application/services
 export { DtoCacheService } from './modules/dynamic-dto/application/services/dto-cache.service';
 export { DtoBatchProcessor } from './modules/dynamic-dto/application/services/dto-batch-processor.service';
 
+// Field processor decorators and discovery (for advanced usage)
+export { FieldProcessor, getFieldProcessorMetadata, isFieldProcessor } from './modules/dynamic-dto/core/decorators/field-processor.decorator';
+export type { FieldProcessorMetadata } from './modules/dynamic-dto/core/decorators/field-processor.decorator';
+export { FieldProcessorDiscoveryService } from './modules/dynamic-dto/infrastructure/services/field-processor-discovery.service';
+export type { DiscoveredProcessor } from './modules/dynamic-dto/infrastructure/services/field-processor-discovery.service';
+
 // Domain entities and value objects
 export { DynamicSchemaEntity } from './modules/dynamic-dto/domain/entities/dynamic-schema.entity';
 export { SchemaValidationResultEntity } from './modules/dynamic-dto/domain/entities/schema-validation-result.entity';

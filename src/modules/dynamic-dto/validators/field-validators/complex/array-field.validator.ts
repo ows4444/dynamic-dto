@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { FieldValidator } from '../../../core/decorators/field-validator.decorator';
 import {
   ArrayFieldSchema,
   BaseFieldSchema,
@@ -15,6 +16,7 @@ import {
 } from '../../../core';
 import { FieldType, FieldTypeValue } from '../../../core/types/field.types';
 
+@FieldValidator({ type: FieldType.array, priority: 1, category: 'complex' })
 @Injectable()
 export class ArrayFieldValidator extends BaseFieldValidator<ArrayFieldSchema> {
   readonly supportedType = FieldType.array;

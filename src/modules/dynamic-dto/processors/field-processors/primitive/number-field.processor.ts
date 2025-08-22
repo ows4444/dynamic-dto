@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { FieldProcessor } from '../../../core/decorators/field-processor.decorator';
 import { IsDefined, IsInt, IsNegative, IsNumber, IsOptional, IsPositive, Max, Min, registerDecorator, ValidationArguments } from 'class-validator';
-import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
-import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
+import { BaseFieldProcessor, type TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 import type { FieldSchema } from '../../../core/interfaces/schema';
 import { FieldType } from '../../../core/types/field.types';
 import type { NumberFieldSchema } from '../../../core/interfaces/schema/primitive/number-field.schema';
 
+@FieldProcessor({ type: FieldType.number, priority: 1, category: 'primitive' })
 @Injectable()
 export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> {
   readonly supportedType = FieldType.number;

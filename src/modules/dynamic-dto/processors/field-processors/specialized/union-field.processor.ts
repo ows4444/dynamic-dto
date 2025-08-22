@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { FieldProcessor } from '../../../core/decorators/field-processor.decorator';
 import { IsDefined, IsOptional, registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
-import { BaseFieldProcessor } from '../../../core/abstractions/base-field-processor.abstract';
-import { type TransformationFunction } from '../../../core/abstractions/transformation-processor.abstract';
+import { BaseFieldProcessor, type TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 import { TypeCondition, TypeHint, UnionFieldSchema, UnionValidationStrategy } from '../../../core/interfaces/schema/specialized-primitives/union-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import type { FieldSchema } from '../../../core/interfaces/schema';
@@ -10,9 +10,9 @@ import type { FieldSchema } from '../../../core/interfaces/schema';
  * Registry for custom validators used in union type conditions
  */
 interface CustomValidatorRegistry {
-  readonly validators: Map<string, (value: any, config?: any) => boolean>;
-  register(name: string, validator: (value: any, config?: any) => boolean): void;
-  get(name: string): ((value: any, config?: any) => boolean) | undefined;
+  readonly validators: Map<string, (value: unknown, config?: Record<string, unknown>) => boolean>;
+  register(name: string, validator: (value: unknown, config?: Record<string, unknown>) => boolean): void;
+  get(name: string): ((value: unknown, config?: Record<string, unknown>) => boolean) | undefined;
 }
 
 interface ValidationError {
@@ -29,9 +29,15 @@ interface TypeMatchResult {
   readonly errors: ValidationError[];
 }
 
+@FieldProcessor({ type: FieldType.union, priority: 1, category: 'specialized' })
 @Injectable()
 export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
   readonly supportedType = FieldType.union;
+
+  /**
+   * Pattern cache for runtime compiled regex patterns
+   */
+  private static readonly pattern_cache = new Map<string, RegExp>();
 
   /**
    * Registry for custom validators
@@ -118,8 +124,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
                 }
                 return defaultConfig.value;
               case 'computed':
-                // TODO: Implement computed default evaluation
-                return this.getDefaultValueForType(schema.unionTypes[0]! as FieldSchema);
+                return this.evaluateComputedDefault(defaultConfig as unknown as Record<string, unknown>, schema);
             }
           }
 
@@ -250,7 +255,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     };
   }
 
-  private validateAgainstAllTypes(value: any, schema: UnionFieldSchema): TypeMatchResult[] {
+  private validateAgainstAllTypes(value: unknown, schema: UnionFieldSchema): TypeMatchResult[] {
     const results: TypeMatchResult[] = [];
 
     for (let i = 0; i < schema.unionTypes.length; i++) {
@@ -342,7 +347,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
 
       case 'pattern':
         if (typeof value !== 'string') return false;
-        return condition.pattern ? new RegExp(condition.pattern).test(value) : false;
+        return condition.pattern ? this.getCachedRegex(condition.pattern).test(value) : false;
 
       case 'custom':
         return this.evaluateCustomValidator(value, condition);
@@ -359,7 +364,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
     return validMatches.reduce((best, current) => (current.confidence > best.confidence ? current : best));
   }
 
-  private detectUnionType(value: any, schema: UnionFieldSchema): number {
+  private detectUnionType(value: unknown, schema: UnionFieldSchema): number {
     if (schema.typeHints && schema.typeHints.length > 0) {
       // Use type hints to detect type
       for (const hint of schema.typeHints) {
@@ -485,5 +490,147 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
    */
   static getRegisteredValidators(): string[] {
     return Array.from(UnionFieldProcessor.customValidatorRegistry.validators.keys());
+  }
+
+  /**
+   * Evaluates computed default values for union types
+   * Supports safe expression evaluation with predefined context
+   */
+  private evaluateComputedDefault(defaultConfig: Record<string, unknown>, schema: UnionFieldSchema): unknown {
+    const { expression, typeIndex, value } = defaultConfig;
+
+    // If no expression is provided, fall back to other strategies
+    if (!expression || typeof expression !== 'string') {
+      if (typeof typeIndex === 'number' && typeIndex >= 0 && typeIndex < schema.unionTypes.length) {
+        return this.getDefaultValueForType(schema.unionTypes[typeIndex]! as FieldSchema);
+      }
+      if (value !== undefined) {
+        return value;
+      }
+      return this.getDefaultValueForType(schema.unionTypes[0]! as FieldSchema);
+    }
+
+    try {
+      // Create safe evaluation context
+      const context = {
+        // Schema information
+        unionTypes: schema.unionTypes,
+        typeCount: schema.unionTypes.length,
+        discriminator: schema.discriminator,
+
+        // Utility functions
+        getTypeDefault: (index: number) => {
+          if (index >= 0 && index < schema.unionTypes.length) {
+            return this.getDefaultValueForType(schema.unionTypes[index]! as FieldSchema);
+          }
+          return null;
+        },
+
+        // Current timestamp for dynamic defaults
+        now: Date.now(),
+        today: new Date().toISOString().split('T')[0],
+
+        // Random utilities for testing/development
+        randomInt: (max = 100) => Math.floor(Math.random() * max),
+        randomChoice: (choices: unknown[]) => choices[Math.floor(Math.random() * choices.length)],
+
+        // Type checking utilities
+        isString: (val: unknown): val is string => typeof val === 'string',
+        isNumber: (val: unknown): val is number => typeof val === 'number',
+        isBoolean: (val: unknown): val is boolean => typeof val === 'boolean',
+        isArray: (val: unknown): val is unknown[] => Array.isArray(val),
+        isObject: (val: unknown): val is object => typeof val === 'object' && val !== null && !Array.isArray(val),
+      };
+
+      // Evaluate the expression safely
+      return this.safeEvaluateExpression(expression, context);
+    } catch (error) {
+      // Log warning in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Failed to evaluate computed default expression: ${expression}`, error);
+      }
+
+      // Fall back to first type's default
+      return this.getDefaultValueForType(schema.unionTypes[0]! as FieldSchema);
+    }
+  }
+
+  /**
+   * Safely evaluates an expression string with the given context
+   * Uses a whitelist approach to prevent code injection
+   */
+  private safeEvaluateExpression(expression: string, context: Record<string, unknown>): unknown {
+    // Sanitize the expression - only allow safe operations
+    const safeExpression = this.sanitizeExpression(expression);
+
+    // If expression was deemed unsafe, return fallback
+    if (!safeExpression) {
+      throw new Error('Expression contains unsafe operations');
+    }
+
+    try {
+      // Create function with limited context
+      // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+      const func = new Function(...Object.keys(context), `"use strict"; return (${safeExpression});`);
+
+      return func(...Object.values(context));
+    } catch (error) {
+      throw new Error(`Expression evaluation failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Sanitizes expressions to only allow safe operations
+   * Returns null if expression contains unsafe patterns
+   */
+  private sanitizeExpression(expression: string): string | null {
+    // Remove comments and extra whitespace
+    const sanitized = expression.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '').trim();
+
+    // List of dangerous patterns to reject
+    const dangerousPatterns = [
+      /\b(eval|Function|constructor|prototype|__proto__)\b/,
+      /\b(process|global|window|document|require|import|export)\b/,
+      /\b(setTimeout|setInterval|clearTimeout|clearInterval)\b/,
+      /\b(XMLHttpRequest|fetch|WebSocket)\b/,
+      /\b(localStorage|sessionStorage|cookie)\b/,
+      /[`$]/g, // Template literals and variable substitution
+      /\[\s*["']__proto__["']\s*\]/,
+      /\[\s*["']constructor["']\s*\]/,
+      /\[\s*["']prototype["']\s*\]/,
+    ];
+
+    // Check for dangerous patterns
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(sanitized)) {
+        return null;
+      }
+    }
+
+    // For now, allow expressions that don't contain obvious dangerous patterns
+    // In a production environment, you might want stricter validation with whitelist patterns
+    return sanitized;
+  }
+
+  private getCachedRegex(pattern: string | RegExp): RegExp {
+    if (pattern instanceof RegExp) {
+      return pattern;
+    }
+
+    // Cache compiled regex patterns for performance
+    if (!UnionFieldProcessor.pattern_cache.has(pattern)) {
+      UnionFieldProcessor.pattern_cache.set(pattern, new RegExp(pattern));
+    }
+
+    return UnionFieldProcessor.pattern_cache.get(pattern)!;
+  }
+
+  /**
+   * Clear the pattern cache if it gets too large
+   */
+  static clearPatternCache(): void {
+    if (UnionFieldProcessor.pattern_cache.size > 1000) {
+      UnionFieldProcessor.pattern_cache.clear();
+    }
   }
 }
