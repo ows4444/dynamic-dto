@@ -343,7 +343,7 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       return { isValid: false, issues };
     }
 
-    const discriminatorValue = (value as any)[schema.discriminator.property];
+    const discriminatorValue = (value as Record<string, unknown>)[schema.discriminator.property] as string | undefined;
 
     if (discriminatorValue === undefined) {
       if (schema.discriminator.required !== false) {

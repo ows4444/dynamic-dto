@@ -251,15 +251,30 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
       .map(([fieldName, fieldSchema]) => {
         const isRequired = schema.getRequiredFields().includes(fieldName);
         // Include all relevant field properties for accurate differentiation
-        return {
+        const baseData = {
           name: fieldName,
           type: fieldSchema.type,
           required: isRequired,
           expose: fieldSchema.expose,
-          ...((fieldSchema as any).items && { items: (fieldSchema as any).items }),
-          ...((fieldSchema as any).properties && { nestedProps: Object.keys((fieldSchema as any).properties).sort() }),
-          ...((fieldSchema as any).enum && { enumValues: (fieldSchema as any).enum.sort() }),
         };
+
+        // Type-safe handling of array field schema
+        if ('items' in fieldSchema && fieldSchema.items) {
+          Object.assign(baseData, { items: fieldSchema.items });
+        }
+
+        // Type-safe handling of nested properties
+        if ('properties' in fieldSchema && fieldSchema.properties && typeof fieldSchema.properties === 'object') {
+          Object.assign(baseData, { nestedProps: Object.keys(fieldSchema.properties).sort() });
+        }
+
+        // Type-safe handling of enum values
+        if ('enum' in fieldSchema && Array.isArray(fieldSchema.enum)) {
+          const enumValues = fieldSchema.enum.filter((value): value is string | number => typeof value === 'string' || typeof value === 'number');
+          Object.assign(baseData, { enumValues: enumValues.sort() });
+        }
+
+        return baseData;
       });
 
     // Create a deterministic JSON representation
@@ -280,7 +295,7 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
   private applyDecorators(targetClass: classConstructor<object>, propertyName: string, decorators: PropertyDecorator[]): void {
     decorators.forEach((decorator) => {
       if (typeof decorator === 'function') {
-        decorator(targetClass.prototype, propertyName);
+        decorator(targetClass.prototype as object, propertyName);
       }
     });
   }

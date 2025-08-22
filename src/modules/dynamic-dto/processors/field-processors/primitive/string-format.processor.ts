@@ -123,10 +123,12 @@ export class StringFormatProcessor extends BaseFieldProcessor<StringFieldSchema>
         decorators.push(IsCreditCard(eachOption));
         break;
       case StringFormat.mobile:
-        // Mobile uses same validation as phone, handled by custom validator
-        const phoneValidator = this.formatFactory.getValidator(StringFormat.phone);
-        if (phoneValidator) {
-          decorators.push(phoneValidator.createDecorator(eachOption));
+        {
+          // Mobile uses same validation as phone, handled by custom validator
+          const phoneValidator = this.formatFactory.getValidator(StringFormat.phone);
+          if (phoneValidator) {
+            decorators.push(phoneValidator.createDecorator(eachOption));
+          }
         }
         break;
       default:

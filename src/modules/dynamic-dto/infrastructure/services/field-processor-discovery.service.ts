@@ -1,7 +1,7 @@
 import { Injectable, Logger, Type } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
-import { FIELD_PROCESSOR_METADATA_KEY, FieldProcessorMetadata, getFieldProcessorMetadata } from '../../core/decorators/field-processor.decorator';
+import { FIELD_PROCESSOR_METADATA_KEY, FieldProcessorMetadata } from '../../core/decorators/field-processor.decorator';
 import type { FieldTypeValue } from '../../core/types/field.types';
 
 export interface DiscoveredProcessor {
@@ -74,10 +74,8 @@ export class FieldProcessorDiscoveryService {
     };
 
     for (const processor of processors) {
-      const category = processor.metadata.category || 'other';
-      if (!grouped[category]) {
-        grouped[category] = [];
-      }
+      const category = processor.metadata.category ?? 'other';
+      grouped[category] ??= [];
       grouped[category].push(processor);
     }
 

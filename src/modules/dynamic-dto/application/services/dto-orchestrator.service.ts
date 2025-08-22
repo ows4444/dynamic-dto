@@ -5,7 +5,7 @@ import { DtoGenerationPipeline } from '../pipelines/dto-generation.pipeline';
 import { DtoCacheService } from './dto-cache.service';
 import { DtoValidationService } from './dto-validation.service';
 import { DtoBatchProcessor } from './dto-batch-processor.service';
-import type { ValidationResult } from './dto-validation.service';
+import type { ValidationResult } from '../../core/interfaces/validation/validation-result.interface';
 
 @Injectable()
 export class DtoOrchestratorService {

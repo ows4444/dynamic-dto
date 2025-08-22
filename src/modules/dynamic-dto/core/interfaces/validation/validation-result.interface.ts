@@ -13,6 +13,8 @@ export interface ValidationResult {
     infoCount: number;
   };
 
+  readonly data?: unknown;
+
   // Convenience getters
   readonly errors?: ValidationIssue[];
   readonly warnings?: ValidationIssue[];

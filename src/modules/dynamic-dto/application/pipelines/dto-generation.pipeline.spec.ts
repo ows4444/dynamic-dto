@@ -317,21 +317,15 @@ describe('DtoGenerationPipeline', () => {
       (pipeline as any).generatedClasses.set('expired-key', expiredRef);
 
       // Act
-      (pipeline as any).cleanupDeadReferences();
+      (pipeline as any).performDeterministicCleanup();
 
-      // Assert
-      expect(debugSpy).toHaveBeenCalledWith(
-        'Cleaned up dead references from cache',
-        expect.objectContaining({
-          removedCount: 1,
-          remainingSize: expect.any(Number),
-        }),
-      );
+      // Assert - Check that cleanup was performed
+      expect((pipeline as any).generatedClasses.size).toBe(0);
     });
 
     it('should handle cleanup interval', (done) => {
       // Arrange
-      const cleanupSpy = jest.spyOn(pipeline as any, 'cleanupDeadReferences');
+      const cleanupSpy = jest.spyOn(pipeline as any, 'performDeterministicCleanup');
 
       // Override cleanup interval for testing
       clearInterval((pipeline as any).cleanupInterval);
@@ -366,29 +360,29 @@ describe('DtoGenerationPipeline', () => {
     });
   });
 
-  describe('field hash generation', () => {
-    it('should generate deterministic hash for field structure', () => {
+  describe('schema fingerprint generation', () => {
+    it('should generate deterministic fingerprint for field structure', () => {
       // Arrange
-      const hash1 = (pipeline as any).generateFieldsHash(mockSchema);
-      const hash2 = (pipeline as any).generateFieldsHash(mockSchema);
+      const hash1 = (pipeline as any).generateSchemaFingerprint(mockSchema);
+      const hash2 = (pipeline as any).generateSchemaFingerprint(mockSchema);
 
       // Assert
       expect(hash1).toBe(hash2);
       expect(hash1).toMatch(/^[a-f0-9]+$/);
     });
 
-    it('should generate different hashes for different field structures', () => {
+    it('should generate different fingerprints for different field structures', () => {
       // Arrange
       const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
 
-      const hash1 = (pipeline as any).generateFieldsHash(mockSchema);
-      const hash2 = (pipeline as any).generateFieldsHash(schema2);
+      const hash1 = (pipeline as any).generateSchemaFingerprint(mockSchema);
+      const hash2 = (pipeline as any).generateSchemaFingerprint(schema2);
 
       // Assert
       expect(hash1).not.toBe(hash2);
     });
 
-    it('should consider required fields in hash', () => {
+    it('should consider required fields in fingerprint', () => {
       // Arrange
       const schema1 = new DynamicSchemaEntity(
         'test',
@@ -408,8 +402,8 @@ describe('DtoGenerationPipeline', () => {
         false,
       );
 
-      const hash1 = (pipeline as any).generateFieldsHash(schema1);
-      const hash2 = (pipeline as any).generateFieldsHash(schema2);
+      const hash1 = (pipeline as any).generateSchemaFingerprint(schema1);
+      const hash2 = (pipeline as any).generateSchemaFingerprint(schema2);
 
       // Assert
       expect(hash1).not.toBe(hash2);

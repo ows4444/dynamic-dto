@@ -17,7 +17,7 @@ import type { FieldSchema } from '../../../core/interfaces/schema';
 @Injectable()
 export class StringAutoGenerationProcessor extends BaseFieldProcessor<StringFieldSchema> {
   // Static counters for sequential generation
-  private static readonly SEQUENCE_COUNTERS = new Map<string, number>();
+  private static readonly sequence_counters = new Map<string, number>();
 
   readonly supportedType = FieldType.string;
 
@@ -25,7 +25,7 @@ export class StringAutoGenerationProcessor extends BaseFieldProcessor<StringFiel
     return schema.type === FieldType.string && !!schema.autoGenerate;
   }
 
-  generateValidationDecorators(schema: StringFieldSchema, isRequired: boolean, parentIsArray: boolean): PropertyDecorator[] {
+  generateValidationDecorators(_schema: StringFieldSchema, _isRequired: boolean, _parentIsArray: boolean): PropertyDecorator[] {
     // StringAutoGenerationProcessor doesn't add validation decorators - it only generates values
     return [];
   }
@@ -115,8 +115,8 @@ export class StringAutoGenerationProcessor extends BaseFieldProcessor<StringFiel
     const padLength = config?.counter?.padLength ?? 0;
 
     // Get or initialize counter
-    const currentValue = StringAutoGenerationProcessor.SEQUENCE_COUNTERS.get(counterKey) ?? start;
-    StringAutoGenerationProcessor.SEQUENCE_COUNTERS.set(counterKey, currentValue + step);
+    const currentValue = StringAutoGenerationProcessor.sequence_counters.get(counterKey) ?? start;
+    StringAutoGenerationProcessor.sequence_counters.set(counterKey, currentValue + step);
 
     // Apply padding if specified
     const paddedValue = padLength > 0 ? currentValue.toString().padStart(padLength, '0') : currentValue.toString();
@@ -167,8 +167,8 @@ export class StringAutoGenerationProcessor extends BaseFieldProcessor<StringFiel
     const padLength = config?.counter?.padLength ?? 0;
 
     // Get or initialize counter
-    const currentValue = StringAutoGenerationProcessor.SEQUENCE_COUNTERS.get(counterKey) ?? start;
-    StringAutoGenerationProcessor.SEQUENCE_COUNTERS.set(counterKey, currentValue + step);
+    const currentValue = StringAutoGenerationProcessor.sequence_counters.get(counterKey) ?? start;
+    StringAutoGenerationProcessor.sequence_counters.set(counterKey, currentValue + step);
 
     // Apply padding if specified
     const paddedValue = padLength > 0 ? currentValue.toString().padStart(padLength, '0') : currentValue.toString();
@@ -197,13 +197,13 @@ export class StringAutoGenerationProcessor extends BaseFieldProcessor<StringFiel
    * Reset all sequence counters (useful for testing)
    */
   static resetSequenceCounters(): void {
-    StringAutoGenerationProcessor.SEQUENCE_COUNTERS.clear();
+    StringAutoGenerationProcessor.sequence_counters.clear();
   }
 
   /**
    * Reset specific sequence counter
    */
   static resetSequenceCounter(key: string): void {
-    StringAutoGenerationProcessor.SEQUENCE_COUNTERS.delete(key);
+    StringAutoGenerationProcessor.sequence_counters.delete(key);
   }
 }

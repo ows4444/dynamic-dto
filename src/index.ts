@@ -34,7 +34,8 @@ export type { ICacheManager, CacheMemoryInfo, CleanupResult } from './modules/dy
 export type { ICacheStrategy } from './modules/dynamic-dto/core/interfaces/cache/cache-strategy.interface';
 
 // Validation types
-export type { ValidationResult, ValidationError } from './modules/dynamic-dto/application/services/dto-validation.service';
+export type { ValidationResult } from './modules/dynamic-dto/core/interfaces/validation/validation-result.interface';
+export type { ValidationError } from './modules/dynamic-dto/application/services/dto-validation.service';
 
 // Validation context
 export type { ValidationContext } from './modules/dynamic-dto/core/interfaces/validation/validation-context.interface';

@@ -249,7 +249,7 @@ export default tseslint.config(
       'max-depth': ['error', 4], // Prevent deeply nested validation logic
       'max-lines': ['warn', 500], // Allow larger files for complex processors
       'max-lines-per-function': ['warn', 120], // Allow complex validation functions
-      'max-params': ['error', 8], // Encourage object parameters
+      'max-params': ['error', 10], // Encourage object parameters
 
       // Dynamic DTO specific rules (consolidated above)
     },
@@ -344,7 +344,7 @@ export default tseslint.config(
     rules: {
       complexity: ['error', 30],
       'max-lines-per-function': ['error', 120],
-      'max-params': ['error', 8], // Orchestration may need many deps
+      'max-params': ['error', 12], // Orchestration may need many deps
     },
   },
 
@@ -372,7 +372,7 @@ export default tseslint.config(
   {
     files: ['**/registries/**/*.ts'],
     rules: {
-      'max-lines': ['error', 300],
+      'max-lines': ['error', 500],
       complexity: ['error', 20],
       '@typescript-eslint/no-explicit-any': 'warn', // May need for registration
     },

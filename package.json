@@ -44,6 +44,9 @@
     "test:e2e": "jest --config jest.e2e.config.js",
     "test:watch": "jest --watch --config jest.config.js",
     "test:cov": "jest --coverage --config jest.config.js",
+    "test:cov:unit": "jest --coverage --config jest.unit.config.js --coverageDirectory=coverage/unit",
+    "test:cov:integration": "jest --coverage --config jest.integration.config.js --coverageDirectory=coverage/integration",
+    "test:cov:e2e": "jest --coverage --config jest.e2e.config.js --coverageDirectory=coverage/e2e",
     "test:coverage": "node scripts/test-coverage.js",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "prepublishOnly": "npm run build"

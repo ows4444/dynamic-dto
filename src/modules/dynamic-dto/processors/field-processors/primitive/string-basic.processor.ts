@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IsDefined, IsNotEmpty, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsOptional, IsString, Length, Matches, ValidationOptions } from 'class-validator';
 import { BaseFieldProcessor, type TransformationFunction } from '../../../core/abstractions/base-field-processor.abstract';
 import { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
@@ -16,7 +16,7 @@ import type { FieldSchema } from '../../../core/interfaces/schema';
 @Injectable()
 export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> {
   // Pre-compiled regex patterns for performance
-  private static readonly REGEX_CACHE = new Map<string, RegExp>();
+  private static readonly regex_cache = new Map<string, RegExp>();
 
   readonly supportedType = FieldType.string;
 
@@ -26,7 +26,7 @@ export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> 
 
   generateValidationDecorators(schema: StringFieldSchema, isRequired: boolean, parentIsArray: boolean): PropertyDecorator[] {
     const decorators: PropertyDecorator[] = [];
-    const eachOption = parentIsArray ? { each: true } : undefined;
+    const eachOption: ValidationOptions | undefined = parentIsArray ? { each: true } : undefined;
 
     // Required/Optional validation
     if (isRequired) {
@@ -51,12 +51,12 @@ export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> 
     return decorators;
   }
 
-  getTypeSpecificTransformations(schema: StringFieldSchema): TransformationFunction[] {
+  getTypeSpecificTransformations(_schema: StringFieldSchema): TransformationFunction[] {
     // StringBasicProcessor doesn't handle transformations - that's StringTransformationProcessor's responsibility
     return [];
   }
 
-  private addLengthValidation(decorators: PropertyDecorator[], schema: StringFieldSchema, eachOption: any): void {
+  private addLengthValidation(decorators: PropertyDecorator[], schema: StringFieldSchema, eachOption?: ValidationOptions): void {
     const hasMinLength = schema.minLength !== undefined;
     const hasMaxLength = schema.maxLength !== undefined;
     const hasExactLength = schema.exactLength !== undefined;
@@ -71,7 +71,7 @@ export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> 
     }
   }
 
-  private addPatternValidation(decorators: PropertyDecorator[], schema: StringFieldSchema, eachOption: any): void {
+  private addPatternValidation(decorators: PropertyDecorator[], schema: StringFieldSchema, eachOption?: ValidationOptions): void {
     // Pattern validation
     if (schema.pattern) {
       const regex = this.getCompiledRegex(schema.pattern);
@@ -96,19 +96,19 @@ export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> 
     }
 
     // Cache compiled regex patterns for performance
-    if (!StringBasicProcessor.REGEX_CACHE.has(pattern)) {
-      StringBasicProcessor.REGEX_CACHE.set(pattern, new RegExp(pattern));
+    if (!StringBasicProcessor.regex_cache.has(pattern)) {
+      StringBasicProcessor.regex_cache.set(pattern, new RegExp(pattern));
     }
 
-    return StringBasicProcessor.REGEX_CACHE.get(pattern)!;
+    return StringBasicProcessor.regex_cache.get(pattern)!;
   }
 
   /**
    * Clear the regex cache if it gets too large
    */
   static clearRegexCache(): void {
-    if (StringBasicProcessor.REGEX_CACHE.size > 1000) {
-      StringBasicProcessor.REGEX_CACHE.clear();
+    if (StringBasicProcessor.regex_cache.size > 1000) {
+      StringBasicProcessor.regex_cache.clear();
     }
   }
 }
