@@ -5,6 +5,7 @@ import { StringFormatProcessor } from './string-format.processor';
 import { StringTransformationProcessor } from './string-transformation.processor';
 import { StringAutoGenerationProcessor } from './string-auto-generation.processor';
 import { StringFormatProcessorFactory } from './string-formats/string-format-processor.factory';
+import { StringProcessorFactory } from './string-processor.factory';
 import { StringFieldSchema, CaseTransform, AutoGenerationType } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import { StringFormat } from '../../../core/enums/string.enums';
@@ -18,7 +19,15 @@ describe('StringFieldProcessorComposite', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [StringFieldProcessorComposite, StringBasicProcessor, StringFormatProcessor, StringTransformationProcessor, StringAutoGenerationProcessor, StringFormatProcessorFactory],
+      providers: [
+        StringFieldProcessorComposite,
+        StringBasicProcessor,
+        StringFormatProcessor,
+        StringTransformationProcessor,
+        StringAutoGenerationProcessor,
+        StringFormatProcessorFactory,
+        StringProcessorFactory,
+      ],
     }).compile();
 
     composite = module.get<StringFieldProcessorComposite>(StringFieldProcessorComposite);

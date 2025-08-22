@@ -55,11 +55,7 @@ describe('NestedObjectTransformerService', () => {
 
       const decorator = service.generateNestedClassDecorator(schema);
       expect(decorator).toBeDefined();
-      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(
-        schema.properties,
-        ['name'],
-        false,
-      );
+      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(schema.properties, ['name'], false);
     });
 
     it('should handle empty required array', () => {
@@ -75,11 +71,7 @@ describe('NestedObjectTransformerService', () => {
       };
 
       service.generateNestedClassDecorator(schema);
-      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(
-        schema.properties,
-        [],
-        false,
-      );
+      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(schema.properties, [], false);
     });
 
     it('should pass exclude flag correctly', () => {
@@ -96,11 +88,7 @@ describe('NestedObjectTransformerService', () => {
       };
 
       service.generateNestedClassDecorator(schema);
-      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(
-        schema.properties,
-        [],
-        true,
-      );
+      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(schema.properties, [], true);
     });
   });
 
@@ -117,11 +105,7 @@ describe('NestedObjectTransformerService', () => {
       };
 
       service.prepareNestedClassGeneration(schema);
-      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(
-        schema.properties,
-        ['name', 'email'],
-        false,
-      );
+      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(schema.properties, ['name', 'email'], false);
     });
 
     it('should not generate nested class when no properties', () => {
@@ -151,11 +135,7 @@ describe('NestedObjectTransformerService', () => {
       };
 
       service.prepareNestedClassGeneration(schema);
-      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(
-        schema.properties,
-        [],
-        false,
-      );
+      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith(schema.properties, [], false);
     });
   });
 

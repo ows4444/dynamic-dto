@@ -20,7 +20,7 @@ describe('CircularReferenceDetectorService', () => {
     it('should handle simple object without circular references', () => {
       const input = { name: 'John', age: 30 };
       const result = service.detectAndHandleCircularReferences(input);
-      
+
       expect(result).toEqual({ name: 'John', age: 30 });
       expect(result).not.toBe(input); // Should create new object
     });
@@ -45,9 +45,7 @@ describe('CircularReferenceDetectorService', () => {
       const input: Record<string, unknown> = { name: 'John' };
       input.self = input;
 
-      expect(() => service.detectAndHandleCircularReferences(input)).toThrow(
-        'Circular reference detected at path: self',
-      );
+      expect(() => service.detectAndHandleCircularReferences(input)).toThrow('Circular reference detected at path: self');
     });
 
     it('should detect nested circular reference', () => {
@@ -56,9 +54,7 @@ describe('CircularReferenceDetectorService', () => {
       };
       (input.user as Record<string, unknown>).parent = input;
 
-      expect(() => service.detectAndHandleCircularReferences(input)).toThrow(
-        'Circular reference detected at path: user.parent',
-      );
+      expect(() => service.detectAndHandleCircularReferences(input)).toThrow('Circular reference detected at path: user.parent');
     });
 
     it('should handle arrays with circular references', () => {
@@ -68,9 +64,7 @@ describe('CircularReferenceDetectorService', () => {
       };
       obj.parent = input;
 
-      expect(() => service.detectAndHandleCircularReferences(input)).toThrow(
-        'Circular reference detected at path: items.0.parent',
-      );
+      expect(() => service.detectAndHandleCircularReferences(input)).toThrow('Circular reference detected at path: items.0.parent');
     });
 
     it('should enforce maximum depth limit', () => {
@@ -84,9 +78,7 @@ describe('CircularReferenceDetectorService', () => {
         current = next;
       }
 
-      expect(() => service.detectAndHandleCircularReferences(root)).toThrow(
-        'Maximum nesting depth (10) exceeded at path: child.child.child.child.child.child.child.child.child.child',
-      );
+      expect(() => service.detectAndHandleCircularReferences(root)).toThrow('Maximum nesting depth (10) exceeded at path: child.child.child.child.child.child.child.child.child.child');
     });
 
     it('should respect custom max depth', () => {
@@ -105,9 +97,7 @@ describe('CircularReferenceDetectorService', () => {
       expect(result.child).toBeDefined();
 
       // Should fail with maxDepth 3
-      expect(() => service.detectAndHandleCircularReferences(root, 3)).toThrow(
-        'Maximum nesting depth (3) exceeded',
-      );
+      expect(() => service.detectAndHandleCircularReferences(root, 3)).toThrow('Maximum nesting depth (3) exceeded');
     });
 
     it('should handle mixed primitive and object values', () => {
@@ -157,13 +147,11 @@ describe('CircularReferenceDetectorService', () => {
     it('should handle objects with array circular references', () => {
       const parent: Record<string, unknown> = { name: 'parent' };
       const child: Record<string, unknown> = { name: 'child' };
-      
+
       parent.children = [child];
       child.parent = parent;
 
-      expect(() => service.detectAndHandleCircularReferences(parent)).toThrow(
-        'Circular reference detected at path: children.0.parent',
-      );
+      expect(() => service.detectAndHandleCircularReferences(parent)).toThrow('Circular reference detected at path: children.0.parent');
     });
   });
 
@@ -184,7 +172,7 @@ describe('CircularReferenceDetectorService', () => {
     it('should clear path cache', () => {
       const input = { test: { nested: { value: 1 } } };
       service.detectAndHandleCircularReferences(input);
-      
+
       expect(service.getPathCacheSize()).toBeGreaterThan(0);
       service.clearPathCache();
       expect(service.getPathCacheSize()).toBe(0);

@@ -72,10 +72,7 @@ describe('DtoGenerationPipeline', () => {
 
   describe('initialization', () => {
     it('should register cache with monitor service', () => {
-      expect(cacheMonitor.registerCache).toHaveBeenCalledWith(
-        'dto-generation-pipeline',
-        expect.any(Object),
-      );
+      expect(cacheMonitor.registerCache).toHaveBeenCalledWith('dto-generation-pipeline', expect.any(Object));
     });
 
     it('should set up cleanup interval', () => {
@@ -155,7 +152,7 @@ describe('DtoGenerationPipeline', () => {
     it('should log cache statistics when approaching capacity', () => {
       // Arrange
       const warnSpy = jest.spyOn(Logger.prototype, 'warn');
-      
+
       // Fill cache to near capacity (simulate)
       jest.spyOn(pipeline as any, 'generatedClasses', 'get').mockReturnValue({
         isNearCapacity: jest.fn().mockReturnValue(true),
@@ -187,14 +184,7 @@ describe('DtoGenerationPipeline', () => {
 
     it('should process multiple schemas efficiently', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity(
-        'test-schema-2',
-        'TestSchema2',
-        { email: { type: FieldType.string, expose: true } },
-        new SchemaVersion(1, 0, 0),
-        ['email'],
-        false,
-      );
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
       const schemas = [mockSchema, schema2];
 
       // Act
@@ -290,14 +280,7 @@ describe('DtoGenerationPipeline', () => {
 
     it('should generate different cache keys for different schemas', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity(
-        'different-schema',
-        'DifferentSchema',
-        { email: { type: FieldType.string, expose: true } },
-        new SchemaVersion(1, 0, 0),
-        ['email'],
-        false,
-      );
+      const schema2 = new DynamicSchemaEntity('different-schema', 'DifferentSchema', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
 
       const key1 = (pipeline as any).generateOptimizedCacheKey(mockSchema);
       const key2 = (pipeline as any).generateOptimizedCacheKey(schema2);
@@ -323,14 +306,14 @@ describe('DtoGenerationPipeline', () => {
     it('should clean up dead weak references', async () => {
       // Arrange
       const debugSpy = jest.spyOn(Logger.prototype, 'debug');
-      
+
       // Add expired reference
       const expiredRef = {
         ref: { deref: jest.fn().mockReturnValue(null) },
         propertyNames: ['name'],
         timestamp: Date.now() - 10 * 60 * 1000, // 10 minutes ago
       };
-      
+
       (pipeline as any).generatedClasses.set('expired-key', expiredRef);
 
       // Act
@@ -349,7 +332,7 @@ describe('DtoGenerationPipeline', () => {
     it('should handle cleanup interval', (done) => {
       // Arrange
       const cleanupSpy = jest.spyOn(pipeline as any, 'cleanupDeadReferences');
-      
+
       // Override cleanup interval for testing
       clearInterval((pipeline as any).cleanupInterval);
       (pipeline as any).cleanupInterval = setInterval(() => {
@@ -396,14 +379,7 @@ describe('DtoGenerationPipeline', () => {
 
     it('should generate different hashes for different field structures', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity(
-        'test-schema-2',
-        'TestSchema2',
-        { email: { type: FieldType.string, expose: true } },
-        new SchemaVersion(1, 0, 0),
-        ['email'],
-        false,
-      );
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
 
       const hash1 = (pipeline as any).generateFieldsHash(mockSchema);
       const hash2 = (pipeline as any).generateFieldsHash(schema2);

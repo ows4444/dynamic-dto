@@ -39,9 +39,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { name: 'John' }; // missing 'age'
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Required field 'age' is missing",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Required field 'age' is missing");
     });
 
     it('should validate all properties when all required fields present', () => {
@@ -150,9 +148,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { name: 123 };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'name' must be a string, got number",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'name' must be a string, got number");
     });
   });
 
@@ -181,9 +177,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { age: 'thirty' };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'age' must be a valid number, got string",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'age' must be a valid number, got string");
     });
 
     it('should throw error for NaN values', () => {
@@ -196,9 +190,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { score: NaN };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'score' must be a valid number, got number",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'score' must be a valid number, got number");
     });
   });
 
@@ -227,9 +219,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { active: 'true' };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'active' must be a boolean, got string",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'active' must be a boolean, got string");
     });
   });
 
@@ -258,9 +248,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { items: 'not-array' };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'items' must be an array, got string",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'items' must be an array, got string");
     });
   });
 
@@ -289,9 +277,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { profile: [] };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'profile' must be an object, got array",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'profile' must be an object, got array");
     });
 
     it('should throw error for primitive when object expected', () => {
@@ -304,9 +290,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { profile: 'not-object' };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'profile' must be an object, got string",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'profile' must be an object, got string");
     });
   });
 
@@ -345,9 +329,7 @@ describe('ObjectValidationService', () => {
       };
       const input = { size: 'extra-large' };
 
-      expect(() => service.performDeepValidation(input, schema)).toThrow(
-        "Property 'size' must be one of: [small, medium, large], got \"extra-large\"",
-      );
+      expect(() => service.performDeepValidation(input, schema)).toThrow('Property \'size\' must be one of: [small, medium, large], got "extra-large"');
     });
 
     it('should handle case-insensitive enum validation', () => {
@@ -392,7 +374,7 @@ describe('ObjectValidationService', () => {
 
     it('should handle deprecated enum values with warning', () => {
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-      
+
       const enumSchema: EnumFieldSchema = {
         type: FieldType.enum,
         expose: true,
@@ -410,9 +392,7 @@ describe('ObjectValidationService', () => {
 
       const result = service.performDeepValidation(input, schema);
       expect(result.status).toBe('old');
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        "Property 'status' uses deprecated enum value: \"old\"",
-      );
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Property \'status\' uses deprecated enum value: "old"');
 
       consoleWarnSpy.mockRestore();
     });

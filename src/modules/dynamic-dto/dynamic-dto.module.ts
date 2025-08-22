@@ -1,16 +1,5 @@
 import { DynamicModule, Module, Type } from '@nestjs/common';
 
-// Import services needed for exports
-import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';
-import { DtoCacheService } from './application/services/dto-cache.service';
-import { DtoValidationService } from './application/services/dto-validation.service';
-import { DtoBatchProcessor } from './application/services/dto-batch-processor.service';
-import { SchemaOrchestratorService } from './application/services/schema-orchestrator.service';
-import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
-import { FieldHandlerRegistry } from './infrastructure/registries/field-handler.registry';
-import { SchemaValidationPipeline } from './application/pipelines/schema-validation.pipeline';
-import { EnhancedCacheMonitorService } from './infrastructure/monitoring/enhanced-cache-monitor.service';
-
 // Consolidated provider factories for simplified module configuration
 import { createCoreServicesProviders, createFieldProcessingProviders, createInfrastructureProviders, createValidationProviders } from './infrastructure/factories/consolidated';
 
@@ -43,19 +32,23 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
   }
 
   /**
-   * Creates the exports array for the module
+   * Creates the exports array for the module by extracting exportable services from provider factories
    */
   private static createExports(): Type[] {
-    return [
-      DtoOrchestratorService,
-      DtoCacheService,
-      DtoValidationService,
-      DtoBatchProcessor,
-      NestedClassGeneratorService,
-      SchemaOrchestratorService,
-      FieldHandlerRegistry,
-      SchemaValidationPipeline,
-      EnhancedCacheMonitorService,
-    ];
+    // Get core services from factory
+    const coreServices = createCoreServicesProviders().filter((provider): provider is Type => typeof provider === 'function');
+
+    // Get field processing services from factory
+    const fieldProcessingServices = createFieldProcessingProviders().filter(
+      (provider): provider is Type => typeof provider === 'function' && (provider.name.includes('Registry') || provider.name.includes('Service')),
+    );
+
+    // Get infrastructure services from factory
+    const infrastructureServices = createInfrastructureProviders({}).filter(
+      (provider): provider is Type => typeof provider === 'function' && (provider.name.includes('Monitor') || provider.name.includes('Manager')),
+    );
+
+    // Combine all exportable services
+    return [...coreServices, ...fieldProcessingServices, ...infrastructureServices];
   }
 }

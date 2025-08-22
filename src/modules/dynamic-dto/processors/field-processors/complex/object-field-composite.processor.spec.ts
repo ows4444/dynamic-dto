@@ -125,9 +125,7 @@ describe('ObjectFieldProcessorComposite', () => {
   describe('getTypeSpecificTransformations', () => {
     beforeEach(() => {
       // Setup default return values for mocks
-      mockCircularReferenceDetector.detectAndHandleCircularReferences.mockImplementation(
-        (value) => value,
-      );
+      mockCircularReferenceDetector.detectAndHandleCircularReferences.mockImplementation((value) => value);
       mockObjectValidation.performDeepValidation.mockImplementation((value) => value);
       mockPropertyFiltering.filterPropertiesByPermissions.mockImplementation((value) => value);
       mockPropertyFiltering.removeAdditionalProperties.mockImplementation((value) => value);
@@ -183,9 +181,7 @@ describe('ObjectFieldProcessorComposite', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const additionalPropsTransformation = transformations.find(
-        (t) => t.name === 'additional_properties_removal',
-      );
+      const additionalPropsTransformation = transformations.find((t) => t.name === 'additional_properties_removal');
       expect(additionalPropsTransformation).toBeDefined();
       expect(additionalPropsTransformation?.order).toBe(50);
     });
@@ -197,9 +193,7 @@ describe('ObjectFieldProcessorComposite', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const additionalPropsTransformation = transformations.find(
-        (t) => t.name === 'additional_properties_removal',
-      );
+      const additionalPropsTransformation = transformations.find((t) => t.name === 'additional_properties_removal');
       expect(additionalPropsTransformation).toBeUndefined();
     });
 
@@ -213,7 +207,7 @@ describe('ObjectFieldProcessorComposite', () => {
 
         const transformations = processor.getTypeSpecificTransformations(schema);
         const circularRefTransform = transformations.find((t) => t.name === 'circular_reference_check');
-        
+
         circularRefTransform?.transform({ value: inputValue });
         expect(mockCircularReferenceDetector.detectAndHandleCircularReferences).toHaveBeenCalledWith(
           inputValue,
@@ -230,7 +224,7 @@ describe('ObjectFieldProcessorComposite', () => {
 
         const transformations = processor.getTypeSpecificTransformations(schema);
         const validationTransform = transformations.find((t) => t.name === 'deep_validation');
-        
+
         validationTransform?.transform({ value: inputValue });
         expect(mockObjectValidation.performDeepValidation).toHaveBeenCalledWith(inputValue, schema);
       });
@@ -244,12 +238,9 @@ describe('ObjectFieldProcessorComposite', () => {
 
         const transformations = processor.getTypeSpecificTransformations(schema);
         const filteringTransform = transformations.find((t) => t.name === 'property_filtering');
-        
+
         filteringTransform?.transform({ value: inputValue });
-        expect(mockPropertyFiltering.filterPropertiesByPermissions).toHaveBeenCalledWith(
-          inputValue,
-          schema,
-        );
+        expect(mockPropertyFiltering.filterPropertiesByPermissions).toHaveBeenCalledWith(inputValue, schema);
       });
 
       it('should skip transformations for non-object values', () => {
@@ -259,7 +250,7 @@ describe('ObjectFieldProcessorComposite', () => {
         };
 
         const transformations = processor.getTypeSpecificTransformations(schema);
-        
+
         // Test with null
         const circularRefTransform = transformations.find((t) => t.name === 'circular_reference_check');
         const result1 = circularRefTransform?.transform({ value: null });
@@ -279,10 +270,10 @@ describe('ObjectFieldProcessorComposite', () => {
 
         const transformations = processor.getTypeSpecificTransformations(schema);
         const circularRefTransform = transformations.find((t) => t.name === 'circular_reference_check');
-        
+
         // Condition should return true for objects
         expect(circularRefTransform?.condition?.(schema, { value: {} })).toBe(true);
-        
+
         // Condition should return false for non-objects
         expect(circularRefTransform?.condition?.(schema, { value: null })).toBe(false);
         expect(circularRefTransform?.condition?.(schema, { value: 'string' })).toBe(false);
@@ -305,7 +296,7 @@ describe('ObjectFieldProcessorComposite', () => {
       mockNestedObjectTransformer.generateNestedClassDecorator.mockReturnValue(mockDecorator);
 
       const decorators = processor.generateEnhancedTransformationDecorators(schema);
-      
+
       expect(mockNestedObjectTransformer.generateNestedClassDecorator).toHaveBeenCalledWith(schema);
       expect(decorators[0]).toBe(mockDecorator);
     });
@@ -319,7 +310,7 @@ describe('ObjectFieldProcessorComposite', () => {
       mockNestedObjectTransformer.generateNestedClassDecorator.mockReturnValue(null);
 
       const decorators = processor.generateEnhancedTransformationDecorators(schema);
-      
+
       expect(mockNestedObjectTransformer.generateNestedClassDecorator).toHaveBeenCalledWith(schema);
       // Should only contain decorators from parent method (none in this case for base implementation)
       expect(decorators.length).toBeGreaterThanOrEqual(0);
@@ -339,7 +330,7 @@ describe('ObjectFieldProcessorComposite', () => {
 
       // Get transformations and verify all services are prepared
       const transformations = processor.getTypeSpecificTransformations(schema);
-      
+
       expect(mockNestedObjectTransformer.prepareNestedClassGeneration).toHaveBeenCalledWith(schema);
       expect(transformations).toHaveLength(6); // All transformations including nested and additional props
     });

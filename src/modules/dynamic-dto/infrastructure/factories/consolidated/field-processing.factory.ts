@@ -13,6 +13,7 @@ import { StringTransformationProcessor } from '../../../processors/field-process
 import { StringAutoGenerationProcessor } from '../../../processors/field-processors/primitive/string-auto-generation.processor';
 import { StringFieldProcessorComposite } from '../../../processors/field-processors/primitive/string-field-composite.processor';
 import { StringFormatProcessorFactory } from '../../../processors/field-processors/primitive/string-formats/string-format-processor.factory';
+import { StringProcessorFactory } from '../../../processors/field-processors/primitive/string-processor.factory';
 
 // Specialized processors
 import { DateFieldProcessor } from '../../../processors/field-processors/specialized/date-field.processor';
@@ -45,23 +46,21 @@ import { EnumFieldValidator } from '../../../validators/field-validators/special
 import { UnionFieldValidator } from '../../../validators/field-validators/specialized/union-field.validator';
 
 // === REGISTRIES & DISCOVERY ===
-import { FieldProcessorRegistry } from '../../registries/field-processor.registry';
-import { FieldValidatorRegistry } from '../../registries/field-validator.registry';
 import { FieldHandlerRegistry } from '../../registries/field-handler.registry';
 import { FieldProcessorDiscoveryService } from '../../services/field-processor-discovery.service';
 
 /**
  * Consolidated Field Processing Factory
  *
- * Combines field processors, validators, and registries into a single factory.
- * This reduces the factory proliferation from separate field-processor, field-validator,
- * and registry factories.
+ * Provides a unified field processing system with a single consolidated registry.
+ * This eliminates the delegation pattern and registry complexity by consolidating
+ * processors and validators into one efficient registry.
  *
  * Responsibilities:
  * - All field processors (12 processors including string specializations)
  * - All field validators (8 validators)
- * - Field processing registries and discovery services
- * - Registry delegation and backward compatibility
+ * - Consolidated field handler registry with integrated discovery
+ * - Object processing support services
  */
 export function createFieldProcessingProviders(): Provider[] {
   return [
@@ -69,12 +68,10 @@ export function createFieldProcessingProviders(): Provider[] {
     DiscoveryService,
     FieldProcessorDiscoveryService,
 
-    // Core registries
-    FieldProcessorRegistry,
-    FieldValidatorRegistry,
+    // Consolidated registry (replaces separate processor and validator registries)
     FieldHandlerRegistry,
 
-    // Backward compatibility aliases
+    // Backward compatibility aliases for existing code
     {
       provide: 'FieldProcessorRegistry',
       useExisting: FieldHandlerRegistry,
@@ -86,6 +83,7 @@ export function createFieldProcessingProviders(): Provider[] {
 
     // === STRING PROCESSING INFRASTRUCTURE ===
     StringFormatProcessorFactory,
+    StringProcessorFactory,
 
     // === FIELD PROCESSORS ===
     // String processors (specialized after SRP refactoring)

@@ -137,10 +137,10 @@ describe('UnionFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const defaultTransformation = transformations.find(t => t.name === 'union_default');
-      
+      const defaultTransformation = transformations.find((t) => t.name === 'union_default');
+
       expect(defaultTransformation).toBeDefined();
-      
+
       // Test the transformation with undefined value
       const result = defaultTransformation!.transform({ value: undefined, obj: {}, key: 'testField' });
       expect(result).toBe(''); // Should return default for string type (index 0)
@@ -161,10 +161,10 @@ describe('UnionFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const defaultTransformation = transformations.find(t => t.name === 'union_default');
-      
+      const defaultTransformation = transformations.find((t) => t.name === 'union_default');
+
       expect(defaultTransformation).toBeDefined();
-      
+
       // Test the transformation with undefined value
       const result = defaultTransformation!.transform({ value: undefined, obj: {}, key: 'testField' });
       expect(result).toBe(''); // Should fall back to first type's default
@@ -185,10 +185,10 @@ describe('UnionFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const defaultTransformation = transformations.find(t => t.name === 'union_default');
-      
+      const defaultTransformation = transformations.find((t) => t.name === 'union_default');
+
       expect(defaultTransformation).toBeDefined();
-      
+
       // Test the transformation with undefined value
       const result = defaultTransformation!.transform({ value: undefined, obj: {}, key: 'testField' });
       expect(['string_default', 42]).toContain(result);
@@ -209,10 +209,10 @@ describe('UnionFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const defaultTransformation = transformations.find(t => t.name === 'union_default');
-      
+      const defaultTransformation = transformations.find((t) => t.name === 'union_default');
+
       expect(defaultTransformation).toBeDefined();
-      
+
       const result = defaultTransformation!.transform({ value: undefined, obj: {}, key: 'testField' });
       expect(typeof result).toBe('string');
       expect(result).toMatch(/^\d{4}-\d{2}-\d{2}$/); // ISO date format
@@ -233,10 +233,10 @@ describe('UnionFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const defaultTransformation = transformations.find(t => t.name === 'union_default');
-      
+      const defaultTransformation = transformations.find((t) => t.name === 'union_default');
+
       expect(defaultTransformation).toBeDefined();
-      
+
       const result = defaultTransformation!.transform({ value: undefined, obj: {}, key: 'testField' });
       expect(result).toBe(0); // Should return default for number type (index 1)
     });
@@ -257,10 +257,10 @@ describe('UnionFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
-      const defaultTransformation = transformations.find(t => t.name === 'union_default');
-      
+      const defaultTransformation = transformations.find((t) => t.name === 'union_default');
+
       expect(defaultTransformation).toBeDefined();
-      
+
       const result = defaultTransformation!.transform({ value: undefined, obj: {}, key: 'testField' });
       expect(result).toBe('fallback_value'); // Should use the value property
     });
@@ -270,7 +270,7 @@ describe('UnionFieldProcessor', () => {
     it('should register custom validator', () => {
       const customValidator = (value: unknown) => typeof value === 'string' && value.includes('test');
       UnionFieldProcessor.registerCustomValidator('containsTest', customValidator);
-      
+
       const registeredValidators = UnionFieldProcessor.getRegisteredValidators();
       expect(registeredValidators).toContain('containsTest');
     });
@@ -278,17 +278,17 @@ describe('UnionFieldProcessor', () => {
     it('should use registered custom validators', () => {
       const customValidator = (value: unknown) => typeof value === 'string' && value.includes('custom');
       UnionFieldProcessor.registerCustomValidator('hasCustom', customValidator);
-      
+
       // Test via type condition matching
       const condition = {
         type: 'custom' as const,
         validatorName: 'hasCustom',
       };
-      
+
       // Access the private method through type assertion
       const matchResult = (processor as any).matchesTypeCondition('custom_value', condition);
       expect(matchResult).toBe(true);
-      
+
       const nonMatchResult = (processor as any).matchesTypeCondition('other_value', condition);
       expect(nonMatchResult).toBe(false);
     });
@@ -298,7 +298,7 @@ describe('UnionFieldProcessor', () => {
         type: 'custom' as const,
         validatorName: 'nonExistentValidator',
       };
-      
+
       const result = (processor as any).matchesTypeCondition('test_value', condition);
       expect(result).toBe(false);
     });
@@ -386,7 +386,7 @@ describe('UnionFieldProcessor', () => {
 
       const value = { type: 'str', value: 'test' };
       const result = (processor as any).resolveDiscriminatedUnion(value, schema);
-      
+
       expect(result).toEqual({ type: 'str', value: 'test', _unionTypeIndex: 0 });
     });
 
@@ -467,7 +467,7 @@ describe('UnionFieldProcessor', () => {
 
     it('should transform string to boolean type', () => {
       const typeSchema = { type: FieldType.boolean, expose: true };
-      
+
       expect((processor as any).transformValueForType('true', typeSchema)).toBe(true);
       expect((processor as any).transformValueForType('1', typeSchema)).toBe(true);
       expect((processor as any).transformValueForType('yes', typeSchema)).toBe(true);
@@ -478,7 +478,7 @@ describe('UnionFieldProcessor', () => {
 
     it('should transform non-string to boolean type', () => {
       const typeSchema = { type: FieldType.boolean, expose: true };
-      
+
       expect((processor as any).transformValueForType(1, typeSchema)).toBe(true);
       expect((processor as any).transformValueForType(0, typeSchema)).toBe(false);
       expect((processor as any).transformValueForType(null, typeSchema)).toBe(false);
@@ -494,17 +494,7 @@ describe('UnionFieldProcessor', () => {
 
   describe('expression sanitization', () => {
     it('should allow safe expressions', () => {
-      const safeExpressions = [
-        'typeCount > 1',
-        'getTypeDefault(0)',
-        'randomInt(10)',
-        '"string_literal"',
-        'true',
-        'false',
-        'null',
-        '42',
-        '3.14',
-      ];
+      const safeExpressions = ['typeCount > 1', 'getTypeDefault(0)', 'randomInt(10)', '"string_literal"', 'true', 'false', 'null', '42', '3.14'];
 
       for (const expr of safeExpressions) {
         const result = (processor as any).sanitizeExpression(expr);

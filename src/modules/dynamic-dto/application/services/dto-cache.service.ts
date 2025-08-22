@@ -99,4 +99,8 @@ export class DtoCacheService {
     // Return first 16 characters for reasonable cache key length
     return hash.substring(0, 16);
   }
+
+  clear(): Promise<void> {
+    return this.cacheManager.clear();
+  }
 }
