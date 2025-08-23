@@ -37,9 +37,7 @@ export class StringTransformationUtils {
       case CaseTransform.SENTENCE:
         return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
       case CaseTransform.CAMEL:
-        return value
-          .replace(this.regexPatterns.camel_pascal, (word, index) => (index === 0 ? word.toLowerCase() : word.toUpperCase()))
-          .replace(this.regexPatterns.spaces_multiple, '');
+        return value.replace(this.regexPatterns.camel_pascal, (word, index) => (index === 0 ? word.toLowerCase() : word.toUpperCase())).replace(this.regexPatterns.spaces_multiple, '');
       case CaseTransform.PASCAL:
         return value.replace(this.regexPatterns.camel_pascal, (word) => word.toUpperCase()).replace(this.regexPatterns.spaces_multiple, '');
       case CaseTransform.SNAKE:

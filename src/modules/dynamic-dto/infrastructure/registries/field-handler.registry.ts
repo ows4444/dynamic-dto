@@ -1,52 +1,38 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
-import { BaseFieldValidator } from '../../core/abstractions/base-field-validator.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
-import { FieldType, FieldTypeValue } from '../../core/types/field.types';
-import { ValidationResultBuilder } from '../../core/utils/validation-result.builder';
+import { FieldTypeValue } from '../../core/types/field.types';
 import { FieldProcessorDiscoveryService } from '../services/field-processor-discovery.service';
+import { FieldValidatorRegistry } from './field-validator.registry';
 
-// Import validators directly for consolidated registration
-import { BooleanFieldValidator } from '../../validators/field-validators/primitive/boolean-field.validator';
-import { NumberFieldValidator } from '../../validators/field-validators/primitive/number-field.validator';
-import { StringFieldValidator } from '../../validators/field-validators/primitive/string-field.validator';
-import { ArrayFieldValidator } from '../../validators/field-validators/complex/array-field.validator';
-import { ObjectFieldValidator } from '../../validators/field-validators/complex/object-field.validator';
-import { DateFieldValidator } from '../../validators/field-validators/specialized/date-field.validator';
-import { EnumFieldValidator } from '../../validators/field-validators/specialized/enum-field.validator';
-import { UnionFieldValidator } from '../../validators/field-validators/specialized/union-field.validator';
-
-interface ConsolidatedHandlerStats {
-  totalProcessors: number;
+export interface ValidatorStats {
   totalValidators: number;
+  validatorsByCategory: Record<string, string[]>;
+  supportedTypes: FieldTypeValue[];
+}
+
+interface ProcessorRegistryStats {
+  totalProcessors: number;
   supportedTypes: FieldTypeValue[];
   processorsByCategory: Record<string, string[]>;
   initialized: boolean;
 }
 
 /**
- * Consolidated registry for both field processors and validators
- * Eliminates delegation pattern for improved performance and maintainability
+ * Registry for field processors with delegation to separate validator registry
+ * Simplified architecture with clear separation of concerns
  */
 @Injectable()
 export class FieldHandlerRegistry implements OnModuleInit {
   private readonly logger = new Logger(FieldHandlerRegistry.name);
   private readonly processors = new Map<FieldTypeValue, BaseFieldProcessor>();
-  private readonly validators = new Map<FieldTypeValue, BaseFieldValidator>();
   private initialized = false;
   private _supportedTypesCache: FieldTypeValue[] | null = null;
 
   constructor(
     private readonly discoveryService: FieldProcessorDiscoveryService,
-    private readonly booleanValidator: BooleanFieldValidator,
-    private readonly numberValidator: NumberFieldValidator,
-    private readonly stringValidator: StringFieldValidator,
-    private readonly arrayValidator: ArrayFieldValidator,
-    private readonly objectValidator: ObjectFieldValidator,
-    private readonly dateValidator: DateFieldValidator,
-    private readonly enumValidator: EnumFieldValidator,
-    private readonly unionValidator: UnionFieldValidator,
+    private readonly validatorRegistry: FieldValidatorRegistry,
   ) {}
 
   onModuleInit(): void {
@@ -54,9 +40,8 @@ export class FieldHandlerRegistry implements OnModuleInit {
 
     try {
       this.initializeProcessors();
-      this.initializeValidators();
       this.initialized = true;
-      this.logger.log(`Initialized consolidated field handler registry with ${this.processors.size} processors and ${this.validators.size} validators`);
+      this.logger.log(`Initialized field handler registry with ${this.processors.size} processors`);
     } catch (error) {
       this.logger.error('Failed to initialize field handlers', error);
       throw error;
@@ -91,29 +76,7 @@ export class FieldHandlerRegistry implements OnModuleInit {
     }
   }
 
-  private initializeValidators(): void {
-    const validatorMappings = [
-      { type: FieldType.boolean, validator: this.booleanValidator },
-      { type: FieldType.number, validator: this.numberValidator },
-      { type: FieldType.string, validator: this.stringValidator },
-      { type: FieldType.array, validator: this.arrayValidator },
-      { type: FieldType.object, validator: this.objectValidator },
-      { type: FieldType.date, validator: this.dateValidator },
-      { type: FieldType.enum, validator: this.enumValidator },
-      { type: FieldType.union, validator: this.unionValidator },
-    ];
-
-    for (const { type, validator } of validatorMappings) {
-      if (validator) {
-        this.validators.set(type, validator);
-        this.logger.debug(`Registered validator for type: ${type}`);
-      } else {
-        this.logger.warn(`Validator not available for type: ${type}`);
-      }
-    }
-  }
-
-  // Processor management methods (consolidated)
+  // Processor management methods
   registerProcessor(processor: BaseFieldProcessor): void {
     if (!processor?.supportedType) {
       this.logger.warn('Invalid processor provided', { processor: processor?.constructor.name });
@@ -147,34 +110,16 @@ export class FieldHandlerRegistry implements OnModuleInit {
     return this.processors.has(type);
   }
 
-  // Validator management methods (consolidated)
-  registerValidator(validator: BaseFieldValidator): void {
-    if (!validator?.supportedType) {
-      this.logger.warn('Invalid validator provided');
-      return;
-    }
-
-    const existingValidator = this.validators.get(validator.supportedType);
-    if (existingValidator && existingValidator.priority > validator.priority) {
-      this.logger.debug(`Keeping higher priority validator for type ${validator.supportedType}`);
-      return;
-    }
-
-    this.validators.set(validator.supportedType, validator);
-    // Invalidate cache when validators change
-    this._supportedTypesCache = null;
-    this.logger.debug(`Registered validator: ${validator.name} for type: ${validator.supportedType}`);
-  }
-
-  getValidator(type: FieldTypeValue): BaseFieldValidator | undefined {
-    return this.validators.get(type);
+  // Validator methods (delegated to validator registry)
+  getValidator(type: FieldTypeValue) {
+    return this.validatorRegistry.getValidator(type);
   }
 
   hasValidator(type: FieldTypeValue): boolean {
-    return this.validators.has(type);
+    return this.validatorRegistry.hasValidator(type);
   }
 
-  // Field processing methods (consolidated)
+  // Field processing methods
   processField(schema: FieldSchema, isRequired: boolean, parentIsArray?: boolean): PropertyDecorator[] {
     try {
       const processor = this.getProcessor(schema.type);
@@ -224,67 +169,29 @@ export class FieldHandlerRegistry implements OnModuleInit {
     }
   }
 
-  // Field validation methods (consolidated)
+  // Field validation methods (delegated)
   validateField(schema: FieldSchema, context: ValidationContext): ValidationResult {
-    try {
-      const validator = this.getValidator(schema.type);
-
-      if (!validator) {
-        this.logger.warn(`No validator found for field type: ${schema.type}`, {
-          fieldPath: context.fieldPath,
-          availableValidators: Array.from(this.validators.keys()),
-        });
-
-        return ValidationResultBuilder.error('VALIDATOR_NOT_FOUND', `No validator found for field type: ${schema.type}`, context.fieldPath, { type: schema.type });
-      }
-
-      if (!validator.canValidate(schema)) {
-        return ValidationResultBuilder.error('VALIDATOR_INCOMPATIBLE', `Validator cannot handle schema for field: ${context.fieldPath}`, context.fieldPath, {
-          validator: validator.name,
-          fieldType: (schema as { type: string }).type,
-        });
-      }
-
-      return validator.validate(schema, context);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Field validation failed', {
-        fieldPath: context.fieldPath,
-        fieldType: schema.type,
-        error: errorMessage,
-      });
-
-      return ValidationResultBuilder.error('VALIDATION_ERROR', `Validation failed for field '${context.fieldPath}': ${errorMessage}`, context.fieldPath, { error: errorMessage });
-    }
+    return this.validatorRegistry.validateField(schema, context);
   }
 
-  // Utility methods (consolidated)
+  // Utility methods
   getAllProcessors(): BaseFieldProcessor[] {
     return Array.from(this.processors.values());
   }
 
-  getAllValidators(): ReadonlyMap<FieldTypeValue, BaseFieldValidator> {
-    return new Map(this.validators);
+  getAllValidators() {
+    return this.validatorRegistry.getAllValidators();
   }
 
   getSupportedTypes(): FieldTypeValue[] {
     // Cache supported types since processors rarely change after initialization
     if (!this._supportedTypesCache) {
       const processorTypes = Array.from(this.processors.keys());
-      const validatorTypes = Array.from(this.validators.keys());
+      const validatorTypes = this.validatorRegistry.getSupportedTypes();
       const allTypes = new Set([...processorTypes, ...validatorTypes]);
       this._supportedTypesCache = Array.from(allTypes);
     }
     return this._supportedTypesCache;
-  }
-
-  unregisterValidator(type: FieldTypeValue): boolean {
-    const removed = this.validators.delete(type);
-    if (removed) {
-      this._supportedTypesCache = null; // Invalidate cache
-      this.logger.debug(`Unregistered validator for type: ${type}`);
-    }
-    return removed;
   }
 
   unregisterProcessor(type: FieldTypeValue): boolean {
@@ -296,7 +203,7 @@ export class FieldHandlerRegistry implements OnModuleInit {
     return removed;
   }
 
-  getHandlerStats(): ConsolidatedHandlerStats {
+  getHandlerStats(): ProcessorRegistryStats {
     const processorsByCategory = this.discoveryService.getProcessorsByCategory();
     const categoriesMap: Record<string, string[]> = {};
 
@@ -306,10 +213,13 @@ export class FieldHandlerRegistry implements OnModuleInit {
 
     return {
       totalProcessors: this.processors.size,
-      totalValidators: this.validators.size,
       supportedTypes: this.getSupportedTypes(),
       processorsByCategory: categoriesMap,
       initialized: this.initialized,
     };
+  }
+
+  getValidatorStats(): ValidatorStats {
+    return this.validatorRegistry.getStats();
   }
 }

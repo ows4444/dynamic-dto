@@ -10,7 +10,7 @@ import { StringTransformationUtils } from './utils/string-transformation.utils';
  * - Case transformations (lower, upper, camel, pascal, snake, kebab, etc.)
  * - Trimming operations (start, end, inner, custom characters)
  * - String normalization and cleaning
- * 
+ *
  * Refactored to use shared utilities for better maintainability and reduced code duplication.
  */
 @Injectable()

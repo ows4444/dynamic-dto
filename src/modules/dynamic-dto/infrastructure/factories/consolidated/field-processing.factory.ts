@@ -1,5 +1,5 @@
 import type { Provider } from '@nestjs/common';
-import { DiscoveryService } from '@nestjs/core';
+import { DiscoveryService, Reflector } from '@nestjs/core';
 
 // === FIELD PROCESSORS ===
 // Primitive processors
@@ -47,7 +47,9 @@ import { UnionFieldValidator } from '../../../validators/field-validators/specia
 
 // === REGISTRIES & DISCOVERY ===
 import { FieldHandlerRegistry } from '../../registries/field-handler.registry';
+import { FieldValidatorRegistry } from '../../registries/field-validator.registry';
 import { FieldProcessorDiscoveryService } from '../../services/field-processor-discovery.service';
+import { FieldValidatorDiscoveryService } from '../../services/field-validator-discovery.service';
 
 /**
  * Consolidated Field Processing Factory
@@ -66,9 +68,12 @@ export function createFieldProcessingProviders(): Provider[] {
   return [
     // === CORE DISCOVERY & REGISTRY SERVICES ===
     DiscoveryService,
+    Reflector,
     FieldProcessorDiscoveryService,
+    FieldValidatorDiscoveryService,
 
-    // Consolidated registry (replaces separate processor and validator registries)
+    // Separate registries with auto-discovery
+    FieldValidatorRegistry,
     FieldHandlerRegistry,
 
     // Backward compatibility aliases for existing code
@@ -78,7 +83,7 @@ export function createFieldProcessingProviders(): Provider[] {
     },
     {
       provide: 'FieldValidatorRegistry',
-      useExisting: FieldHandlerRegistry,
+      useExisting: FieldValidatorRegistry,
     },
 
     // === STRING PROCESSING INFRASTRUCTURE ===

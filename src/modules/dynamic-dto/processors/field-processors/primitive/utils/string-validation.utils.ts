@@ -1,4 +1,5 @@
-import { IsDefined, IsNotEmpty, IsOptional, IsString, Length, Matches, ValidationOptions } from 'class-validator';
+import type { ValidationOptions } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsOptional, IsString, Length, Matches } from 'class-validator';
 
 /**
  * Shared validation utilities for string field processors.
@@ -7,17 +8,13 @@ import { IsDefined, IsNotEmpty, IsOptional, IsString, Length, Matches, Validatio
  */
 export class StringValidationUtils {
   // Shared regex pattern cache for performance optimization
-  private static readonly REGEX_CACHE = new Map<string, RegExp>();
-  private static readonly MAX_CACHE_SIZE = 1000;
+  private static readonly regexCache = new Map<string, RegExp>();
+  private static readonly maxCacheSize = 1000;
 
   /**
    * Generate common validation decorators for string fields
    */
-  static generateCommonValidationDecorators(
-    isRequired: boolean,
-    parentIsArray: boolean,
-    nullable?: boolean,
-  ): PropertyDecorator[] {
+  static generateCommonValidationDecorators(isRequired: boolean, parentIsArray: boolean, nullable?: boolean): PropertyDecorator[] {
     const decorators: PropertyDecorator[] = [];
     const eachOption: ValidationOptions | undefined = parentIsArray ? { each: true } : undefined;
 
@@ -102,22 +99,22 @@ export class StringValidationUtils {
     }
 
     // Cache compiled regex patterns for performance
-    if (!this.REGEX_CACHE.has(pattern)) {
+    if (!this.regexCache.has(pattern)) {
       // Prevent cache from growing too large
-      if (this.REGEX_CACHE.size >= this.MAX_CACHE_SIZE) {
+      if (this.regexCache.size >= this.maxCacheSize) {
         this.clearRegexCache();
       }
-      this.REGEX_CACHE.set(pattern, new RegExp(pattern));
+      this.regexCache.set(pattern, new RegExp(pattern));
     }
 
-    return this.REGEX_CACHE.get(pattern)!;
+    return this.regexCache.get(pattern)!;
   }
 
   /**
    * Clear the regex cache - can be called periodically or when memory pressure is detected
    */
   static clearRegexCache(): void {
-    this.REGEX_CACHE.clear();
+    this.regexCache.clear();
   }
 
   /**
@@ -125,9 +122,9 @@ export class StringValidationUtils {
    */
   static getCacheStats() {
     return {
-      size: this.REGEX_CACHE.size,
-      maxSize: this.MAX_CACHE_SIZE,
-      keys: Array.from(this.REGEX_CACHE.keys()),
+      size: this.regexCache.size,
+      maxSize: this.maxCacheSize,
+      keys: Array.from(this.regexCache.keys()),
     };
   }
 }
