@@ -53,10 +53,11 @@ export interface TypeCondition {
 }
 
 export const UnionValidationStrategy = {
-  strict: 'strict', // Value must match exactly one type
-  first_match: 'first_match', // Use first matching type
-  best_match: 'best_match', // Use type with highest confidence score
-  all_valid: 'all_valid', // Value must be valid for all types
+  oneOf: 'oneOf', // Value must match exactly one type
+  firstMatch: 'firstMatch', // Use first matching type
+  anyOf: 'anyOf', // Value can match any type
+  allValid: 'allValid', // Value must be valid for all types
+  bestMatch: 'bestMatch', // Use type with highest confidence score
   discriminated: 'discriminated', // Use discriminator property
 } as const;
 
