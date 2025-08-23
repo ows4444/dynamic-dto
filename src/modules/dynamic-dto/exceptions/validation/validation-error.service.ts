@@ -135,7 +135,7 @@ export class ValidationErrorService {
   private deduplicateErrors(errors: BaseValidationError[]): BaseValidationError[] {
     const seen = new Set<string>();
     return errors.filter((error) => {
-      const key = `${error.code}:${error.context?.fieldPath || 'schema'}`;
+      const key = `${error.code}:${error.context?.fieldPath ?? 'schema'}`;
       if (seen.has(key)) {
         return false;
       }

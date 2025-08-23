@@ -50,7 +50,7 @@ export class FieldProcessorDiscoveryService {
       }
 
       // Sort processors by priority (higher priority first)
-      processors.sort((a, b) => (b.metadata.priority || 0) - (a.metadata.priority || 0));
+      processors.sort((a, b) => (b.metadata.priority ?? 0) - (a.metadata.priority ?? 0));
 
       this.logger.log(`Discovered ${processors.length} field processors`);
     } catch (error) {
