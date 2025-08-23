@@ -20,5 +20,6 @@ export interface DynamicDtoModuleOptions {
     enableAlerting?: boolean;
     alertingIntervalMs?: number;
     aggressiveCleanupThreshold?: number;
+    cleanupIntervalMs?: number;
   };
 }

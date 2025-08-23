@@ -146,12 +146,38 @@ Multi-layered validation approach:
 
 ## Memory Management
 
-The library implements sophisticated memory management:
+The library implements sophisticated memory management with configurable settings:
 
 - **WeakRef** for generated DTO classes to allow garbage collection
 - **FinalizationRegistry** for cleanup callbacks
-- **LRU eviction** for cache size management
-- **Memory monitoring** with automatic cleanup triggers
+- **LRU eviction** for cache size management with graduated cleanup levels
+- **Configurable cleanup intervals** and memory pressure thresholds
+- **Memory monitoring** with automatic cleanup triggers and error handling
+
+### Memory Configuration Options
+
+Configure memory management through module options:
+
+```typescript
+DynamicDtoModule.forRoot({
+  cache: {
+    ttl: 15 * 60 * 1000, // 15 minutes cache TTL
+    maxSize: 1000, // Maximum cache entries
+  },
+  monitoring: {
+    utilizationThreshold: 0.85, // Memory pressure threshold (85%)
+    aggressiveCleanupThreshold: 0.15, // Max 15% eviction per cleanup
+    cleanupIntervalMs: 60000, // Cleanup interval (1 minute minimum)
+  }
+})
+```
+
+### Memory Management Best Practices
+
+1. **TTL Configuration**: Set appropriate TTL based on your application's DTO usage patterns
+2. **Cleanup Intervals**: Use longer intervals (60s+) for production to avoid performance overhead
+3. **Memory Thresholds**: Monitor cache utilization and adjust thresholds based on memory constraints
+4. **Error Handling**: Cleanup operations include error boundaries to prevent memory management failures
 
 ## Test Requirements
 

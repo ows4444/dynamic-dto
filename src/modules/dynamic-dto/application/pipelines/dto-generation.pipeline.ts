@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
 import { createHash } from 'crypto';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
@@ -6,6 +6,8 @@ import { FieldHandlerRegistry } from '../../infrastructure/registries/field-hand
 import { classConstructor } from '../../core/types/common.types';
 import { LRUCache } from '../../infrastructure/cache/lru-cache';
 import { CacheMonitorService } from '../../infrastructure/monitoring/cache-monitor.service';
+import { MODULE_OPTIONS_TOKEN } from '../../dynamic-dto.module-definition';
+import { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
 
 /**
  * Weak reference wrapper for generated classes to prevent memory leaks
@@ -31,21 +33,34 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
   private readonly logger = new Logger(DtoGenerationPipeline.name);
   private readonly generatedClasses = new LRUCache<string, WeakClassReference>(500); // Max 500 weak references
   private readonly cleanupInterval: NodeJS.Timeout;
-  private readonly memoryPressureThreshold = 0.8; // 80% cache utilization
-  private readonly ttlMs = 10 * 60 * 1000; // 10 minutes TTL
-  private readonly maxIdleTimeMs = 5 * 60 * 1000; // 5 minutes max idle time
+  private readonly memoryPressureThreshold: number;
+  private readonly ttlMs: number;
+  private readonly maxIdleTimeMs: number;
+  private readonly cleanupIntervalMs: number;
+  private readonly maxEvictionPercentage: number;
 
   constructor(
     private readonly fieldHandlerRegistry: FieldHandlerRegistry,
     @Optional() private readonly cacheMonitor?: CacheMonitorService,
+    @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions = {},
   ) {
+    // Configure memory management settings from options
+    const monitoring = this.options.monitoring || {};
+    const cache = this.options.cache || {};
+
+    this.memoryPressureThreshold = monitoring.utilizationThreshold || 0.85;
+    this.ttlMs = cache.ttl || 15 * 60 * 1000; // 15 minutes TTL
+    this.maxIdleTimeMs = Math.min(this.ttlMs * 0.5, 10 * 60 * 1000); // Max 10 minutes idle
+    this.cleanupIntervalMs = Math.max(60000, this.ttlMs * 0.1); // Min 1 minute, max 10% of TTL
+    this.maxEvictionPercentage = monitoring.aggressiveCleanupThreshold || 0.15; // Max 15% eviction
+
     // Register cache for monitoring if service is available
     this.cacheMonitor?.registerCache('dto-generation-pipeline', this.generatedClasses);
 
-    // Set up periodic cleanup with deterministic TTL-based eviction
+    // Set up periodic cleanup with configurable intervals
     this.cleanupInterval = setInterval(() => {
       this.performDeterministicCleanup();
-    }, 15000); // Clean up every 15 seconds for more aggressive memory management
+    }, this.cleanupIntervalMs);
   }
 
   /**
@@ -302,32 +317,39 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
    * Perform deterministic cleanup with TTL-based eviction and memory pressure detection
    */
   private performDeterministicCleanup(): void {
-    const keysToDelete: string[] = [];
-    const currentTime = Date.now();
+    try {
+      const keysToDelete: string[] = [];
+      const currentTime = Date.now();
 
-    // Iterate through cache to find expired, dead, or idle references
-    for (const [key, weakRef] of this.generatedClasses.entries()) {
-      const age = currentTime - weakRef.timestamp;
-      const idleTime = currentTime - weakRef.lastAccessed;
-      const isExpired = age > this.ttlMs;
-      const isIdle = idleTime > this.maxIdleTimeMs;
-      const isDeadRef = !weakRef.ref.deref();
+      // Iterate through cache to find expired, dead, or idle references
+      for (const [key, weakRef] of this.generatedClasses.entries()) {
+        const age = currentTime - weakRef.timestamp;
+        const idleTime = currentTime - weakRef.lastAccessed;
+        const isExpired = age > this.ttlMs;
+        const isIdle = idleTime > this.maxIdleTimeMs;
+        const isDeadRef = !weakRef.ref.deref();
 
-      if (isExpired || isDeadRef || isIdle) {
-        keysToDelete.push(key);
+        if (isExpired || isDeadRef || isIdle) {
+          keysToDelete.push(key);
+        }
       }
-    }
 
-    // Remove expired/dead/idle references
-    keysToDelete.forEach((key) => {
-      this.generatedClasses.delete(key);
-    });
+      // Remove expired/dead/idle references
+      keysToDelete.forEach((key) => {
+        this.generatedClasses.delete(key);
+      });
 
-    if (keysToDelete.length > 0) {
-      this.logger.debug('Deterministic cleanup completed', {
-        removedCount: keysToDelete.length,
-        remainingSize: this.generatedClasses.size(),
-        memoryUsageBytes: this.generatedClasses.getApproximateMemoryUsage(),
+      if (keysToDelete.length > 0) {
+        this.logger.debug('Deterministic cleanup completed', {
+          removedCount: keysToDelete.length,
+          remainingSize: this.generatedClasses.size(),
+          memoryUsageBytes: this.generatedClasses.getApproximateMemoryUsage(),
+          cleanupReason: 'periodic',
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error during deterministic cleanup', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
@@ -344,64 +366,93 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
   }
 
   /**
-   * Check memory pressure and trigger aggressive cleanup if needed
+   * Check memory pressure and trigger graduated cleanup if needed
    */
   private checkMemoryPressureAndCleanup(): void {
     const utilization = this.generatedClasses.size() / this.generatedClasses.getMaxSize();
 
     if (utilization > this.memoryPressureThreshold) {
-      this.logger.warn('Memory pressure detected, triggering aggressive cleanup', {
+      this.logger.warn('Memory pressure detected, triggering graduated cleanup', {
         utilization: `${Math.round(utilization * 100)}%`,
         currentSize: this.generatedClasses.size(),
         capacity: this.generatedClasses.getMaxSize(),
       });
 
-      // Perform immediate cleanup and reduce TTL temporarily
-      this.performAggressiveCleanup();
+      // Perform graduated cleanup based on pressure level
+      this.performGraduatedCleanup(utilization);
     }
   }
 
   /**
-   * Perform aggressive cleanup by removing least recently used and low-access items
+   * Perform graduated cleanup based on memory pressure level
    */
-  private performAggressiveCleanup(): void {
-    const keysToDelete: string[] = [];
-    const currentTime = Date.now();
+  private performGraduatedCleanup(utilization: number): void {
+    try {
+      const keysToDelete: string[] = [];
+      const currentTime = Date.now();
 
-    // Collect all entries with their access patterns
-    const entries = Array.from(this.generatedClasses.entries())
-      .map(([key, weakRef]) => ({
-        key,
-        weakRef,
-        idleTime: currentTime - weakRef.lastAccessed,
-        accessRate: weakRef.accessCount / Math.max(1, (currentTime - weakRef.timestamp) / 60000), // per minute
-      }))
-      .sort((a, b) => {
-        // Sort by access rate (ascending) then by idle time (descending)
-        const rateDiff = a.accessRate - b.accessRate;
-        return rateDiff !== 0 ? rateDiff : b.idleTime - a.idleTime;
+      // Calculate eviction percentage based on pressure level
+      const pressureLevel = (utilization - this.memoryPressureThreshold) / (1 - this.memoryPressureThreshold);
+      const evictionPercentage = Math.min(this.maxEvictionPercentage, 0.05 + pressureLevel * 0.1); // 5-15% based on pressure
+
+      // Collect all entries with their access patterns
+      const entries = Array.from(this.generatedClasses.entries())
+        .map(([key, weakRef]) => ({
+          key,
+          weakRef,
+          idleTime: currentTime - weakRef.lastAccessed,
+          accessRate: weakRef.accessCount / Math.max(1, (currentTime - weakRef.timestamp) / 60000), // per minute
+          score: this.calculateEvictionScore(weakRef, currentTime),
+        }))
+        .sort((a, b) => a.score - b.score); // Sort by eviction score (lower = more likely to evict)
+
+      // Calculate number of items to remove
+      const itemsToRemove = Math.min(
+        Math.max(1, Math.floor(entries.length * evictionPercentage)),
+        entries.length - Math.floor(this.generatedClasses.getMaxSize() * (this.memoryPressureThreshold - 0.05)),
+      );
+
+      // Remove lowest scored entries
+      for (let i = 0; i < itemsToRemove && i < entries.length; i++) {
+        const entry = entries[i];
+        if (entry) {
+          keysToDelete.push(entry.key);
+        }
+      }
+
+      // Remove selected references
+      keysToDelete.forEach((key) => {
+        this.generatedClasses.delete(key);
       });
 
-    // Remove bottom 25% of entries or until we're under threshold
-    const targetSize = Math.floor(this.generatedClasses.getMaxSize() * (this.memoryPressureThreshold - 0.1));
-    const itemsToRemove = Math.min(Math.max(1, entries.length - targetSize), Math.ceil(entries.length * 0.25));
-
-    for (let i = 0; i < itemsToRemove; i++) {
-      const entry = entries[i];
-      if (entry) {
-        keysToDelete.push(entry.key);
-      }
+      this.logger.warn('Graduated cleanup completed', {
+        removedCount: keysToDelete.length,
+        evictionPercentage: `${Math.round(evictionPercentage * 100)}%`,
+        pressureLevel: `${Math.round(pressureLevel * 100)}%`,
+        remainingSize: this.generatedClasses.size(),
+        newUtilization: `${Math.round((this.generatedClasses.size() / this.generatedClasses.getMaxSize()) * 100)}%`,
+      });
+    } catch (error) {
+      this.logger.error('Error during graduated cleanup', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
+  }
 
-    // Remove selected references
-    keysToDelete.forEach((key) => {
-      this.generatedClasses.delete(key);
-    });
+  /**
+   * Calculate eviction score for a weak reference (lower score = more likely to evict)
+   */
+  private calculateEvictionScore(weakRef: WeakClassReference, currentTime: number): number {
+    const age = currentTime - weakRef.timestamp;
+    const idleTime = currentTime - weakRef.lastAccessed;
+    const accessRate = weakRef.accessCount / Math.max(1, age / 60000); // per minute
 
-    this.logger.warn('Aggressive cleanup completed', {
-      removedCount: keysToDelete.length,
-      remainingSize: this.generatedClasses.size(),
-      newUtilization: `${Math.round((this.generatedClasses.size() / this.generatedClasses.getMaxSize()) * 100)}%`,
-    });
+    // Score based on: access frequency (40%), idle time (30%), age (20%), access count (10%)
+    const accessFrequencyScore = Math.max(0, 1 - accessRate / 10) * 0.4;
+    const idleTimeScore = Math.min(1, idleTime / this.maxIdleTimeMs) * 0.3;
+    const ageScore = Math.min(1, age / this.ttlMs) * 0.2;
+    const accessCountScore = Math.max(0, 1 - weakRef.accessCount / 100) * 0.1;
+
+    return accessFrequencyScore + idleTimeScore + ageScore + accessCountScore;
   }
 }
