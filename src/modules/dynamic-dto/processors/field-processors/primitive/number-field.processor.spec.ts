@@ -126,8 +126,8 @@ describe('NumberFieldProcessor', () => {
       const transformations = processor.getTypeSpecificTransformations(basicNumberSchema);
 
       expect(transformations).toHaveLength(1);
-      expect(transformations[0].name).toBe('type_coercion');
-      expect(transformations[0].order).toBe(30);
+      expect(transformations[0]?.name).toBe('type_coercion');
+      expect(transformations[0]?.order).toBe(30);
     });
 
     it('should include precision rounding when precision is specified', () => {
@@ -139,8 +139,8 @@ describe('NumberFieldProcessor', () => {
       const transformations = processor.getTypeSpecificTransformations(precisionSchema);
 
       expect(transformations).toHaveLength(2);
-      expect(transformations[1].name).toBe('precision_rounding');
-      expect(transformations[1].order).toBe(40);
+      expect(transformations[1]?.name).toBe('precision_rounding');
+      expect(transformations[1]?.order).toBe(40);
     });
 
     it('should include precision rounding when scale is specified', () => {
@@ -152,7 +152,7 @@ describe('NumberFieldProcessor', () => {
       const transformations = processor.getTypeSpecificTransformations(scaleSchema);
 
       expect(transformations).toHaveLength(2);
-      expect(transformations[1].name).toBe('precision_rounding');
+      expect(transformations[1]?.name).toBe('precision_rounding');
     });
 
     it('should include range clamping when clamp is enabled with min/max', () => {
@@ -166,8 +166,8 @@ describe('NumberFieldProcessor', () => {
       const transformations = processor.getTypeSpecificTransformations(clampSchema);
 
       expect(transformations).toHaveLength(2);
-      expect(transformations[1].name).toBe('range_clamping');
-      expect(transformations[1].order).toBe(50);
+      expect(transformations[1]?.name).toBe('range_clamping');
+      expect(transformations[1]?.order).toBe(50);
     });
   });
 
@@ -176,36 +176,36 @@ describe('NumberFieldProcessor', () => {
 
     beforeEach(() => {
       const transformations = processor.getTypeSpecificTransformations(basicNumberSchema);
-      transformation = transformations[0].transform;
+      transformation = transformations[0]?.transform;
     });
 
     it('should preserve null and undefined values', () => {
-      expect(transformation({ value: null })).toBeNull();
-      expect(transformation({ value: undefined })).toBeUndefined();
+      expect(transformation?.({ value: null, obj: {}, key: 'test' })).toBeNull();
+      expect(transformation?.({ value: undefined, obj: {}, key: 'test' })).toBeUndefined();
     });
 
     it('should convert valid number strings to numbers', () => {
-      expect(transformation({ value: '123' })).toBe(123);
-      expect(transformation({ value: '123.45' })).toBe(123.45);
-      expect(transformation({ value: '-67' })).toBe(-67);
-      expect(transformation({ value: '0' })).toBe(0);
-      expect(transformation({ value: '  42  ' })).toBe(42);
+      expect(transformation?.({ value: '123', obj: {}, key: 'test' })).toBe(123);
+      expect(transformation?.({ value: '123.45', obj: {}, key: 'test' })).toBe(123.45);
+      expect(transformation?.({ value: '-67', obj: {}, key: 'test' })).toBe(-67);
+      expect(transformation?.({ value: '0', obj: {}, key: 'test' })).toBe(0);
+      expect(transformation?.({ value: '  42  ', obj: {}, key: 'test' })).toBe(42);
     });
 
     it('should not convert invalid number strings', () => {
-      expect(transformation({ value: 'abc' })).toBe('abc');
-      expect(transformation({ value: '123abc' })).toBe('123abc');
-      expect(transformation({ value: '' })).toBe('');
+      expect(transformation?.({ value: 'abc', obj: {}, key: 'test' })).toBe('abc');
+      expect(transformation?.({ value: '123abc', obj: {}, key: 'test' })).toBe('123abc');
+      expect(transformation?.({ value: '', obj: {}, key: 'test' })).toBe('');
     });
 
     it('should convert boolean values to numbers', () => {
-      expect(transformation({ value: true })).toBe(1);
-      expect(transformation({ value: false })).toBe(0);
+      expect(transformation?.({ value: true, obj: {}, key: 'test' })).toBe(1);
+      expect(transformation?.({ value: false, obj: {}, key: 'test' })).toBe(0);
     });
 
     it('should preserve already numeric values', () => {
-      expect(transformation({ value: 123 })).toBe(123);
-      expect(transformation({ value: 123.45 })).toBe(123.45);
+      expect(transformation?.({ value: 123, obj: {}, key: 'test' })).toBe(123);
+      expect(transformation?.({ value: 123.45, obj: {}, key: 'test' })).toBe(123.45);
     });
   });
 
@@ -217,10 +217,10 @@ describe('NumberFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(scaleSchema);
-      const precisionTransform = transformations[1].transform;
+      const precisionTransform = transformations[1]?.transform;
 
-      expect(precisionTransform({ value: 123.456789 })).toBe(123.46);
-      expect(precisionTransform({ value: 123.454 })).toBe(123.45);
+      expect(precisionTransform?.({ value: 123.456789, obj: {}, key: 'test' })).toBe(123.46);
+      expect(precisionTransform?.({ value: 123.454, obj: {}, key: 'test' })).toBe(123.45);
     });
 
     it('should apply precision formatting', () => {
@@ -230,10 +230,10 @@ describe('NumberFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(precisionSchema);
-      const precisionTransform = transformations[1].transform;
+      const precisionTransform = transformations[1]?.transform;
 
-      expect(precisionTransform({ value: 123.456789 })).toBe(123);
-      expect(precisionTransform({ value: 1.23456 })).toBe(1.23);
+      expect(precisionTransform?.({ value: 123.456789, obj: {}, key: 'test' })).toBe(123);
+      expect(precisionTransform?.({ value: 1.23456, obj: {}, key: 'test' })).toBe(1.23);
     });
 
     it('should not transform non-numeric values', () => {
@@ -243,9 +243,9 @@ describe('NumberFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(scaleSchema);
-      const precisionTransform = transformations[1].transform;
+      const precisionTransform = transformations[1]?.transform;
 
-      expect(precisionTransform({ value: 'abc' })).toBe('abc');
+      expect(precisionTransform?.({ value: 'abc', obj: {}, key: 'test' })).toBe('abc');
     });
   });
 
@@ -259,11 +259,11 @@ describe('NumberFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(clampSchema);
-      const clampTransform = transformations[1].transform;
+      const clampTransform = transformations[1]?.transform;
 
-      expect(clampTransform({ value: -10 })).toBe(0);
-      expect(clampTransform({ value: 150 })).toBe(100);
-      expect(clampTransform({ value: 50 })).toBe(50);
+      expect(clampTransform?.({ value: -10, obj: {}, key: 'test' })).toBe(0);
+      expect(clampTransform?.({ value: 150, obj: {}, key: 'test' })).toBe(100);
+      expect(clampTransform?.({ value: 50, obj: {}, key: 'test' })).toBe(50);
     });
 
     it('should clamp only to min when max is not specified', () => {
@@ -274,10 +274,10 @@ describe('NumberFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(minOnlySchema);
-      const clampTransform = transformations[1].transform;
+      const clampTransform = transformations[1]?.transform;
 
-      expect(clampTransform({ value: -10 })).toBe(0);
-      expect(clampTransform({ value: 150 })).toBe(150);
+      expect(clampTransform?.({ value: -10, obj: {}, key: 'test' })).toBe(0);
+      expect(clampTransform?.({ value: 150, obj: {}, key: 'test' })).toBe(150);
     });
 
     it('should clamp only to max when min is not specified', () => {
@@ -288,10 +288,10 @@ describe('NumberFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(maxOnlySchema);
-      const clampTransform = transformations[1].transform;
+      const clampTransform = transformations[1]?.transform;
 
-      expect(clampTransform({ value: -10 })).toBe(-10);
-      expect(clampTransform({ value: 150 })).toBe(100);
+      expect(clampTransform?.({ value: -10, obj: {}, key: 'test' })).toBe(-10);
+      expect(clampTransform?.({ value: 150, obj: {}, key: 'test' })).toBe(100);
     });
 
     it('should not clamp non-numeric values', () => {
@@ -303,9 +303,9 @@ describe('NumberFieldProcessor', () => {
       };
 
       const transformations = processor.getTypeSpecificTransformations(clampSchema);
-      const clampTransform = transformations[1].transform;
+      const clampTransform = transformations[1]?.transform;
 
-      expect(clampTransform({ value: 'abc' })).toBe('abc');
+      expect(clampTransform?.({ value: 'abc', obj: {}, key: 'test' })).toBe('abc');
     });
   });
 

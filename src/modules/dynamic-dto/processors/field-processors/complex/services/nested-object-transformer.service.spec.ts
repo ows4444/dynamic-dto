@@ -31,6 +31,7 @@ describe('NestedObjectTransformerService', () => {
     it('should return null when schema has no properties', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
@@ -111,6 +112,7 @@ describe('NestedObjectTransformerService', () => {
     it('should not generate nested class when no properties', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
@@ -130,7 +132,7 @@ describe('NestedObjectTransformerService', () => {
               name: { type: FieldType.string, expose: true },
             },
           },
-          items: { type: FieldType.array, expose: true },
+          items: { type: FieldType.array, expose: true, items: [] },
         },
       };
 
@@ -143,6 +145,7 @@ describe('NestedObjectTransformerService', () => {
     it('should return original value when no properties in schema', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
       const input = { any: 'value' };
@@ -160,10 +163,10 @@ describe('NestedObjectTransformerService', () => {
         },
       };
 
-      expect(service.validateNestedStructure(null, schema)).toBeNull();
-      expect(service.validateNestedStructure(undefined, schema)).toBeUndefined();
-      expect(service.validateNestedStructure('string', schema)).toBe('string');
-      expect(service.validateNestedStructure(123, schema)).toBe(123);
+      expect(service.validateNestedStructure(null as unknown as Record<string, unknown>, schema)).toBeNull();
+      expect(service.validateNestedStructure(undefined as unknown as Record<string, unknown>, schema)).toBeUndefined();
+      expect(service.validateNestedStructure('string' as unknown as Record<string, unknown>, schema)).toBe('string');
+      expect(service.validateNestedStructure(123 as unknown as Record<string, unknown>, schema)).toBe(123);
     });
 
     it('should create copy of input object', () => {
@@ -189,6 +192,7 @@ describe('NestedObjectTransformerService', () => {
           name: { type: FieldType.string, expose: true },
           profile: {
             type: FieldType.object,
+            properties: { theme: { type: FieldType.string, expose: true } },
             expose: true,
             default: { theme: 'light' },
           },
@@ -235,6 +239,7 @@ describe('NestedObjectTransformerService', () => {
         properties: {
           profile: {
             type: FieldType.object,
+            properties: { theme: { type: FieldType.string, expose: true } },
             expose: true,
             default: { theme: 'light' },
           },
@@ -256,6 +261,10 @@ describe('NestedObjectTransformerService', () => {
         properties: {
           config: {
             type: FieldType.object,
+            properties: {
+              api: { type: FieldType.object, properties: { endpoint: { type: FieldType.string, expose: true } }, expose: true },
+              ui: { type: FieldType.object, properties: { theme: { type: FieldType.string, expose: true } }, expose: true },
+            },
             expose: true,
             default: {
               api: { endpoint: 'localhost' },
@@ -283,6 +292,7 @@ describe('NestedObjectTransformerService', () => {
         properties: {
           optional: {
             type: FieldType.object,
+            properties: { value: { type: FieldType.string, expose: true } },
             expose: true,
             default: { value: 'default' },
           },
@@ -303,9 +313,10 @@ describe('NestedObjectTransformerService', () => {
           settings: {
             type: FieldType.object,
             expose: true,
+            properties: { theme: { type: FieldType.string, expose: true } },
             default: { theme: 'light' },
           },
-          tags: { type: FieldType.array, expose: true, default: [] },
+          tags: { type: FieldType.array, expose: true, default: [], items: [] },
         },
         required: ['name', 'settings', 'tags'],
       };
@@ -339,6 +350,7 @@ describe('NestedObjectTransformerService', () => {
         properties: {
           config: {
             type: FieldType.object,
+            properties: { fallback: { type: FieldType.boolean, expose: true } },
             expose: true,
             default: { fallback: true },
           },
@@ -359,6 +371,7 @@ describe('NestedObjectTransformerService', () => {
           profile: {
             type: FieldType.object,
             expose: true,
+            properties: {},
             // No default value
           },
         },

@@ -46,9 +46,11 @@ import { UnionFieldValidator } from '../../../validators/field-validators/specia
 
 // === REGISTRIES & DISCOVERY ===
 import { FieldHandlerRegistry } from '../../registries/field-handler.registry';
+import { FieldProcessorRegistry } from '../../registries/field-processor.registry';
 import { FieldValidatorRegistry } from '../../registries/field-validator.registry';
 import { FieldProcessorDiscoveryService } from '../../services/field-processor-discovery.service';
 import { FieldValidatorDiscoveryService } from '../../services/field-validator-discovery.service';
+import { FieldHandlerDiscoveryService } from '../../services/field-handler-discovery.service';
 
 /**
  * Consolidated Field Processing Factory
@@ -70,8 +72,10 @@ export function createFieldProcessingProviders(): Provider[] {
     Reflector,
     FieldProcessorDiscoveryService,
     FieldValidatorDiscoveryService,
+    FieldHandlerDiscoveryService,
 
     // Separate registries with auto-discovery
+    FieldProcessorRegistry,
     FieldValidatorRegistry,
     FieldHandlerRegistry,
 

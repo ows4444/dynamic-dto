@@ -19,6 +19,7 @@ describe('ObjectValidationService', () => {
     it('should handle objects without properties schema', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
       const input = { name: 'John', age: 30 };
@@ -92,7 +93,7 @@ describe('ObjectValidationService', () => {
         type: FieldType.object,
         expose: true,
         properties: {
-          tags: { type: FieldType.array, expose: true },
+          tags: { type: FieldType.array, expose: true, items: [] },
         },
         required: ['tags'],
       };
@@ -229,7 +230,7 @@ describe('ObjectValidationService', () => {
         type: FieldType.object,
         expose: true,
         properties: {
-          items: { type: FieldType.array, expose: true },
+          items: { type: FieldType.array, expose: true , items: []},
         },
       };
       const input = { items: [1, 2, 3] };
@@ -243,7 +244,7 @@ describe('ObjectValidationService', () => {
         type: FieldType.object,
         expose: true,
         properties: {
-          items: { type: FieldType.array, expose: true },
+          items: { type: FieldType.array, expose: true, items: [] },
         },
       };
       const input = { items: 'not-array' };
@@ -258,7 +259,7 @@ describe('ObjectValidationService', () => {
         type: FieldType.object,
         expose: true,
         properties: {
-          profile: { type: FieldType.object, expose: true },
+          profile: { type: FieldType.object, expose: true, properties: {} },
         },
       };
       const input = { profile: { name: 'John' } };
@@ -272,7 +273,7 @@ describe('ObjectValidationService', () => {
         type: FieldType.object,
         expose: true,
         properties: {
-          profile: { type: FieldType.object, expose: true },
+          profile: { type: FieldType.object, expose: true, properties: {} },
         },
       };
       const input = { profile: [] };
@@ -285,7 +286,7 @@ describe('ObjectValidationService', () => {
         type: FieldType.object,
         expose: true,
         properties: {
-          profile: { type: FieldType.object, expose: true },
+          profile: { type: FieldType.object, expose: true, properties: {} },
         },
       };
       const input = { profile: 'not-object' };

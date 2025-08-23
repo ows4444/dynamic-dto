@@ -80,8 +80,8 @@ describe('BooleanFieldProcessor', () => {
 
       // Assert
       expect(transformations).toHaveLength(1);
-      expect(transformations[0].name).toBe('boolean_coercion');
-      expect(transformations[0].order).toBe(30);
+      expect(transformations[0]?.name).toBe('boolean_coercion');
+      expect(transformations[0]?.order).toBe(30);
     });
 
     describe('boolean coercion transformation', () => {
@@ -89,7 +89,7 @@ describe('BooleanFieldProcessor', () => {
 
       beforeEach(() => {
         const transformations = processor.getTypeSpecificTransformations(mockBooleanSchema);
-        transformation = transformations[0].transform;
+        transformation = transformations[0]?.transform;
       });
 
       it('should handle custom true values', () => {

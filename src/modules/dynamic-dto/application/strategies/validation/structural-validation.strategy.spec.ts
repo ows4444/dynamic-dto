@@ -164,11 +164,11 @@ describe('StructuralValidationStrategy', () => {
       // Assert
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(2);
-      expect(result.issues[0].message).toBe('Enhanced validation error');
-      expect(result.issues[1].message).toBe('Base validation warning');
-      expect(result.summary.totalIssues).toBe(2);
-      expect(result.summary.errorCount).toBe(1);
-      expect(result.summary.warningCount).toBe(1);
+      expect(result.issues[0]?.message).toBe('Enhanced validation error');
+      expect(result.issues[1]?.message).toBe('Base validation warning');
+      expect(result.summary?.totalIssues).toBe(2);
+      expect(result.summary?.errorCount).toBe(1);
+      expect(result.summary?.warningCount).toBe(1);
     });
 
     it('should handle enhanced validation failure', () => {
@@ -218,7 +218,7 @@ describe('StructuralValidationStrategy', () => {
       // Assert
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
-      expect(result.issues[0].code).toBe('STRUCTURE_ERROR');
+      expect(result.issues[0]?.code).toBe('STRUCTURE_ERROR');
     });
 
     it('should handle base validation failure', () => {
@@ -268,7 +268,7 @@ describe('StructuralValidationStrategy', () => {
       // Assert
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
-      expect(result.issues[0].code).toBe('BASE_ERROR');
+      expect(result.issues[0]?.code).toBe('BASE_ERROR');
     });
 
     it('should execute without context parameter', () => {

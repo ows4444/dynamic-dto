@@ -68,6 +68,7 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should return true for object field schemas', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
@@ -77,7 +78,7 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should return false for non-object field schemas', () => {
       expect(processor.canProcess({ type: FieldType.string, expose: true })).toBe(false);
       expect(processor.canProcess({ type: FieldType.number, expose: true })).toBe(false);
-      expect(processor.canProcess({ type: FieldType.array, expose: true })).toBe(false);
+      expect(processor.canProcess({ type: FieldType.array, expose: true, items: [] })).toBe(false);
     });
   });
 
@@ -85,6 +86,7 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should generate required decorators for required fields', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
@@ -98,6 +100,7 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should generate optional decorators for optional fields', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
@@ -111,6 +114,7 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should generate decorators with each option for array contexts', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
@@ -136,23 +140,24 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should return transformation functions in correct order', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
       const transformations = processor.getTypeSpecificTransformations(schema);
       expect(transformations).toHaveLength(5); // Without nested class transformation
 
-      expect(transformations[0].order).toBe(10);
-      expect(transformations[0].name).toBe('circular_reference_check');
+      expect(transformations[0]?.order).toBe(10);
+      expect(transformations[0]?.name).toBe('circular_reference_check');
 
-      expect(transformations[1].order).toBe(20);
-      expect(transformations[1].name).toBe('deep_validation');
+      expect(transformations[1]?.order).toBe(20);
+      expect(transformations[1]?.name).toBe('deep_validation');
 
-      expect(transformations[2].order).toBe(40);
-      expect(transformations[2].name).toBe('property_filtering');
+      expect(transformations[2]?.order).toBe(40);
+      expect(transformations[2]?.name).toBe('property_filtering');
 
-      expect(transformations[3].order).toBe(60);
-      expect(transformations[3].name).toBe('property_transformation');
+      expect(transformations[3]?.order).toBe(60);
+      expect(transformations[3]?.name).toBe('property_transformation');
     });
 
     it('should include nested class validation when properties exist', () => {
@@ -177,6 +182,7 @@ describe('ObjectFieldProcessorComposite', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
         expose: true,
+        properties: {},
         additionalProperties: false,
       };
 
@@ -189,6 +195,7 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should not include additional properties removal by default', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 
@@ -201,6 +208,7 @@ describe('ObjectFieldProcessorComposite', () => {
       it('should execute circular reference detection', () => {
         const schema: ObjectFieldSchema = {
           type: FieldType.object,
+          properties: {},
           expose: true,
         };
         const inputValue = { test: 'value' };
@@ -208,7 +216,11 @@ describe('ObjectFieldProcessorComposite', () => {
         const transformations = processor.getTypeSpecificTransformations(schema);
         const circularRefTransform = transformations.find((t) => t.name === 'circular_reference_check');
 
-        circularRefTransform?.transform({ value: inputValue });
+        circularRefTransform?.transform({
+          value: inputValue,
+          obj: {},
+          key: '',
+        });
         expect(mockCircularReferenceDetector.detectAndHandleCircularReferences).toHaveBeenCalledWith(
           inputValue,
           10, // default max depth
@@ -218,6 +230,7 @@ describe('ObjectFieldProcessorComposite', () => {
       it('should execute deep validation', () => {
         const schema: ObjectFieldSchema = {
           type: FieldType.object,
+          properties: {},
           expose: true,
         };
         const inputValue = { test: 'value' };
@@ -225,13 +238,18 @@ describe('ObjectFieldProcessorComposite', () => {
         const transformations = processor.getTypeSpecificTransformations(schema);
         const validationTransform = transformations.find((t) => t.name === 'deep_validation');
 
-        validationTransform?.transform({ value: inputValue });
+        validationTransform?.transform({
+          value: inputValue,
+          obj: {},
+          key: '',
+        });
         expect(mockObjectValidation.performDeepValidation).toHaveBeenCalledWith(inputValue, schema);
       });
 
       it('should execute property filtering', () => {
         const schema: ObjectFieldSchema = {
           type: FieldType.object,
+          properties: {},
           expose: true,
         };
         const inputValue = { test: 'value' };
@@ -239,13 +257,18 @@ describe('ObjectFieldProcessorComposite', () => {
         const transformations = processor.getTypeSpecificTransformations(schema);
         const filteringTransform = transformations.find((t) => t.name === 'property_filtering');
 
-        filteringTransform?.transform({ value: inputValue });
+        filteringTransform?.transform({
+          value: inputValue,
+          obj: {},
+          key: '',
+        });
         expect(mockPropertyFiltering.filterPropertiesByPermissions).toHaveBeenCalledWith(inputValue, schema);
       });
 
       it('should skip transformations for non-object values', () => {
         const schema: ObjectFieldSchema = {
           type: FieldType.object,
+          properties: {},
           expose: true,
         };
 
@@ -253,18 +276,27 @@ describe('ObjectFieldProcessorComposite', () => {
 
         // Test with null
         const circularRefTransform = transformations.find((t) => t.name === 'circular_reference_check');
-        const result1 = circularRefTransform?.transform({ value: null });
+        const result1 = circularRefTransform?.transform({
+          value: null,
+          obj: {},
+          key: '',
+        });
         expect(result1).toBeNull();
         expect(mockCircularReferenceDetector.detectAndHandleCircularReferences).not.toHaveBeenCalled();
 
         // Test with string
-        const result2 = circularRefTransform?.transform({ value: 'string' });
+        const result2 = circularRefTransform?.transform({
+          value: 'string',
+          obj: {},
+          key: '',
+        });
         expect(result2).toBe('string');
       });
 
       it('should use transformation conditions correctly', () => {
         const schema: ObjectFieldSchema = {
           type: FieldType.object,
+          properties: {},
           expose: true,
         };
 
@@ -272,12 +304,36 @@ describe('ObjectFieldProcessorComposite', () => {
         const circularRefTransform = transformations.find((t) => t.name === 'circular_reference_check');
 
         // Condition should return true for objects
-        expect(circularRefTransform?.condition?.(schema, { value: {} })).toBe(true);
+        expect(
+          circularRefTransform?.condition?.(schema, {
+            value: {},
+            obj: {},
+            key: '',
+          }),
+        ).toBe(true);
 
         // Condition should return false for non-objects
-        expect(circularRefTransform?.condition?.(schema, { value: null })).toBe(false);
-        expect(circularRefTransform?.condition?.(schema, { value: 'string' })).toBe(false);
-        expect(circularRefTransform?.condition?.(schema, { value: 123 })).toBe(false);
+        expect(
+          circularRefTransform?.condition?.(schema, {
+            value: null,
+            obj: {},
+            key: '',
+          }),
+        ).toBe(false);
+        expect(
+          circularRefTransform?.condition?.(schema, {
+            value: 'string',
+            obj: {},
+            key: '',
+          }),
+        ).toBe(false);
+        expect(
+          circularRefTransform?.condition?.(schema, {
+            value: 123,
+            obj: {},
+            key: '',
+          }),
+        ).toBe(false);
       });
     });
   });
@@ -304,6 +360,7 @@ describe('ObjectFieldProcessorComposite', () => {
     it('should not add nested class decorator when none returned', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
 

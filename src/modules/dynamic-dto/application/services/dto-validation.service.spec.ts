@@ -6,6 +6,7 @@ import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity
 import { FieldType } from '../../core/types/field.types';
 import * as classValidator from 'class-validator';
 import * as classTransformer from 'class-transformer';
+import { ValidationResult } from '../../core';
 
 // Mock class-validator and class-transformer
 jest.mock('class-validator');
@@ -63,6 +64,7 @@ describe('DtoValidationService', () => {
       // Arrange
       const mockValidationResult = {
         isValid: true,
+        issues: [],
         errors: [],
       };
       validationPipeline.validate.mockReturnValue(mockValidationResult);
@@ -80,8 +82,9 @@ describe('DtoValidationService', () => {
 
     it('should return invalid result when schema fails validation', () => {
       // Arrange
-      const mockValidationResult = {
+      const mockValidationResult: ValidationResult = {
         isValid: false,
+        issues: [],
         errors: ['Invalid field configuration', { message: 'Field type mismatch' }],
       };
       validationPipeline.validate.mockReturnValue(mockValidationResult);
@@ -92,18 +95,19 @@ describe('DtoValidationService', () => {
       // Assert
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(2);
-      expect(result.issues[0].message).toBe('Invalid field configuration');
-      expect(result.issues[1].message).toBe('Field type mismatch');
-      expect(result.issues[0].severity).toBe('error');
-      expect(result.issues[0].code).toBe('SCHEMA_VALIDATION_ERROR');
+      expect(result.issues[0]?.message).toBe('Invalid field configuration');
+      expect(result.issues[1]?.message).toBe('Field type mismatch');
+      expect(result.issues[0]?.severity).toBe('error');
+      expect(result.issues[0]?.code).toBe('SCHEMA_VALIDATION_ERROR');
       expect(result.summary?.totalIssues).toBe(2);
       expect(result.summary?.errorCount).toBe(2);
     });
 
     it('should handle undefined errors in validation result', () => {
       // Arrange
-      const mockValidationResult = {
+      const mockValidationResult: ValidationResult = {
         isValid: false,
+        issues: [],
         errors: [{ message: undefined }],
       };
       validationPipeline.validate.mockReturnValue(mockValidationResult);
@@ -113,7 +117,7 @@ describe('DtoValidationService', () => {
 
       // Assert
       expect(result.isValid).toBe(false);
-      expect(result.issues[0].message).toBe('Unknown validation error');
+      expect(result.issues[0]?.message).toBe('Unknown validation error');
     });
   });
 
@@ -124,7 +128,7 @@ describe('DtoValidationService', () => {
       const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
       const schemas = [schema1, schema2];
 
-      validationPipeline.validate.mockReturnValueOnce({ isValid: true, errors: [] }).mockReturnValueOnce({ isValid: false, errors: ['Invalid schema'] });
+      validationPipeline.validate.mockReturnValueOnce({ isValid: true, issues: [], errors: [] }).mockReturnValueOnce({ isValid: false, errors: ['Invalid schema'] });
 
       // Act
       const result = service.validateSchemas(schemas);
@@ -165,7 +169,7 @@ describe('DtoValidationService', () => {
       expect(result.data).toBeDefined();
       expect(result.issues).toEqual([]);
       expect(result.errors).toEqual([]);
-      expect(result.summary.totalIssues).toBe(0);
+      expect(result.summary?.totalIssues).toBe(0);
     });
 
     it('should return invalid result when data fails validation', async () => {
@@ -191,12 +195,12 @@ describe('DtoValidationService', () => {
       expect(result.isValid).toBe(false);
       expect(result.data).toBeUndefined();
       expect(result.issues).toHaveLength(2);
-      expect(result.issues[0].message).toBe('name should not be empty');
-      expect(result.issues[0].fieldPath).toBe('name');
-      expect(result.issues[0].severity).toBe('error');
-      expect(result.issues[0].code).toBe('VALIDATION_ERROR');
-      expect(result.issues[1].message).toBe('age must be at least 0');
-      expect(result.summary.errorCount).toBe(2);
+      expect(result.issues[0]?.message).toBe('name should not be empty');
+      expect(result.issues[0]?.fieldPath).toBe('name');
+      expect(result.issues[0]?.severity).toBe('error');
+      expect(result.issues[0]?.code).toBe('VALIDATION_ERROR');
+      expect(result.issues[1]?.message).toBe('age must be at least 0');
+      expect(result.summary?.errorCount).toBe(2);
     });
 
     it('should handle validation errors with missing constraints', async () => {
@@ -215,8 +219,8 @@ describe('DtoValidationService', () => {
 
       // Assert
       expect(result.isValid).toBe(false);
-      expect(result.issues[0].message).toBe('Validation failed');
-      expect(result.issues[0].constraint).toBe('validation_failed');
+      expect(result.issues[0]?.message).toBe('Validation failed');
+      expect(result.issues[0]?.constraint).toBe('validation_failed');
     });
 
     it('should handle exceptions during validation', async () => {
@@ -232,9 +236,9 @@ describe('DtoValidationService', () => {
       // Assert
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
-      expect(result.issues[0].message).toBe('Transformation failed');
-      expect(result.issues[0].code).toBe('VALIDATION_EXCEPTION');
-      expect(result.summary.errorCount).toBe(1);
+      expect(result.issues[0]?.message).toBe('Transformation failed');
+      expect(result.issues[0]?.code).toBe('VALIDATION_EXCEPTION');
+      expect(result.summary?.errorCount).toBe(1);
     });
 
     it('should handle non-Error exceptions', async () => {
@@ -248,8 +252,8 @@ describe('DtoValidationService', () => {
 
       // Assert
       expect(result.isValid).toBe(false);
-      expect(result.issues[0].message).toBe('Unknown error');
-      expect(result.issues[0].code).toBe('VALIDATION_EXCEPTION');
+      expect(result.issues[0]?.message).toBe('Unknown error');
+      expect(result.issues[0]?.code).toBe('VALIDATION_EXCEPTION');
     });
   });
 });

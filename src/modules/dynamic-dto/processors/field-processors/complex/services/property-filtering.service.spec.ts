@@ -33,6 +33,7 @@ describe('PropertyFilteringService', () => {
     it('should handle empty objects', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
       const input = {};
@@ -95,6 +96,7 @@ describe('PropertyFilteringService', () => {
     it('should handle empty properties schema', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
       const input = { any: 'value', should: 'remain' };
@@ -226,6 +228,7 @@ describe('PropertyFilteringService', () => {
     it('should handle empty objects', () => {
       const schema: ObjectFieldSchema = {
         type: FieldType.object,
+        properties: {},
         expose: true,
       };
       const input = {};
@@ -242,8 +245,9 @@ describe('PropertyFilteringService', () => {
           string: { type: FieldType.string, expose: true },
           number: { type: FieldType.number, expose: true },
           boolean: { type: FieldType.boolean, expose: true },
-          array: { type: FieldType.array, expose: true },
-          nested: { type: FieldType.object, expose: true },
+
+          array: { type: FieldType.array, expose: true , items: { type: FieldType.number, expose: true }},
+          nested: { type: FieldType.object, expose: true, properties: { prop: { type: FieldType.string, expose: true } } },
         },
       };
       const input = {
