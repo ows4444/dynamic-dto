@@ -187,7 +187,7 @@ describe('DateFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('DATE_INVALID_TIMEZONE');
-      expect(result.errors?.[0]?.message).toBe('Invalid timezone: Invalid/Timezone');
+      expect(result.errors?.[0]?.message).toBe("Field 'test.field' Invalid timezone: Invalid/Timezone");
     });
 
     it('should fail validation with completely invalid timezone', () => {
@@ -289,7 +289,7 @@ describe('DateFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('DATE_CONFLICTING_CONSTRAINTS');
-      expect(result.errors?.[0]?.message).toBe('Cannot validate both future and past simultaneously');
+      expect(result.errors?.[0]?.message).toBe("Field 'test.field' Cannot validate both future and past simultaneously");
     });
 
     it('should pass validation with only excludeDates', () => {
@@ -345,7 +345,7 @@ describe('DateFieldValidator', () => {
       expect(result.errors).toHaveLength(0);
       expect(result.warnings).toHaveLength(1);
       expect(result.warnings?.[0]?.code).toBe('DATE_CONFLICTING_INCLUDE_EXCLUDE');
-      expect(result.warnings?.[0]?.message).toBe('Some dates appear in both include and exclude lists');
+      expect(result.warnings?.[0]?.message).toBe("Field 'test.field' Some dates appear in both include and exclude lists");
     });
 
     it('should warn when multiple dates conflict between include and exclude', () => {
