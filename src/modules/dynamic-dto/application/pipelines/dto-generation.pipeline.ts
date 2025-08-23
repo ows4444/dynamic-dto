@@ -45,14 +45,14 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
     @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions = {},
   ) {
     // Configure memory management settings from options
-    const monitoring = this.options.monitoring || {};
-    const cache = this.options.cache || {};
+    const monitoring = this.options.monitoring ?? {};
+    const cache = this.options.cache ?? {};
 
-    this.memoryPressureThreshold = monitoring.utilizationThreshold || 0.85;
-    this.ttlMs = cache.ttl || 15 * 60 * 1000; // 15 minutes TTL
+    this.memoryPressureThreshold = monitoring.utilizationThreshold ?? 0.85;
+    this.ttlMs = cache.ttl ?? 15 * 60 * 1000; // 15 minutes TTL
     this.maxIdleTimeMs = Math.min(this.ttlMs * 0.5, 10 * 60 * 1000); // Max 10 minutes idle
     this.cleanupIntervalMs = Math.max(60000, this.ttlMs * 0.1); // Min 1 minute, max 10% of TTL
-    this.maxEvictionPercentage = monitoring.aggressiveCleanupThreshold || 0.15; // Max 15% eviction
+    this.maxEvictionPercentage = monitoring.aggressiveCleanupThreshold ?? 0.15; // Max 15% eviction
 
     // Register cache for monitoring if service is available
     this.cacheMonitor?.registerCache('dto-generation-pipeline', this.generatedClasses);
