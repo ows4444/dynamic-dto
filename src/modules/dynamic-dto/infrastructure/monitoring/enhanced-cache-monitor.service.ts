@@ -39,13 +39,13 @@ export class EnhancedCacheMonitorService {
   ) {
     // Merge user configuration with defaults
     this.config = {
-      memoryThresholdBytes: userConfig?.memoryThresholdBytes ?? (parseInt(process.env.CACHE_MEMORY_THRESHOLD_BYTES || '0') || 50 * 1024 * 1024), // 50MB default or env
-      utilizationThreshold: userConfig?.utilizationThreshold ?? (parseFloat(process.env.CACHE_UTILIZATION_THRESHOLD || '0') || 0.85), // 85% default or env
-      hitRateThreshold: userConfig?.hitRateThreshold ?? (parseFloat(process.env.CACHE_HIT_RATE_THRESHOLD || '0') || 0.7), // 70% default or env
+      memoryThresholdBytes: userConfig?.memoryThresholdBytes ?? (parseInt(process.env.CACHE_MEMORY_THRESHOLD_BYTES ?? '0') || 50 * 1024 * 1024), // 50MB default or env
+      utilizationThreshold: userConfig?.utilizationThreshold ?? (parseFloat(process.env.CACHE_UTILIZATION_THRESHOLD ?? '0') || 0.85), // 85% default or env
+      hitRateThreshold: userConfig?.hitRateThreshold ?? (parseFloat(process.env.CACHE_HIT_RATE_THRESHOLD ?? '0') || 0.7), // 70% default or env
       enableAutoCleanup: userConfig?.enableAutoCleanup ?? process.env.CACHE_ENABLE_AUTO_CLEANUP !== 'false', // true default unless env is 'false'
       enableAlerting: userConfig?.enableAlerting ?? process.env.CACHE_ENABLE_ALERTING !== 'false', // true default unless env is 'false'
-      alertingIntervalMs: userConfig?.alertingIntervalMs ?? (parseInt(process.env.CACHE_ALERTING_INTERVAL_MS || '0') || 5 * 60 * 1000), // 5 minutes default or env
-      aggressiveCleanupThreshold: userConfig?.aggressiveCleanupThreshold ?? (parseFloat(process.env.CACHE_AGGRESSIVE_CLEANUP_THRESHOLD || '0') || 0.95), // 95% default or env
+      alertingIntervalMs: userConfig?.alertingIntervalMs ?? (parseInt(process.env.CACHE_ALERTING_INTERVAL_MS ?? '0') || 5 * 60 * 1000), // 5 minutes default or env
+      aggressiveCleanupThreshold: userConfig?.aggressiveCleanupThreshold ?? (parseFloat(process.env.CACHE_AGGRESSIVE_CLEANUP_THRESHOLD ?? '0') || 0.95), // 95% default or env
     };
 
     this.logger.log('Enhanced cache monitoring initialized', {
@@ -235,7 +235,7 @@ export class EnhancedCacheMonitorService {
       hitRate: `${(metrics.memoryUsage.hitRate * 100).toFixed(1)}%`,
       thresholdExceeded: metrics.thresholdExceeded,
       recommendationCount: metrics.recommendations.length,
-      lastCleanup: metrics.memoryUsage.lastCleanup?.toISOString() || 'Never',
+      lastCleanup: metrics.memoryUsage.lastCleanup?.toISOString() ?? 'Never',
     };
 
     this.logger.log('Cache health summary', summary);

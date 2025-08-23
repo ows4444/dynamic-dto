@@ -46,7 +46,7 @@ export class CacheManagerService implements ICacheManager {
 
   async isMemoryThresholdExceeded(threshold?: number): Promise<boolean> {
     const memoryInfo = await this.getMemoryUsage();
-    const thresholdBytes = threshold || this.defaultMemoryThreshold;
+    const thresholdBytes = threshold ?? this.defaultMemoryThreshold;
 
     const exceeded = memoryInfo.estimatedBytes > thresholdBytes;
 

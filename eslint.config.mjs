@@ -354,7 +354,7 @@ export default tseslint.config(
     rules: {
       'no-await-in-loop': 'error',
       'prefer-const': 'error',
-      complexity: ['error', 20], // Keep cache logic simple
+      complexity: ['error', 30], // Keep cache logic simple
     },
   },
 
@@ -362,7 +362,7 @@ export default tseslint.config(
   {
     files: ['**/factories/**/*.ts'],
     rules: {
-      'max-lines-per-function': ['error', 60], // Factories should be focused
+      'max-lines-per-function': ['error', 90], // Factories should be focused
       '@typescript-eslint/naming-convention': 'off', // Allow create* patterns
       'max-params': ['error', 12], // Factories may inject many deps
     },

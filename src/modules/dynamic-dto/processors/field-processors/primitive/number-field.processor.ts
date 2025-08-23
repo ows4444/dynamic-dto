@@ -158,11 +158,11 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
         validator: {
           validate(value: unknown, args: ValidationArguments): boolean {
             if (typeof value !== 'number') return false;
-            const [min] = args.constraints;
+            const [min] = args.constraints as [number];
             return value > min;
           },
           defaultMessage(args: ValidationArguments): string {
-            const [min] = args.constraints;
+            const [min] = args.constraints as [number];
             return `${args.property} must be greater than ${min}`;
           },
         },
@@ -186,11 +186,11 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
         validator: {
           validate(value: unknown, args: ValidationArguments): boolean {
             if (typeof value !== 'number') return false;
-            const [max] = args.constraints;
+            const [max] = args.constraints as [number];
             return value < max;
           },
           defaultMessage(args: ValidationArguments): string {
-            const [max] = args.constraints;
+            const [max] = args.constraints as [number];
             return `${args.property} must be less than ${max}`;
           },
         },
@@ -214,11 +214,11 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
         validator: {
           validate(value: unknown, args: ValidationArguments): boolean {
             if (typeof value !== 'number') return false;
-            const [divisor] = args.constraints;
+            const [divisor] = args.constraints as [number];
             return Number.isInteger(value / divisor);
           },
           defaultMessage(args: ValidationArguments): string {
-            const [divisor] = args.constraints;
+            const [divisor] = args.constraints as [number];
             return `${args.property} must be a multiple of ${divisor}`;
           },
         },
@@ -242,12 +242,12 @@ export class NumberFieldProcessor extends BaseFieldProcessor<NumberFieldSchema> 
         validator: {
           validate(value: unknown, args: ValidationArguments): boolean {
             if (typeof value !== 'number') return false;
-            const [maxPlaces] = args.constraints;
-            const decimalPlaces = (value.toString().split('.')[1] || '').length;
+            const [maxPlaces] = args.constraints as [number];
+            const decimalPlaces = (value.toString().split('.')[1] ?? '').length;
             return decimalPlaces <= maxPlaces;
           },
           defaultMessage(args: ValidationArguments): string {
-            const [maxPlaces] = args.constraints;
+            const [maxPlaces] = args.constraints as [number];
             return `${args.property} must have at most ${maxPlaces} decimal places`;
           },
         },

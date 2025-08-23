@@ -223,7 +223,7 @@ export class ValidationErrorRecoveryService {
   private deduplicateSteps(steps: RecoveryStep[]): RecoveryStep[] {
     const seen = new Set<string>();
     return steps.filter((step) => {
-      const key = `${step.action}:${step.targetField || 'global'}`;
+      const key = `${step.action}:${step.targetField ?? 'global'}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -259,14 +259,14 @@ export class ValidationErrorRecoveryService {
   /**
    * Assess risk level of recovery operations
    */
-  private assessRiskLevel(summary: any, recoverySteps: RecoveryStep[]): 'low' | 'medium' | 'high' {
+  private assessRiskLevel(summary: { criticalErrors: number }, recoverySteps: RecoveryStep[]): 'low' | 'medium' | 'high' {
     // High risk if many critical errors or risky operations
-    if ((summary.criticalErrors as number) > 10 || recoverySteps.some((s) => s.action === 'remove_field')) {
+    if (summary.criticalErrors > 10 || recoverySteps.some((s) => s.action === 'remove_field')) {
       return 'high';
     }
 
     // Medium risk if moderate errors or some auto-operations
-    if ((summary.criticalErrors as number) > 3 || recoverySteps.length > 5) {
+    if (summary.criticalErrors > 3 || recoverySteps.length > 5) {
       return 'medium';
     }
 

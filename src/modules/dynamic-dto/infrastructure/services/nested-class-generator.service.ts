@@ -4,7 +4,7 @@ import { FieldSchema } from '../../core/interfaces/schema';
 import { classConstructor } from '../../core/types/common.types';
 import { LRUCache } from '../cache/lru-cache';
 import { CacheMonitorService } from '../monitoring/cache-monitor.service';
-import { isclassConstructor, isSchemaRecord, isStringArray } from '../../core/types/type-guards';
+import { isClassConstructor, isSchemaRecord, isStringArray } from '../../core/types/type-guards';
 import type { FieldProcessorRegistry } from '../registries/field-processor.registry';
 
 export interface INestedClassGenerator {
@@ -90,7 +90,7 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     Object.defineProperty(DynamicClass, 'name', { value: className });
 
     // Type assertion to ensure class constructor is properly typed
-    if (!isclassConstructor(DynamicClass)) {
+    if (!isClassConstructor(DynamicClass)) {
       throw new Error(`Failed to create valid class constructor for ${className}`);
     }
 

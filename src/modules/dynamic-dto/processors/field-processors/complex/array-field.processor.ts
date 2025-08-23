@@ -68,7 +68,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
       order: 30,
       name: 'array_coercion',
       transform: ({ value }) => {
-        if (Array.isArray(value)) return value;
+        if (Array.isArray(value)) return value as unknown[];
 
         // Convert single values to arrays if not already an array
         if (value !== undefined && value !== null) {
@@ -86,7 +86,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
       transform: ({ value }) => {
         if (!Array.isArray(value)) return value;
 
-        let result = [...value];
+        let result = [...(value as unknown[])];
 
         // Remove duplicates if configured
         if (schema.uniqueItems) {
@@ -107,7 +107,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
           if (!Array.isArray(value)) return value;
 
           // Basic validation that items are objects
-          return value.filter((item) => item && typeof item === 'object');
+          return value.filter((item) => item && typeof item === 'object') as unknown[];
         },
         condition: (_, { value }) => Array.isArray(value),
       });

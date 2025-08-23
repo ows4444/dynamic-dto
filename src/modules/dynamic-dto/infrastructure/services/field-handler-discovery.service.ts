@@ -166,7 +166,7 @@ export class FieldHandlerDiscoveryService {
     }
   }
 
-  private extractProcessorMetadata(wrapper: InstanceWrapper): DiscoveredProcessor | null {
+  private extractProcessorMetadata(wrapper: InstanceWrapper<BaseFieldValidator>): DiscoveredProcessor | null {
     try {
       const { instance, metatype } = wrapper;
 
@@ -186,7 +186,7 @@ export class FieldHandlerDiscoveryService {
       }
 
       return {
-        instance: instance as BaseFieldProcessor,
+        instance,
         type: metatype as new (...args: unknown[]) => BaseFieldProcessor,
         metadata,
       };
@@ -196,7 +196,7 @@ export class FieldHandlerDiscoveryService {
     }
   }
 
-  private extractValidatorMetadata(wrapper: InstanceWrapper): DiscoveredValidator | null {
+  private extractValidatorMetadata(wrapper: InstanceWrapper<BaseFieldValidator>): DiscoveredValidator | null {
     try {
       const { instance, metatype } = wrapper;
 
@@ -216,7 +216,7 @@ export class FieldHandlerDiscoveryService {
       }
 
       return {
-        instance: instance as BaseFieldValidator,
+        instance,
         type: metatype as new (...args: unknown[]) => BaseFieldValidator,
         metadata,
       };

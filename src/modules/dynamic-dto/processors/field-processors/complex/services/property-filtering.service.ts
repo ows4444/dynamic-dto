@@ -332,7 +332,8 @@ export class PropertyFilteringService {
     try {
       // Simple math evaluation without Function constructor
       if (/^[0-9+\-*/.() ]+$/.test(safeExpression)) {
-        return eval(safeExpression); // eslint-disable-line no-eval
+        const result = eval(safeExpression) as unknown; // eslint-disable-line no-eval
+        return typeof result === 'number' ? result : String(result);
       }
     } catch {
       // Fall back to original expression if evaluation fails

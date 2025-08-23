@@ -111,7 +111,7 @@ export class ObjectValidationService {
 
     // Handle case-insensitive validation
     if (schema.caseSensitive === false && typeof value === 'string') {
-      const matchingValue = schema.values.find((enumValue: unknown) => typeof enumValue === 'string' && enumValue.toLowerCase() === value.toLowerCase());
+      const matchingValue = schema.values.find((enumValue: unknown) => typeof enumValue === 'string' && enumValue.toLowerCase() === value.toLowerCase()) as string | undefined;
       if (matchingValue) {
         return matchingValue; // Return the properly cased version
       }
@@ -129,7 +129,7 @@ export class ObjectValidationService {
   private validateMultipleEnumValues(value: unknown, schema: EnumFieldSchema, propertyName: string): unknown {
     if (Array.isArray(value)) {
       // Validate each value in the array
-      const invalidValues = value.filter((v) => !schema.values.includes(v));
+      const invalidValues = value.filter((v: string | number) => !schema.values.includes(v));
       if (invalidValues.length > 0) {
         throw new Error(`Property '${propertyName}' contains invalid enum values: [${invalidValues.join(', ')}]. ` + `Valid values: [${schema.values.join(', ')}]`);
       }

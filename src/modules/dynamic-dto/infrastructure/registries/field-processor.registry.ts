@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 import { FieldSchema } from '../../core/interfaces/schema';
 import { FieldTypeValue } from '../../core/types/field.types';
-import { DiscoveredProcessor, FieldProcessorDiscoveryService } from '../services/field-processor-discovery.service';
+import { FieldProcessorDiscoveryService } from '../services/field-processor-discovery.service';
 
 interface ProcessorStats {
   totalProcessors: number;

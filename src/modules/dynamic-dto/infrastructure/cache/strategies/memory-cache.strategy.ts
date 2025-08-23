@@ -173,7 +173,7 @@ export class MemoryCacheStrategy implements ICacheStrategy {
       case 'object':
         if (obj instanceof Date) return 24;
         if (Array.isArray(obj)) {
-          return obj.reduce((sum, item) => sum + this.estimateObjectSize(item), 24);
+          return obj.reduce((sum: number, item: unknown) => sum + this.estimateObjectSize(item), 24);
         }
         // For complex objects (like class constructors), use a larger estimate
         return JSON.stringify(obj).length * 2 + 100; // Base object overhead

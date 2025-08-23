@@ -204,7 +204,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
 
               case UnionValidationStrategy.best_match: {
                 const bestMatch = this.findBestMatch(matchResults);
-                return bestMatch !== null && bestMatch.valid;
+                return bestMatch?.valid ?? false;
               }
 
               case UnionValidationStrategy.all_valid:
@@ -263,7 +263,7 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
       try {
         // This is a simplified validation - in a real implementation,
         // you'd need to dynamically create validators for each union type
-        const confidence = this.calculateTypeConfidence(value, typeSchema! as FieldSchema, [...(schema.typeHints || [])]);
+        const confidence = this.calculateTypeConfidence(value, typeSchema! as FieldSchema, [...(schema.typeHints ?? [])]);
         const valid = confidence > 0.5; // Threshold for validity
 
         results.push({

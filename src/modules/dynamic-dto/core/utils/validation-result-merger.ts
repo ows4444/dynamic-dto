@@ -13,7 +13,7 @@ export class ValidationResultMerger {
     }
 
     if (results.length === 1) {
-      return results[0] || this.createEmptyResult();
+      return results[0] ?? this.createEmptyResult();
     }
 
     const aggregatedData = this.aggregateResults(results);
@@ -124,7 +124,7 @@ export class ValidationResultMerger {
       isValid,
       issues: uniqueIssues.map((issue) => this.cleanObject(issue)),
       ...(Object.keys(mergedMetadata).length > 0 && { metadata: mergedMetadata }),
-      fieldPath: fieldPath || '',
+      fieldPath: fieldPath ?? '',
 
       get errors() {
         return uniqueIssues.filter((issue) => issue.severity === 'error');
@@ -160,7 +160,7 @@ export class ValidationResultMerger {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.cleanObject(item)) as unknown as T;
+      return obj.map((item: T) => this.cleanObject<T>(item)) as T;
     }
 
     const cleaned: T = {} as unknown as T;

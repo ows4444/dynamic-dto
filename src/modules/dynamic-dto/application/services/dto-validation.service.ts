@@ -31,7 +31,7 @@ export class DtoValidationService {
       });
     }
 
-    const validationIssues: ValidationIssue[] = (validationResult.errors || []).map((error) => ({
+    const validationIssues: ValidationIssue[] = (validationResult.errors ?? []).map((error) => ({
       severity: 'error' as const,
       code: 'SCHEMA_VALIDATION_ERROR',
       message: typeof error === 'string' ? error : error.message || 'Unknown validation error',
@@ -77,11 +77,11 @@ export class DtoValidationService {
 
       const validationIssues: ValidationIssue[] = errors.map((error) => ({
         severity: 'error' as const,
-        message: Object.values(error.constraints || {}).join(', ') || 'Validation failed',
+        message: Object.values(error.constraints ?? {}).join(', ') || 'Validation failed',
         fieldPath: error.property,
-        value: error.value,
+        value: error.value as string,
         code: 'VALIDATION_ERROR',
-        constraint: Object.keys(error.constraints || {})[0] || 'validation_failed',
+        constraint: Object.keys(error.constraints ?? {})[0] ?? 'validation_failed',
         metadata: {
           property: error.property,
           constraints: error.constraints,

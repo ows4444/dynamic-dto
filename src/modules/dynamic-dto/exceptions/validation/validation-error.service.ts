@@ -52,7 +52,7 @@ export class ValidationErrorService {
   createFieldError(
     errorType: 'TYPE_MISMATCH' | 'REQUIRED' | 'CONSTRAINT' | 'PERMISSION' | 'DEPRECATED' | 'SECURITY',
     fieldName: string,
-    details: any,
+    details: Record<string, any>,
     context?: ValidationErrorContext,
   ): BaseValidationError {
     switch (errorType) {
@@ -79,7 +79,7 @@ export class ValidationErrorService {
   createSchemaError(
     errorType: 'STRUCTURE' | 'VERSION' | 'CIRCULAR_REFERENCE' | 'FIELD_NAMING' | 'BUSINESS_RULE' | 'CROSS_FIELD',
     schemaName: string,
-    details: any,
+    details: Record<string, any>,
     context?: ValidationErrorContext,
   ): BaseValidationError {
     switch (errorType) {
@@ -212,7 +212,7 @@ export class ValidationErrorService {
 
     // Update by type
     for (const error of errors) {
-      this.errorMetrics.errorsByType[error.constructor.name] = (this.errorMetrics.errorsByType[error.constructor.name] || 0) + 1;
+      this.errorMetrics.errorsByType[error.constructor.name] = (this.errorMetrics.errorsByType[error.constructor.name] ?? 0) + 1;
     }
 
     // Update by severity

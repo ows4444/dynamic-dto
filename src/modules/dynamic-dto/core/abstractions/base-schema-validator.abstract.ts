@@ -225,8 +225,8 @@ export abstract class BaseSchemaValidator {
     const target = parseVersion(targetVersion);
 
     for (let i = 0; i < Math.max(current.length, target.length); i++) {
-      const currentPart = current[i] || 0;
-      const targetPart = target[i] || 0;
+      const currentPart = current[i] ?? 0;
+      const targetPart = target[i] ?? 0;
 
       if (currentPart > targetPart) return true;
       if (currentPart < targetPart) return false;
