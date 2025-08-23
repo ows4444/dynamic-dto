@@ -77,8 +77,8 @@ describe('DtoValidationService', () => {
       expect(result.isValid).toBe(true);
       expect(result.issues).toEqual([]);
       expect(result.errors).toEqual([]);
-      expect(result.summary.totalIssues).toBe(0);
-      expect(result.summary.errorCount).toBe(0);
+      expect(result.summary?.totalIssues).toBe(0);
+      expect(result.summary?.errorCount).toBe(0);
     });
 
     it('should return invalid result when schema fails validation', () => {
@@ -99,8 +99,8 @@ describe('DtoValidationService', () => {
       expect(result.issues[1].message).toBe('Field type mismatch');
       expect(result.issues[0].severity).toBe('error');
       expect(result.issues[0].code).toBe('SCHEMA_VALIDATION_ERROR');
-      expect(result.summary.totalIssues).toBe(2);
-      expect(result.summary.errorCount).toBe(2);
+      expect(result.summary?.totalIssues).toBe(2);
+      expect(result.summary?.errorCount).toBe(2);
     });
 
     it('should handle undefined errors in validation result', () => {
@@ -124,19 +124,10 @@ describe('DtoValidationService', () => {
     it('should return valid schemas and count invalid ones', () => {
       // Arrange
       const schema1 = mockSchema;
-      const schema2 = new DynamicSchemaEntity(
-        'test-schema-2',
-        'TestSchema2',
-        { email: { type: FieldType.string, expose: true } },
-        new SchemaVersion(1, 0, 0),
-        ['email'],
-        false,
-      );
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
       const schemas = [schema1, schema2];
 
-      validationPipeline.validate
-        .mockReturnValueOnce({ isValid: true, errors: [] })
-        .mockReturnValueOnce({ isValid: false, errors: ['Invalid schema'] });
+      validationPipeline.validate.mockReturnValueOnce({ isValid: true, errors: [] }).mockReturnValueOnce({ isValid: false, errors: ['Invalid schema'] });
 
       // Act
       const result = service.validateSchemas(schemas);

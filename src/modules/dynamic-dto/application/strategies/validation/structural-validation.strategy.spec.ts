@@ -103,11 +103,7 @@ describe('StructuralValidationStrategy', () => {
 
       // Assert
       expect(schemaValidationPipeline.execute).toHaveBeenCalledWith(mockSchema);
-      expect(baseSchemaValidator.validate).toHaveBeenCalledWith(
-        mockSchema.properties,
-        mockContext,
-        mockSchema.name
-      );
+      expect(baseSchemaValidator.validate).toHaveBeenCalledWith(mockSchema.properties, mockContext, mockSchema.name);
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
     });
@@ -116,16 +112,20 @@ describe('StructuralValidationStrategy', () => {
       // Arrange
       const enhancedResult: ValidationResult = {
         isValid: false,
-        issues: [{
-          severity: 'error' as const,
-          message: 'Enhanced validation error',
-          code: 'ENHANCED_ERROR',
-        }],
-        errors: [{
-          severity: 'error' as const,
-          message: 'Enhanced validation error',
-          code: 'ENHANCED_ERROR',
-        }],
+        issues: [
+          {
+            severity: 'error' as const,
+            message: 'Enhanced validation error',
+            code: 'ENHANCED_ERROR',
+          },
+        ],
+        errors: [
+          {
+            severity: 'error' as const,
+            message: 'Enhanced validation error',
+            code: 'ENHANCED_ERROR',
+          },
+        ],
         summary: {
           totalIssues: 1,
           errorCount: 1,
@@ -136,16 +136,20 @@ describe('StructuralValidationStrategy', () => {
 
       const baseResult: ValidationResult = {
         isValid: false,
-        issues: [{
-          severity: 'warning' as const,
-          message: 'Base validation warning',
-          code: 'BASE_WARNING',
-        }],
-        errors: [{
-          severity: 'warning' as const,
-          message: 'Base validation warning',
-          code: 'BASE_WARNING',
-        }],
+        issues: [
+          {
+            severity: 'warning' as const,
+            message: 'Base validation warning',
+            code: 'BASE_WARNING',
+          },
+        ],
+        errors: [
+          {
+            severity: 'warning' as const,
+            message: 'Base validation warning',
+            code: 'BASE_WARNING',
+          },
+        ],
         summary: {
           totalIssues: 1,
           errorCount: 0,
@@ -174,16 +178,20 @@ describe('StructuralValidationStrategy', () => {
       // Arrange
       const enhancedResult: ValidationResult = {
         isValid: false,
-        issues: [{
-          severity: 'error' as const,
-          message: 'Schema structure invalid',
-          code: 'STRUCTURE_ERROR',
-        }],
-        errors: [{
-          severity: 'error' as const,
-          message: 'Schema structure invalid',
-          code: 'STRUCTURE_ERROR',
-        }],
+        issues: [
+          {
+            severity: 'error' as const,
+            message: 'Schema structure invalid',
+            code: 'STRUCTURE_ERROR',
+          },
+        ],
+        errors: [
+          {
+            severity: 'error' as const,
+            message: 'Schema structure invalid',
+            code: 'STRUCTURE_ERROR',
+          },
+        ],
         summary: {
           totalIssues: 1,
           errorCount: 1,
@@ -232,16 +240,20 @@ describe('StructuralValidationStrategy', () => {
 
       const baseResult: ValidationResult = {
         isValid: false,
-        issues: [{
-          severity: 'error' as const,
-          message: 'Base validation failed',
-          code: 'BASE_ERROR',
-        }],
-        errors: [{
-          severity: 'error' as const,
-          message: 'Base validation failed',
-          code: 'BASE_ERROR',
-        }],
+        issues: [
+          {
+            severity: 'error' as const,
+            message: 'Base validation failed',
+            code: 'BASE_ERROR',
+          },
+        ],
+        errors: [
+          {
+            severity: 'error' as const,
+            message: 'Base validation failed',
+            code: 'BASE_ERROR',
+          },
+        ],
         summary: {
           totalIssues: 1,
           errorCount: 1,
@@ -296,11 +308,7 @@ describe('StructuralValidationStrategy', () => {
 
       // Assert
       expect(schemaValidationPipeline.execute).toHaveBeenCalledWith(mockSchema);
-      expect(baseSchemaValidator.validate).toHaveBeenCalledWith(
-        mockSchema.properties,
-        undefined,
-        mockSchema.name
-      );
+      expect(baseSchemaValidator.validate).toHaveBeenCalledWith(mockSchema.properties, undefined, mockSchema.name);
       expect(result.isValid).toBe(true);
     });
 
@@ -313,10 +321,7 @@ describe('StructuralValidationStrategy', () => {
 
       // Act & Assert
       expect(() => strategy.execute(mockSchema, mockContext)).toThrow('Validation pipeline failed');
-      expect(Logger.prototype.error).toHaveBeenCalledWith(
-        'StructuralValidation failed for schema: TestSchema',
-        error
-      );
+      expect(Logger.prototype.error).toHaveBeenCalledWith('StructuralValidation failed for schema: TestSchema', error);
     });
 
     it('should handle base validator errors', () => {
@@ -341,10 +346,7 @@ describe('StructuralValidationStrategy', () => {
 
       // Act & Assert
       expect(() => strategy.execute(mockSchema, mockContext)).toThrow('Base validator failed');
-      expect(Logger.prototype.error).toHaveBeenCalledWith(
-        'StructuralValidation failed for schema: TestSchema',
-        error
-      );
+      expect(Logger.prototype.error).toHaveBeenCalledWith('StructuralValidation failed for schema: TestSchema', error);
     });
   });
 

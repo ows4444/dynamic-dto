@@ -19,7 +19,7 @@ describe('DynamicDtoModule', () => {
       }).compile();
 
       expect(module).toBeDefined();
-      
+
       // Test that core service can be resolved
       const orchestrator = module.get<DtoOrchestratorService>(DtoOrchestratorService);
       expect(orchestrator).toBeDefined();
@@ -46,7 +46,7 @@ describe('DynamicDtoModule', () => {
 
       // Get all expected exports
       const expectedExports = ExportRegistry.getAllExports();
-      
+
       // Verify each exported service can be resolved
       for (const exportedService of expectedExports) {
         expect(() => module.get(exportedService)).not.toThrow();
@@ -64,7 +64,7 @@ describe('DynamicDtoModule', () => {
     it('should have extended exports available', () => {
       const extendedExports = ExportRegistry.getExtendedExports();
       const allExports = ExportRegistry.getAllExports();
-      
+
       // Extended exports should equal all exports in our current implementation
       expect(extendedExports).toEqual(allExports);
     });

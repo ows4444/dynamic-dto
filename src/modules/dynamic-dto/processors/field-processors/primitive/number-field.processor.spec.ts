@@ -47,7 +47,7 @@ describe('NumberFieldProcessor', () => {
         min: 0,
         max: 100,
       };
-      
+
       const decorators = processor.generateValidationDecorators(schemaWithRange, true, false);
       expect(decorators.length).toBeGreaterThanOrEqual(4); // IsDefined + IsNumber + Min + Max
     });
@@ -57,7 +57,7 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         integer: true,
       };
-      
+
       const decorators = processor.generateValidationDecorators(integerSchema, true, false);
       expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + IsInt
     });
@@ -67,7 +67,7 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         positive: true,
       };
-      
+
       const decorators = processor.generateValidationDecorators(positiveSchema, true, false);
       expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + IsPositive
     });
@@ -77,7 +77,7 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         negative: true,
       };
-      
+
       const decorators = processor.generateValidationDecorators(negativeSchema, true, false);
       expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + IsNegative
     });
@@ -88,7 +88,7 @@ describe('NumberFieldProcessor', () => {
         exclusiveMin: 0,
         exclusiveMax: 100,
       };
-      
+
       const decorators = processor.generateValidationDecorators(exclusiveSchema, true, false);
       expect(decorators.length).toBeGreaterThanOrEqual(4); // IsDefined + IsNumber + ExclusiveMin + ExclusiveMax
     });
@@ -98,7 +98,7 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         multipleOf: 5,
       };
-      
+
       const decorators = processor.generateValidationDecorators(multipleOfSchema, true, false);
       expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + MultipleOf
     });
@@ -109,7 +109,7 @@ describe('NumberFieldProcessor', () => {
         integer: false,
         scale: 2,
       };
-      
+
       const decorators = processor.generateValidationDecorators(decimalSchema, true, false);
       expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + Decimal
     });
@@ -124,7 +124,7 @@ describe('NumberFieldProcessor', () => {
   describe('getTypeSpecificTransformations', () => {
     it('should always include type coercion transformation', () => {
       const transformations = processor.getTypeSpecificTransformations(basicNumberSchema);
-      
+
       expect(transformations).toHaveLength(1);
       expect(transformations[0].name).toBe('type_coercion');
       expect(transformations[0].order).toBe(30);
@@ -135,9 +135,9 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         precision: 3,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(precisionSchema);
-      
+
       expect(transformations).toHaveLength(2);
       expect(transformations[1].name).toBe('precision_rounding');
       expect(transformations[1].order).toBe(40);
@@ -148,9 +148,9 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         scale: 2,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(scaleSchema);
-      
+
       expect(transformations).toHaveLength(2);
       expect(transformations[1].name).toBe('precision_rounding');
     });
@@ -162,9 +162,9 @@ describe('NumberFieldProcessor', () => {
         min: 0,
         max: 100,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(clampSchema);
-      
+
       expect(transformations).toHaveLength(2);
       expect(transformations[1].name).toBe('range_clamping');
       expect(transformations[1].order).toBe(50);
@@ -215,10 +215,10 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         scale: 2,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(scaleSchema);
       const precisionTransform = transformations[1].transform;
-      
+
       expect(precisionTransform({ value: 123.456789 })).toBe(123.46);
       expect(precisionTransform({ value: 123.454 })).toBe(123.45);
     });
@@ -228,10 +228,10 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         precision: 3,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(precisionSchema);
       const precisionTransform = transformations[1].transform;
-      
+
       expect(precisionTransform({ value: 123.456789 })).toBe(123);
       expect(precisionTransform({ value: 1.23456 })).toBe(1.23);
     });
@@ -241,10 +241,10 @@ describe('NumberFieldProcessor', () => {
         ...basicNumberSchema,
         scale: 2,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(scaleSchema);
       const precisionTransform = transformations[1].transform;
-      
+
       expect(precisionTransform({ value: 'abc' })).toBe('abc');
     });
   });
@@ -257,10 +257,10 @@ describe('NumberFieldProcessor', () => {
         min: 0,
         max: 100,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(clampSchema);
       const clampTransform = transformations[1].transform;
-      
+
       expect(clampTransform({ value: -10 })).toBe(0);
       expect(clampTransform({ value: 150 })).toBe(100);
       expect(clampTransform({ value: 50 })).toBe(50);
@@ -272,10 +272,10 @@ describe('NumberFieldProcessor', () => {
         clamp: true,
         min: 0,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(minOnlySchema);
       const clampTransform = transformations[1].transform;
-      
+
       expect(clampTransform({ value: -10 })).toBe(0);
       expect(clampTransform({ value: 150 })).toBe(150);
     });
@@ -286,10 +286,10 @@ describe('NumberFieldProcessor', () => {
         clamp: true,
         max: 100,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(maxOnlySchema);
       const clampTransform = transformations[1].transform;
-      
+
       expect(clampTransform({ value: -10 })).toBe(-10);
       expect(clampTransform({ value: 150 })).toBe(100);
     });
@@ -301,10 +301,10 @@ describe('NumberFieldProcessor', () => {
         min: 0,
         max: 100,
       };
-      
+
       const transformations = processor.getTypeSpecificTransformations(clampSchema);
       const clampTransform = transformations[1].transform;
-      
+
       expect(clampTransform({ value: 'abc' })).toBe('abc');
     });
   });

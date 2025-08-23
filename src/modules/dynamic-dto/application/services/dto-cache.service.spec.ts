@@ -91,9 +91,7 @@ describe('DtoCacheService', () => {
 
       // Assert
       expect(result).toBe(expectedValue);
-      expect(cacheManager.get).toHaveBeenCalledWith(
-        expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/)
-      );
+      expect(cacheManager.get).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/));
     });
 
     it('should return null when no cached value exists', async () => {
@@ -117,11 +115,7 @@ describe('DtoCacheService', () => {
       await service.set(mockSchema, value);
 
       // Assert
-      expect(cacheManager.set).toHaveBeenCalledWith(
-        expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/),
-        value,
-        3600
-      );
+      expect(cacheManager.set).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/), value, 3600);
     });
 
     it('should cache value with adaptive TTL when provided', async () => {
@@ -133,11 +127,7 @@ describe('DtoCacheService', () => {
       await service.set(mockSchema, value, adaptiveTtl);
 
       // Assert
-      expect(cacheManager.set).toHaveBeenCalledWith(
-        expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/),
-        value,
-        1800
-      );
+      expect(cacheManager.set).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/), value, 1800);
     });
 
     it('should use fallback TTL when options.cache.ttl is not configured', async () => {
@@ -166,7 +156,7 @@ describe('DtoCacheService', () => {
       expect(cacheManager.set).toHaveBeenCalledWith(
         expect.any(String),
         value,
-        3600 // Default fallback TTL
+        3600, // Default fallback TTL
       );
     });
   });
@@ -273,14 +263,7 @@ describe('DtoCacheService', () => {
 
     it('should generate different cache keys for different schemas', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity(
-        'test-schema-2',
-        'TestSchema2',
-        { email: { type: FieldType.string, expose: true } },
-        new SchemaVersion(1, 0, 0),
-        ['email'],
-        false,
-      );
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
 
       // Act
       const key1 = service.generateCacheKey(mockSchema);

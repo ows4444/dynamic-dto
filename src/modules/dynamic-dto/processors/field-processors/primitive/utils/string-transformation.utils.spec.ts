@@ -118,37 +118,37 @@ describe('StringTransformationUtils', () => {
     });
 
     it('should trim all when start, end, and inner are true', () => {
-      const result = StringTransformationUtils.applyTrimming('  hello    world  ', { 
-        start: true, 
-        end: true, 
-        inner: true 
+      const result = StringTransformationUtils.applyTrimming('  hello    world  ', {
+        start: true,
+        end: true,
+        inner: true,
       });
       expect(result).toBe('hello world');
     });
 
     it('should trim custom characters', () => {
-      const result = StringTransformationUtils.applyTrimming('xxx hello world xxx', { 
-        start: true, 
+      const result = StringTransformationUtils.applyTrimming('xxx hello world xxx', {
+        start: true,
         end: true,
-        chars: 'x ' 
+        chars: 'x ',
       });
       expect(result).toBe('hello world');
     });
 
     it('should preserve specified characters', () => {
-      const result = StringTransformationUtils.applyTrimming('xxx hello world xxx', { 
-        start: true, 
+      const result = StringTransformationUtils.applyTrimming('xxx hello world xxx', {
+        start: true,
         end: true,
         chars: 'x ',
-        preserve: ['x'] 
+        preserve: ['x'],
       });
       expect(result).toBe('xxx hello world xxx'); // Should only trim spaces, not x
     });
 
     it('should use default trim characters when none specified', () => {
-      const result = StringTransformationUtils.applyTrimming('\t\n hello world \r\n', { 
-        start: true, 
-        end: true 
+      const result = StringTransformationUtils.applyTrimming('\t\n hello world \r\n', {
+        start: true,
+        end: true,
       });
       expect(result).toBe('hello world');
     });
@@ -220,9 +220,9 @@ describe('StringTransformationUtils', () => {
     it('should provide cache statistics', () => {
       StringTransformationUtils.applyTrimming('test', { start: true, chars: 'abc' });
       StringTransformationUtils.applyTrimming('test', { end: true, chars: 'def' });
-      
+
       const stats = StringTransformationUtils.getCacheStats();
-      
+
       expect(stats.size).toBeGreaterThan(0);
       expect(stats.maxSize).toBe(500);
       expect(Array.isArray(stats.keys)).toBe(true);
@@ -230,12 +230,12 @@ describe('StringTransformationUtils', () => {
 
     it('should clear cache manually', () => {
       StringTransformationUtils.applyTrimming('test', { start: true, chars: 'abc' });
-      
+
       let stats = StringTransformationUtils.getCacheStats();
       expect(stats.size).toBeGreaterThan(0);
-      
+
       StringTransformationUtils.clearPatternCache();
-      
+
       stats = StringTransformationUtils.getCacheStats();
       expect(stats.size).toBe(0);
     });
@@ -245,13 +245,13 @@ describe('StringTransformationUtils', () => {
       for (let i = 0; i < 500; i++) {
         StringTransformationUtils.applyTrimming('test', { start: true, chars: `char${i}` });
       }
-      
+
       const statsBeforeClear = StringTransformationUtils.getCacheStats();
       expect(statsBeforeClear.size).toBe(500);
-      
+
       // This should trigger cache clear
       StringTransformationUtils.applyTrimming('test', { start: true, chars: 'overflow' });
-      
+
       const statsAfterClear = StringTransformationUtils.getCacheStats();
       expect(statsAfterClear.size).toBeLessThan(500); // Cache was cleared
     });
