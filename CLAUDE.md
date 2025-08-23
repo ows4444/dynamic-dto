@@ -1,228 +1,187 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with
-code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Development Commands
 
-### Build & Development
+### Testing Commands
 
-```bash
-npm run build                    # Build the library for distribution
-npm run format                  # Format code with Prettier
-```
+- `npm test` - Run all tests using Jest
+- `npm run test:unit` - Run unit tests only (99% coverage requirement)
+- `npm run test:integration` - Run integration tests (90% coverage requirement)
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Generate combined coverage report from all test suites (enforces 99% threshold)
+- `npm run test:cov:unit` - Unit test coverage only
+- `npm run test:cov:integration` - Integration test coverage only
+- `npm run test:cov:e2e` - E2E test coverage only
 
-### Code Quality
+### Build and Development
 
-```bash
-npm run lint                    # Run ESLint with auto-fix
-```
-
-### Testing
-
-```bash
-npm test                        # Run all tests with default config
-npm run test:unit               # Run unit tests only (99% coverage required)
-npm run test:integration        # Run integration tests only (90% coverage required)
-npm run test:e2e               # Run end-to-end tests only (85% coverage required)
-npm run test:watch             # Run tests in watch mode
-npm run test:cov               # Run tests with coverage
-npm run test:coverage          # Run comprehensive coverage analysis (all test types)
-npm run test:debug             # Run tests in debug mode
-```
-
-**Coverage Requirements**: This project enforces strict coverage thresholds:
-
-- Unit tests: 99% coverage
-- Integration tests: 90% coverage
-- E2E tests: 85% coverage
-
-The `npm run test:coverage` command runs all test suites and combines coverage
-reports, enforcing these thresholds via `scripts/test-coverage.js`.
+- `npm run build` - Build the library using NestJS CLI
+- `npm run lint` - ESLint with auto-fix
+- `npm run format` - Prettier formatting
 
 ## Architecture Overview
 
-This is a **Dynamic DTO Generation Library** built with NestJS that creates Data
-Transfer Object (DTO) classes from JSON schemas at runtime. The architecture
-follows **Clean Architecture principles** with clear separation of concerns
-across four layers:
+This is a NestJS library implementing **Clean Architecture** principles for dynamic DTO generation and validation. The architecture separates concerns into distinct layers:
 
-### Core Architecture Layers
+### Layer Structure
 
-#### 1. **Application Layer** (`application/`)
+- **Domain Layer**: `src/modules/dynamic-dto/domain/` - Core business entities (DynamicSchemaEntity, SchemaValidationResultEntity)
+- **Application Layer**: `src/modules/dynamic-dto/application/` - Use cases, services, and processing pipelines
+- **Infrastructure Layer**: `src/modules/dynamic-dto/infrastructure/` - Technical concerns (caching, registries, factories, monitoring)
+- **Core Layer**: `src/modules/dynamic-dto/core/` - Shared abstractions, types, interfaces, and utilities
 
-- **Services**: Orchestration and business logic
-  - `DtoOrchestratorService`: Main entry point for DTO generation and validation
-  - `DtoValidationService`: Handles data validation against generated DTOs
-  - `DtoCacheService`: Manages caching with adaptive TTL
-  - `DtoBatchProcessor`: Processes multiple schemas in parallel
-  - `SchemaOrchestratorService`: Manages schema operations
+### Key Architectural Patterns
 
-- **Pipelines**: Sequential processing workflows
-  - `DtoGenerationPipeline`: Coordinates DTO class generation
-  - `ValidationPipeline`: Validates schemas before processing
-  - `SchemaValidationPipeline`: Comprehensive schema structure validation
+#### Factory Pattern with Consolidation
 
-#### 2. **Domain Layer** (`domain/`)
+The library uses **consolidated provider factories** to reduce complexity:
 
-- **Entities**: Core business objects
-  - `DynamicSchemaEntity`: Represents a complete schema definition
-  - `SchemaValidationResultEntity`: Aggregates validation results
+- `createCoreServicesProviders()` - Main orchestration services + processing pipelines
+- `createFieldProcessingProviders()` - Field processors and registries  
+- `createInfrastructureProviders()` - Caching, monitoring, discovery services
+- `createValidationProviders()` - Validation strategies and pipelines
 
-#### 3. **Infrastructure Layer** (`infrastructure/`)
+These replace the original 9 separate factories with 4 consolidated ones.
 
-- **Cache Management**: Pluggable caching strategies with memory monitoring
-- **Registries**: Central registries for processors and validators using the
-  Registry pattern
-- **Factories**: Create and configure components without circular dependencies
-- **Monitoring**: Cache performance and memory usage tracking
+#### Registry + Discovery Pattern
 
-#### 4. **Core Layer** (`core/`)
+Field processors use automatic registration via decorators:
 
-- **Types & Interfaces**: Shared contracts and type definitions
-- **Abstractions**: Base classes implementing Template Method pattern
-- **Utilities**: Shared helper functions and validation result merging
+```typescript
+@FieldProcessor({ type: FieldType.string, priority: 1, category: 'primitive' })
+@Injectable()
+export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> {
+  // Implementation
+}
+```
+
+- `FieldProcessorRegistry` - Auto-discovers processors on module initialization
+- `FieldProcessorDiscoveryService` - Handles reflection-based discovery
+- Processors are categorized: `primitive`, `specialized`, `complex`
+
+#### Pipeline Pattern
+
+Sequential processing through specialized pipelines:
+
+- `DtoGenerationPipeline` - Creates DTO classes with memory management via WeakRef
+- `ValidationPipeline` - Multi-stage validation workflows
+- `SchemaValidationPipeline` - Schema structure validation
+
+#### Composition over Inheritance
+
+String processing uses composition pattern:
+
+- `StringBasicProcessor` - Core string validation
+- `StringFormatProcessor` - Format-specific validation (email, URL, etc.)
+- `StringTransformationProcessor` - String transformations
+- `StringAutoGenerationProcessor` - Auto-generated values
+- `StringFieldCompositeProcessor` - Orchestrates all string processors
 
 ### Field Processing System
 
-The system uses a **Registry + Factory pattern** for extensible field
-processing:
+The field processing system is highly extensible and uses several key patterns:
 
-#### Field Types
+#### Processor Hierarchy
 
-- **Primitive**: `string`, `number`, `boolean`
-- **Specialized**: `date`, `enum`, `union`
-- **Complex**: `array`, `object` (with nested schemas)
+- **BaseFieldProcessor** - Abstract base for all processors
+- **Primitive Processors**: String, Number, Boolean
+- **Complex Processors**: Array, Object (with circular reference detection)
+- **Specialized Processors**: Date, Enum, Union
 
-#### Processing Components
+#### String Format Validators
 
-- **Field Processors** (`processors/field-processors/`): Generate validation
-  decorators and class properties
-- **Field Validators** (`validators/field-validators/`): Type-specific
-  validation logic
-- **Registries** (`infrastructure/registries/`): Central registration of
-  processors and validators
+String processing includes 12+ specialized format validators:
 
-### Module Configuration
+- Email, URL, UUID, Phone, Currency
+- Country codes, Coordinates, Domains  
+- Password validation, Username patterns
+- Cron expressions, Semantic versioning
+- Time formats
 
-The `DynamicDtoModule` uses NestJS ConfigurableModuleBuilder pattern with
-organized provider factories:
+Located in: `src/modules/dynamic-dto/processors/field-processors/primitive/string-formats/`
 
-```typescript
-DynamicDtoModule.forRoot({
-  cache: {
-    ttl: 3600, // Cache TTL in seconds
-    maxSize: 1000, // Maximum cache entries
-  },
-  validation: {
-    enableCrossFieldValidation: true,
-    performanceMode: 'strict', // 'strict' | 'balanced' | 'fast'
-    maxNestingDepth: 10,
-  },
-  isGlobal: true,
-});
-```
+### Caching Architecture
 
-#### Provider Factory Organization
+Advanced caching system with performance monitoring:
 
-The module uses organized provider factories for maintainable configuration:
+- **LRU Cache** - Memory-efficient caching with size limits
+- **Adaptive TTL** - Cache duration adjusts based on usage patterns
+- **Memory Management** - WeakRef for generated classes to prevent memory leaks
+- **Cache Monitoring** - Real-time metrics and memory usage tracking
 
-- **Core Services**: `createCoreServiceProviders()` - Main orchestration
-  services
-- **Pipelines**: `createPipelineProviders()` - Processing workflows
-- **Infrastructure**: `createInfrastructureProviders()` - Caching and utilities
-- **Registries**: `createRegistryProviders()` - Field processor and validator
-  registries
-- **Field Processing**: `createFieldProcessorProviders()` /
-  `createFieldValidatorProviders()`
-- **Schema Validation**: `createSchemaValidationProviders()` - Schema structure
-  validation
-- **Validation Strategies**: `createValidationStrategyProviders()` -
-  Consolidated validation logic (3 strategies)
-- **Error Handling**: `createErrorHandlingProviders()` - Error recovery services
+Key classes:
 
-#### Validation Strategy Architecture
+- `DtoCacheService` - Main caching interface
+- `LRUCache` - Core LRU implementation
+- `CacheMonitorService` - Performance metrics and monitoring
 
-The system uses **3 consolidated validation strategies** instead of multiple
-over-engineered abstractions:
+### Validation System
 
-1. **StructuralValidationStrategy** - Combines enhanced and base schema
-   validation
-2. **FieldValidationStrategy** - Integrates field registry and business rules
-   validation
-3. **CrossFieldValidationStrategy** - Handles cross-field dependency validation
+Multi-layered validation approach:
 
-This consolidation reduces complexity while maintaining all validation
-functionality.
+- **Schema Validation** - Validates schema structure and field definitions
+- **Data Validation** - Uses class-validator decorators on generated DTOs
+- **Cross-field Validation** - Complex validation rules across multiple fields
+- **Validation Strategies** - Pluggable validation logic
 
-### Caching Strategy
-
-- **Adaptive TTL**: Cache duration adjusts based on usage patterns
-- **Memory Monitoring**: Built-in cleanup when memory thresholds exceeded
-- **Cache Keys**: Generated using schema name + hash for uniqueness
-- **Pluggable Strategies**: Memory cache included, extensible for Redis/external
-  caches
-
-### Error Handling Architecture
-
-- **Validation Error Aggregation**: Collects and contextualizes validation
-  failures
-- **Error Recovery Services**: Attempts to fix common validation issues
-- **Structured Error Types**: Hierarchical error types extending
-  `BaseValidationError`
-
-## Key Design Patterns
-
-1. **Registry Pattern**: Central registries for processors and validators
-2. **Factory Pattern**: Component creation without circular dependencies
-3. **Pipeline Pattern**: Sequential processing stages
-4. **Strategy Pattern**: Pluggable validation and caching strategies
-5. **Template Method Pattern**: Abstract base classes for consistent
-   implementation
-6. **Mediator Pattern**: Field processing coordination
-
-## Important Implementation Notes
+## Working with Field Processors
 
 ### Adding New Field Types
 
-1. Create processor in `processors/field-processors/[category]/`
-2. Create validator in `validators/field-validators/[category]/`
-3. Register both in respective factories
-4. Add schema interface in `core/interfaces/schema/`
-5. Update `FieldType` enum and exports in `core/types/field.types.ts`
-6. Maintain 99% test coverage for new components
+1. Create processor in appropriate category folder (`primitive/`, `specialized/`, `complex/`)
+2. Extend `BaseFieldProcessor<YourFieldSchema>`
+3. Add `@FieldProcessor` decorator with metadata
+4. Implement required methods: `canProcess`, `generateValidationDecorators`, etc.
+5. The registry will auto-discover and register the processor
 
-### Schema Structure
+### Processor Responsibilities
 
-Schemas define field types, validation rules, nested structures, and array
-configurations. The `DynamicSchemaEntity` constructor takes:
+- **Validation Decorators** - Generate class-validator decorators
+- **Transformation Decorators** - Generate class-transformer decorators  
+- **Serialization Decorators** - Generate serialization rules
+- **Schema Validation** - Validate field schema structure
 
-- Schema ID and name
-- Field definitions object
-- Required fields array
-- Exposure flag for validation
+## Memory Management
 
-### Validation Flow
+The library implements sophisticated memory management:
 
-1. Schema validation via `ValidationPipeline`
-2. DTO class generation via `DtoGenerationPipeline`
-3. Runtime data validation using class-validator decorators
-4. Result aggregation with detailed error context
+- **WeakRef** for generated DTO classes to allow garbage collection
+- **FinalizationRegistry** for cleanup callbacks
+- **LRU eviction** for cache size management
+- **Memory monitoring** with automatic cleanup triggers
 
-### Performance Considerations
+## Test Requirements
 
-- Caching is critical - DTOs are expensive to generate
-- Batch processing for multiple schemas improves throughput
-- Memory monitoring prevents cache bloat
-- Field processor registration happens at module initialization
+- **Unit Tests**: 99% coverage requirement (lines, functions, branches, statements)
+- **Integration Tests**: 90% coverage requirement
+- **Test Structure**: Uses separate Jest configs for unit, integration, and e2e tests
+- **Coverage Enforcement**: `scripts/test-coverage.js` enforces coverage thresholds
 
-## Testing Strategy
+## Development Workflow
 
-- **Unit Tests**: Individual component testing with mocks (99% coverage)
-- **Integration Tests**: Module interaction testing (90% coverage)
-- **E2E Tests**: Complete workflow validation (85% coverage)
-- **Test Fixtures**: Reusable test data in `test/` directory
-- **Coverage Enforcement**: Automated via `scripts/test-coverage.js`
+1. **Code Changes**: Follow Clean Architecture layer separation
+2. **Testing**: Ensure tests pass and meet coverage requirements
+3. **Linting**: Run `npm run lint` for code quality
+4. **Building**: Use `npm run build` to verify compilation
 
-The test configuration uses separate Jest configs for each test type to enable
-targeted coverage reporting and threshold enforcement.
+## Key Files to Understand
+
+- `src/modules/dynamic-dto/dynamic-dto.module.ts` - Main module configuration
+- `src/modules/dynamic-dto/application/services/dto-orchestrator.service.ts` - Main entry point
+- `src/modules/dynamic-dto/infrastructure/factories/consolidated/` - Provider factories
+- `src/modules/dynamic-dto/infrastructure/registries/field-processor.registry.ts` - Processor registration
+- `test/fixtures/schema-fixtures.ts` - Test schemas for all field types
+
+## Extensions and Customization
+
+The library is designed for extensibility:
+
+- **Custom Field Processors** - Add new field types via decorator pattern
+- **Custom Validation Strategies** - Implement validation interfaces
+- **Custom Caching Strategies** - Implement cache strategy interfaces
+- **Custom String Formats** - Add new string format validators
+
+All extensions follow the same decorator-based discovery pattern for automatic registration.
