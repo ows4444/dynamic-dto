@@ -25,8 +25,7 @@ describe('StructuralValidationStrategy', () => {
 
   const mockContext: ValidationContext = {
     fieldPath: 'test',
-    parentSchema: {},
-    rootSchema: {},
+
     depth: 1,
   };
 

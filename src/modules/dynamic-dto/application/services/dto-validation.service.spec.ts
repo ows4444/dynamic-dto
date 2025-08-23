@@ -4,7 +4,6 @@ import { DtoValidationService } from './dto-validation.service';
 import { ValidationPipeline } from '../pipelines/validation.pipeline';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldType } from '../../core/types/field.types';
-import { ValidationSeverity } from '../../core/enums/validation.enums';
 import * as classValidator from 'class-validator';
 import * as classTransformer from 'class-transformer';
 

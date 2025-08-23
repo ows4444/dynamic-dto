@@ -177,8 +177,6 @@ describe('DtoCacheService', () => {
       // Arrange
       cacheManager.getMemoryUsage.mockResolvedValue({
         utilizationRate: 0.9,
-        usedMemory: 900,
-        freeMemory: 100,
       });
 
       // Act
