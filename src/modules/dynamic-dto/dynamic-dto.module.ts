@@ -1,7 +1,22 @@
 import { DynamicModule, Module } from '@nestjs/common';
 
-// Consolidated provider factories for simplified module configuration
-import { createCoreServicesProviders, createFieldProcessingProviders, createInfrastructureProviders, createValidationProviders } from './infrastructure/factories/consolidated';
+// Feature modules with lazy loading support
+import { CacheModule, FieldProcessingModule, FieldValidationModule, MonitoringModule, ValidationModule } from './modules';
+
+// Core services only
+import { DtoCacheService } from './application/services/dto-cache.service';
+import { DtoValidationService } from './application/services/dto-validation.service';
+import { DtoBatchProcessor } from './application/services/dto-batch-processor.service';
+import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';
+import { SchemaOrchestratorService } from './application/services/schema-orchestrator.service';
+
+// Core pipelines
+import { DtoGenerationPipeline } from './application/pipelines/dto-generation.pipeline';
+import { ValidationPipeline } from './application/pipelines/validation.pipeline';
+import { SchemaValidationPipeline } from './application/pipelines/schema-validation.pipeline';
+
+// Infrastructure services
+import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 
 // Explicit export registry to replace complex runtime filtering
 import { ExportRegistry } from './infrastructure/registries/export.registry';
@@ -16,7 +31,19 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
     return {
       module: DynamicDtoModule,
       global: options.isGlobal ?? false,
-      imports: [...(options.imports ?? [])],
+      imports: [
+        // Core feature modules (always loaded)
+        FieldProcessingModule,
+        FieldValidationModule,
+        ValidationModule,
+
+        // Optional feature modules (lazy loaded based on configuration)
+        ...(options.cache ? [CacheModule.forRoot(options)] : []),
+        ...(options.monitoring?.enableAlerting !== false ? [MonitoringModule.forRoot(options)] : []),
+
+        // Additional user imports
+        ...(options.imports ?? []),
+      ],
       providers: [
         // Module options
         {
@@ -24,11 +51,20 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
           useValue: options,
         },
 
-        // Consolidated provider groups (reduced from 9 factories to 4)
-        ...createCoreServicesProviders(),
-        ...createFieldProcessingProviders(),
-        ...createInfrastructureProviders(options),
-        ...createValidationProviders(),
+        // === CORE SERVICES (8 providers) ===
+        DtoCacheService,
+        DtoValidationService,
+        DtoBatchProcessor,
+        DtoOrchestratorService,
+        SchemaOrchestratorService,
+
+        // === CORE PIPELINES (3 providers) ===
+        DtoGenerationPipeline,
+        ValidationPipeline,
+        SchemaValidationPipeline,
+
+        // === INFRASTRUCTURE SERVICES (1 provider) ===
+        NestedClassGeneratorService,
       ],
       exports: ExportRegistry.getAllExports(),
     };
