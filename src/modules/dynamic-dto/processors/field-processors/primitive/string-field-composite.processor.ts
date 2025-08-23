@@ -4,29 +4,34 @@ import { BaseFieldProcessor, type TransformationFunction } from '../../../core/a
 import { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import type { FieldSchema } from '../../../core/interfaces/schema';
-import { StringProcessorFactory } from './string-processor.factory';
+import { StringBasicProcessor } from './string-basic.processor';
+import { StringFormatProcessor } from './string-format.processor';
+import { StringTransformationProcessor } from './string-transformation.processor';
+import { StringAutoGenerationProcessor } from './string-auto-generation.processor';
 
 /**
  * StringFieldProcessorComposite coordinates specialized string processors using composition pattern.
- * Refactored to eliminate inheritance complexity and improve maintainability.
+ * Refactored to use direct dependency injection instead of factory pattern to eliminate
+ * circular dependency anti-patterns and improve clarity.
  *
  * Responsibilities:
  * - Delegates to specialized processors with clear separation of concerns
  * - Combines transformation functions with proper ordering
- * - Uses shared utilities for common operations
- * - Maintains clean factory pattern for dependency management
+ * - Uses direct dependency injection for clear initialization
  * - Provides unified interface while preserving individual processor responsibilities
  */
 @FieldProcessor({ type: FieldType.string, priority: 1, category: 'primitive' })
 @Injectable()
 export class StringFieldProcessorComposite extends BaseFieldProcessor<StringFieldSchema> {
   readonly supportedType = FieldType.string;
-  private readonly processorCollection: ReturnType<StringProcessorFactory['createProcessorCollection']>;
 
-  constructor(private readonly processorFactory: StringProcessorFactory) {
+  constructor(
+    private readonly basicProcessor: StringBasicProcessor,
+    private readonly formatProcessor: StringFormatProcessor,
+    private readonly transformationProcessor: StringTransformationProcessor,
+    private readonly autoGenerationProcessor: StringAutoGenerationProcessor,
+  ) {
     super();
-    this.processorCollection = this.processorFactory.createProcessorCollection();
-    // Note: Processor validation is deferred to first usage to avoid circular dependency issues
   }
 
   canProcess(schema: FieldSchema): schema is StringFieldSchema {
@@ -36,11 +41,11 @@ export class StringFieldProcessorComposite extends BaseFieldProcessor<StringFiel
   generateValidationDecorators(schema: StringFieldSchema, isRequired: boolean, parentIsArray: boolean): PropertyDecorator[] {
     const decorators: PropertyDecorator[] = [];
 
-    // Collect validation decorators from all processors via factory
-    decorators.push(...this.processorCollection.getBasicProcessor().generateValidationDecorators(schema, isRequired, parentIsArray));
-    decorators.push(...this.processorCollection.getFormatProcessor().generateValidationDecorators(schema, isRequired, parentIsArray));
-    decorators.push(...this.processorCollection.getTransformationProcessor().generateValidationDecorators(schema, isRequired, parentIsArray));
-    decorators.push(...this.processorCollection.getAutoGenerationProcessor().generateValidationDecorators(schema, isRequired, parentIsArray));
+    // Collect validation decorators from all processors via direct injection
+    decorators.push(...this.basicProcessor.generateValidationDecorators(schema, isRequired, parentIsArray));
+    decorators.push(...this.formatProcessor.generateValidationDecorators(schema, isRequired, parentIsArray));
+    decorators.push(...this.transformationProcessor.generateValidationDecorators(schema, isRequired, parentIsArray));
+    decorators.push(...this.autoGenerationProcessor.generateValidationDecorators(schema, isRequired, parentIsArray));
 
     return decorators;
   }
@@ -48,11 +53,11 @@ export class StringFieldProcessorComposite extends BaseFieldProcessor<StringFiel
   getTypeSpecificTransformations(schema: StringFieldSchema): TransformationFunction[] {
     const allTransformations: TransformationFunction[] = [];
 
-    // Collect transformations from all processors via factory
-    allTransformations.push(...this.processorCollection.getBasicProcessor().getTypeSpecificTransformations(schema));
-    allTransformations.push(...this.processorCollection.getFormatProcessor().getTypeSpecificTransformations(schema));
-    allTransformations.push(...this.processorCollection.getTransformationProcessor().getTypeSpecificTransformations(schema));
-    allTransformations.push(...this.processorCollection.getAutoGenerationProcessor().getTypeSpecificTransformations(schema));
+    // Collect transformations from all processors via direct injection
+    allTransformations.push(...this.basicProcessor.getTypeSpecificTransformations(schema));
+    allTransformations.push(...this.formatProcessor.getTypeSpecificTransformations(schema));
+    allTransformations.push(...this.transformationProcessor.getTypeSpecificTransformations(schema));
+    allTransformations.push(...this.autoGenerationProcessor.getTypeSpecificTransformations(schema));
 
     // Sort by order to ensure proper execution sequence:
     // 1. Auto-generation (order: 30) - generates values first
@@ -71,15 +76,15 @@ export class StringFieldProcessorComposite extends BaseFieldProcessor<StringFiel
     // Ensure all processors that claim to handle this schema can actually process it
     const schemaAny = schema as any;
 
-    if (schemaAny.format && !this.processorCollection.getFormatProcessor().canProcess(schema)) {
+    if (schemaAny.format && !this.formatProcessor.canProcess(schema)) {
       throw new Error(`Format processor cannot handle schema with format: ${schemaAny.format}`);
     }
 
-    if ((schemaAny.caseTransform || schemaAny.trimming) && !this.processorCollection.getTransformationProcessor().canProcess(schema)) {
+    if ((schemaAny.caseTransform || schemaAny.trimming) && !this.transformationProcessor.canProcess(schema)) {
       throw new Error(`Transformation processor cannot handle schema with transformations`);
     }
 
-    if (schemaAny.autoGenerate && !this.processorCollection.getAutoGenerationProcessor().canProcess(schema)) {
+    if (schemaAny.autoGenerate && !this.autoGenerationProcessor.canProcess(schema)) {
       throw new Error(`Auto-generation processor cannot handle schema with autoGenerate: ${schemaAny.autoGenerate}`);
     }
 
@@ -91,10 +96,10 @@ export class StringFieldProcessorComposite extends BaseFieldProcessor<StringFiel
    */
   getProcessors() {
     return {
-      basic: this.processorCollection.getBasicProcessor(),
-      format: this.processorCollection.getFormatProcessor(),
-      transformation: this.processorCollection.getTransformationProcessor(),
-      autoGeneration: this.processorCollection.getAutoGenerationProcessor(),
+      basic: this.basicProcessor,
+      format: this.formatProcessor,
+      transformation: this.transformationProcessor,
+      autoGeneration: this.autoGenerationProcessor,
     };
   }
 }

@@ -13,7 +13,6 @@ import { StringTransformationProcessor } from '../../../processors/field-process
 import { StringAutoGenerationProcessor } from '../../../processors/field-processors/primitive/string-auto-generation.processor';
 import { StringFieldProcessorComposite } from '../../../processors/field-processors/primitive/string-field-composite.processor';
 import { StringFormatProcessorFactory } from '../../../processors/field-processors/primitive/string-formats/string-format-processor.factory';
-import { StringProcessorFactory } from '../../../processors/field-processors/primitive/string-processor.factory';
 
 // Specialized processors
 import { DateFieldProcessor } from '../../../processors/field-processors/specialized/date-field.processor';
@@ -88,7 +87,6 @@ export function createFieldProcessingProviders(): Provider[] {
 
     // === STRING PROCESSING INFRASTRUCTURE ===
     StringFormatProcessorFactory,
-    StringProcessorFactory,
 
     // === FIELD PROCESSORS ===
     // String processors (specialized after SRP refactoring)
