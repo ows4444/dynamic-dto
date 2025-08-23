@@ -80,21 +80,7 @@ export class FieldValidationStrategy extends ValidationStrategy {
       }
     }
 
-    // Rule 2: Schema versioning consistency
-    if (schema.version) {
-      const versionPattern = /^\d+\.\d+\.\d+$/;
-      if (!versionPattern.test(schema.version.toString())) {
-        issues.push({
-          message: `Schema version '${schema.version.toString()}' must follow semantic versioning (x.y.z)`,
-          code: 'INVALID_SCHEMA_VERSION',
-          severity: ValidationSeverity.warning,
-          fieldPath: 'version',
-          metadata: { version: schema.version.toString() },
-        });
-      }
-    }
-
-    // Rule 3: Metadata consistency
+    // Rule 2: Metadata consistency
     if (schema.metadata && Object.keys(schema.metadata).length === 0) {
       issues.push({
         message: 'Schema has empty metadata object',

@@ -4,7 +4,6 @@ import { DtoGenerationPipeline } from './dto-generation.pipeline';
 import { FieldHandlerRegistry } from '../../infrastructure/registries/field-handler.registry';
 import { CacheMonitorService } from '../../infrastructure/monitoring/cache-monitor.service';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
-import { SchemaVersion } from '../../domain/value-objects/schema-version.vo';
 import { FieldType } from '../../core/types/field.types';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 
@@ -21,7 +20,6 @@ describe('DtoGenerationPipeline', () => {
       age: { type: FieldType.number, expose: true },
       isActive: { type: FieldType.boolean, expose: true, default: true },
     },
-    new SchemaVersion(1, 0, 0),
     ['name', 'age'],
     false,
   );
@@ -184,7 +182,7 @@ describe('DtoGenerationPipeline', () => {
 
     it('should process multiple schemas efficiently', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
       const schemas = [mockSchema, schema2];
 
       // Act
@@ -280,7 +278,7 @@ describe('DtoGenerationPipeline', () => {
 
     it('should generate different cache keys for different schemas', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity('different-schema', 'DifferentSchema', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
+      const schema2 = new DynamicSchemaEntity('different-schema', 'DifferentSchema', { email: { type: FieldType.string, expose: true } }, ['email'], false);
 
       const key1 = (pipeline as any).generateOptimizedCacheKey(mockSchema);
       const key2 = (pipeline as any).generateOptimizedCacheKey(schema2);
@@ -295,7 +293,7 @@ describe('DtoGenerationPipeline', () => {
       const parts = key.split(':');
 
       // Assert
-      expect(parts).toHaveLength(3); // name:version:hash
+      expect(parts).toHaveLength(2); // name:hash
       expect(parts[0]).toBe('TestSchema');
       expect(parts[1]).toBe('1.0.0');
       expect(parts[2]).toMatch(/^[a-f0-9]+$/); // Hex hash
@@ -373,7 +371,7 @@ describe('DtoGenerationPipeline', () => {
 
     it('should generate different fingerprints for different field structures', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
 
       const hash1 = (pipeline as any).generateSchemaFingerprint(mockSchema);
       const hash2 = (pipeline as any).generateSchemaFingerprint(schema2);
@@ -388,7 +386,6 @@ describe('DtoGenerationPipeline', () => {
         'test',
         'Test',
         { name: { type: FieldType.string, expose: true } },
-        new SchemaVersion(1, 0, 0),
         ['name'], // Required
         false,
       );
@@ -397,7 +394,6 @@ describe('DtoGenerationPipeline', () => {
         'test',
         'Test',
         { name: { type: FieldType.string, expose: true } },
-        new SchemaVersion(1, 0, 0),
         [], // Not required
         false,
       );

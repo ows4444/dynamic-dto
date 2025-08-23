@@ -68,8 +68,6 @@ across four layers:
 - **Entities**: Core business objects
   - `DynamicSchemaEntity`: Represents a complete schema definition
   - `SchemaValidationResultEntity`: Aggregates validation results
-- **Value Objects**: Immutable domain concepts
-  - `SchemaVersion`: Manages semantic versioning of schemas
 
 #### 3. **Infrastructure Layer** (`infrastructure/`)
 
@@ -161,7 +159,7 @@ functionality.
 
 - **Adaptive TTL**: Cache duration adjusts based on usage patterns
 - **Memory Monitoring**: Built-in cleanup when memory thresholds exceeded
-- **Cache Keys**: Generated using schema name + version + hash for uniqueness
+- **Cache Keys**: Generated using schema name + hash for uniqueness
 - **Pluggable Strategies**: Memory cache included, extensible for Redis/external
   caches
 
@@ -201,7 +199,6 @@ configurations. The `DynamicSchemaEntity` constructor takes:
 
 - Schema ID and name
 - Field definitions object
-- Schema version (using `SchemaVersion` value object)
 - Required fields array
 - Exposure flag for validation
 

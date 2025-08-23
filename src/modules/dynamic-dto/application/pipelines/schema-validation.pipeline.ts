@@ -9,7 +9,6 @@ export interface SchemaValidationPipelineOptions {
   userId?: string;
   userRoles?: string[];
   includeIntegrityCheck?: boolean;
-  schemaVersion?: string;
 }
 
 @Injectable()
@@ -17,14 +16,13 @@ export class SchemaValidationPipeline {
   constructor(private readonly schemaOrchestrator: SchemaOrchestratorService) {}
 
   execute(schema: DynamicSchemaEntity, options: SchemaValidationPipelineOptions = {}): ValidationResult {
-    const { userRoles, schemaVersion } = options;
+    const { userRoles } = options;
 
     const schemaProperties: Record<string, FieldSchema> = schema instanceof DynamicSchemaEntity ? schema.properties : schema;
 
     // Enhanced validation with context
     const context: Partial<ValidationContext> = {
       ...(userRoles !== undefined && { userRoles }),
-      ...(schemaVersion !== undefined && { schemaVersion }),
     };
 
     const result = this.schemaOrchestrator.validateSchema(schemaProperties, context);

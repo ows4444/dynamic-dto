@@ -4,7 +4,7 @@ import { FieldHandlerRegistry } from '../../infrastructure/registries/field-hand
 import { FieldType } from '../../core/types/field.types';
 import { ObjectFieldSchema } from '../../core/interfaces/schema/complex/object-field.schema';
 import { FieldSchema } from '../../core/interfaces/schema';
-import { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
+import { ValidationContext } from '../../core/interfaces/validation';
 
 describe('EnhancedStructuralSchemaValidator', () => {
   let validator: EnhancedStructuralSchemaValidator;
@@ -266,7 +266,6 @@ describe('EnhancedStructuralSchemaValidator', () => {
 
       const validationContext: Partial<ValidationContext> = {
         userRoles: ['admin'],
-        schemaVersion: '1.0.0',
       };
 
       const result = validator.validateWithContext(schema, validationContext);
@@ -277,7 +276,6 @@ describe('EnhancedStructuralSchemaValidator', () => {
           fieldPath: 'test',
           depth: 0,
           userRoles: ['admin'],
-          schemaVersion: '1.0.0',
         })
       );
       expect(result.isValid).toBe(true);

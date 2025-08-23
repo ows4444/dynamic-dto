@@ -3,7 +3,6 @@ import { Logger } from '@nestjs/common';
 import { DtoCacheService } from './dto-cache.service';
 import { ICacheManager } from '../../core/interfaces/cache/cache-manager.interface';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
-import { SchemaVersion } from '../../domain/value-objects/schema-version.vo';
 import { FieldType } from '../../core/types/field.types';
 import { MODULE_OPTIONS_TOKEN } from '../../dynamic-dto.module-definition';
 import type { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
@@ -20,7 +19,6 @@ describe('DtoCacheService', () => {
       name: { type: FieldType.string, expose: true },
       age: { type: FieldType.number, expose: true },
     },
-    new SchemaVersion(1, 0, 0),
     ['name'],
     false,
   );
@@ -166,9 +164,6 @@ describe('DtoCacheService', () => {
       // Arrange
       cacheManager.getMemoryUsage.mockResolvedValue({
         utilizationRate: 0.5,
-        totalMemory: 1000,
-        usedMemory: 500,
-        freeMemory: 500,
       });
 
       // Act
@@ -182,7 +177,6 @@ describe('DtoCacheService', () => {
       // Arrange
       cacheManager.getMemoryUsage.mockResolvedValue({
         utilizationRate: 0.9,
-        totalMemory: 1000,
         usedMemory: 900,
         freeMemory: 100,
       });
@@ -213,9 +207,6 @@ describe('DtoCacheService', () => {
       const serviceWithoutOptions = moduleWithoutOptions.get<DtoCacheService>(DtoCacheService);
       cacheManager.getMemoryUsage.mockResolvedValue({
         utilizationRate: 0.5,
-        totalMemory: 1000,
-        usedMemory: 500,
-        freeMemory: 500,
       });
 
       // Act
@@ -263,7 +254,7 @@ describe('DtoCacheService', () => {
 
     it('should generate different cache keys for different schemas', () => {
       // Arrange
-      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
 
       // Act
       const key1 = service.generateCacheKey(mockSchema);
@@ -282,7 +273,6 @@ describe('DtoCacheService', () => {
           name: { type: FieldType.string, expose: true },
           age: { type: FieldType.number, expose: true },
         },
-        new SchemaVersion(2, 0, 0), // Different version
         ['name'],
         false,
       );
@@ -304,7 +294,6 @@ describe('DtoCacheService', () => {
           name: { type: FieldType.string, expose: true },
           age: { type: FieldType.number, expose: true, nullable: true },
         },
-        new SchemaVersion(1, 0, 0),
         ['name'], // age is not required
         false,
       );

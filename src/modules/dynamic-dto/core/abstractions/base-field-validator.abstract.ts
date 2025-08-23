@@ -1,5 +1,5 @@
 import { ValidationSeverity } from '../enums/validation.enums';
-import type { BaseFieldSchema, ConditionalValidation, DisplayHints, FieldPermissions } from '../interfaces/schema';
+import type { BaseFieldSchema, ConditionalValidation, FieldPermissions } from '../interfaces/schema';
 import type { ValidationContext, ValidationResult } from '../interfaces/validation';
 import type { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
 import type { FieldTypeValue } from '../types/field.types';
@@ -76,11 +76,6 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
       issues.push(...this.validatePermissions(schema.permissions, context));
     }
 
-    // Display hints validation
-    if (schema.displayHints) {
-      issues.push(...this.validateDisplayHints(schema.displayHints, context));
-    }
-
     // Conditional validation
     if (schema.conditionalValidation?.length) {
       issues.push(...this.validateConditionalRules(schema.conditionalValidation, context));
@@ -138,32 +133,6 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
         message: `Field '${context.fieldPath}' has write permissions without read permissions for roles: ${writeOnlyRoles.join(', ')}`,
         fieldPath: context.fieldPath,
         metadata: { roles: writeOnlyRoles },
-      });
-    }
-
-    return issues;
-  }
-
-  protected validateDisplayHints(hints: DisplayHints, context: ValidationContext): ValidationIssue[] {
-    const issues: ValidationIssue[] = [];
-
-    if (hints.order !== undefined && (hints.order < 0 || !Number.isInteger(hints.order))) {
-      issues.push({
-        severity: ValidationSeverity.error,
-        code: 'DISPLAY_INVALID_ORDER',
-        message: `Display order for field '${context.fieldPath}' must be a non-negative integer`,
-        fieldPath: context.fieldPath,
-        value: hints.order,
-      });
-    }
-
-    if (hints.validation?.debounceMs !== undefined && hints.validation.debounceMs < 0) {
-      issues.push({
-        severity: ValidationSeverity.error,
-        code: 'DISPLAY_INVALID_DEBOUNCE',
-        message: `Validation debounce for field '${context.fieldPath}' must be non-negative`,
-        fieldPath: context.fieldPath,
-        value: hints.validation.debounceMs,
       });
     }
 

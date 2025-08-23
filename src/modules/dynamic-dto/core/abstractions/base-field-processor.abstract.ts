@@ -14,7 +14,6 @@ export interface SerializationContext {
   includeDeprecated?: boolean;
   locale?: string;
   userId?: string;
-  version?: string;
 }
 
 export interface TransformationFunction {
@@ -71,10 +70,6 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
     if (isRequired && !schema.readonly) decorators.push(IsNotEmpty({ message: this.getValidationMessage(schema, 'required') }));
     else if (!isRequired) decorators.push(IsOptional());
 
-    if ('customValidators' in schema && schema.customValidators?.length) {
-      decorators.push(...this.generateCustomValidationDecorators(schema.customValidators));
-    }
-
     decorators.push(...this.generateValidationStrategyDecorators(schema));
     return decorators;
   }
@@ -86,10 +81,6 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
 
   protected createNullableValidation(): PropertyDecorator[] {
     return [ValidateIf((_, val) => val !== null)];
-  }
-
-  protected generateCustomValidationDecorators(customValidators: readonly string[]): PropertyDecorator[] {
-    return customValidators.map(() => ValidateIf(() => true));
   }
 
   protected generateValidationStrategyDecorators(schema: T): PropertyDecorator[] {
@@ -286,7 +277,6 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
     const validatedSchema = this.validateSchemaStructure(schema);
 
     if (this.shouldExcludeForPermissions(validatedSchema, context)) return [Exclude()];
-    if (this.shouldExcludeForHidden(validatedSchema, context)) return [Exclude()];
     if (this.shouldExcludeForDeprecated(validatedSchema, context)) return [Exclude()];
 
     const decorators: PropertyDecorator[] = [];
@@ -300,10 +290,6 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
   protected shouldExcludeForPermissions(schema: T, context?: SerializationContext): boolean {
     if (!context?.userRoles || !('permissions' in schema) || !schema.permissions) return false;
     return !this.checkOperationPermission(schema.permissions, context.userRoles, context.operation);
-  }
-
-  protected shouldExcludeForHidden(schema: T, context?: SerializationContext): boolean {
-    return !!('displayHints' in schema && schema.displayHints?.hidden) && !context?.includeHidden;
   }
 
   protected shouldExcludeForDeprecated(schema: T, context?: SerializationContext): boolean {

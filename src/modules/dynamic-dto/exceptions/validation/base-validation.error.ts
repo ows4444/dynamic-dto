@@ -5,7 +5,6 @@ import type { DeepReadonly } from '../../core/types/common.types';
 export interface ValidationErrorContext {
   readonly fieldPath?: string;
   readonly schemaName?: string;
-  readonly schemaVersion?: string;
   readonly operation?: 'create' | 'read' | 'update' | 'delete';
   readonly userRoles?: readonly string[];
   readonly timestamp?: Date;

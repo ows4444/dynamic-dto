@@ -87,7 +87,7 @@ npm run build             # NestJS build with TypeScript compilation
 
 - **Field Processing**: Test field processor registration and validation flows
 - **Cache Behavior**: Verify DTO caching and memory management
-- **Schema Evolution**: Test schema compatibility and version handling
+- **Schema Evolution**: Test schema compatibility
 - **Error Recovery**: Validate error aggregation and recovery services
 - **Batch Processing**: Test concurrent schema processing if affected
 

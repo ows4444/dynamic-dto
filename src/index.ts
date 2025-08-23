@@ -16,7 +16,6 @@ export type { DiscoveredProcessor } from './modules/dynamic-dto/infrastructure/s
 // Domain entities and value objects
 export { DynamicSchemaEntity } from './modules/dynamic-dto/domain/entities/dynamic-schema.entity';
 export { SchemaValidationResultEntity } from './modules/dynamic-dto/domain/entities/schema-validation-result.entity';
-export { SchemaVersion } from './modules/dynamic-dto/domain/value-objects/schema-version.vo';
 
 // Core types and interfaces
 export { FieldType, FieldTypeValue } from './modules/dynamic-dto/core/types/field.types';

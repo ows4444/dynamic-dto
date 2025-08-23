@@ -4,7 +4,6 @@ import { StructuralValidationStrategy } from './structural-validation.strategy';
 import { SchemaValidationPipeline } from '../../pipelines/schema-validation.pipeline';
 import { BaseSchemaValidator } from '../../../core/abstractions/base-schema-validator.abstract';
 import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.entity';
-import { SchemaVersion } from '../../../domain/value-objects/schema-version.vo';
 import { FieldType } from '../../../core/types/field.types';
 import type { ValidationContext, ValidationResult } from '../../../core/interfaces/validation';
 
@@ -20,7 +19,6 @@ describe('StructuralValidationStrategy', () => {
       name: { type: FieldType.string, expose: true },
       age: { type: FieldType.number, expose: true },
     },
-    new SchemaVersion(1, 0, 0),
     ['name'],
     false,
   );

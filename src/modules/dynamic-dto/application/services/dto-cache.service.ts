@@ -56,8 +56,7 @@ export class DtoCacheService {
   generateCacheKey(schema: DynamicSchemaEntity): string {
     // Generate comprehensive hash including schema metadata for better cache differentiation
     const schemaHash = this.generateSchemaHash(schema);
-    const versionString = schema.version.toString();
-    return `dto:${schema.name}:${versionString}:${schemaHash}`;
+    return `dto:${schema.name}:${schemaHash}`;
   }
 
   private generateSchemaHash(schema: DynamicSchemaEntity): string {
@@ -77,9 +76,7 @@ export class DtoCacheService {
             ...(fieldSchema.readonly !== undefined && { readonly: fieldSchema.readonly }),
             ...(fieldSchema.default !== undefined && { hasDefault: true }),
             ...(fieldSchema.validationStrategy && { validationStrategy: fieldSchema.validationStrategy }),
-            ...(fieldSchema.customValidators && { hasCustomValidators: true }),
             ...(fieldSchema.conditionalValidation && { hasConditionalValidation: true }),
-            ...(fieldSchema.displayHints && { hasDisplayHints: true }),
             ...(fieldSchema.permissions && { hasPermissions: true }),
             ...(fieldSchema.deprecated && { deprecated: fieldSchema.deprecated }),
             ...(fieldSchema.experimental !== undefined && { experimental: fieldSchema.experimental }),

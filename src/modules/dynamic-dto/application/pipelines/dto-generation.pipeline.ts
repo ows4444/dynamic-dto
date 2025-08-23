@@ -78,7 +78,7 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
       }
     }
 
-    const className = this.generateClassName(schema.name, schema.version.toString());
+    const className = this.generateClassName(schema.name);
     const DynamicClass = this.generateWithRuntimeApproach(className, schema);
 
     // Cache with weak reference to prevent memory leaks
@@ -142,7 +142,7 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
     const startTime = Date.now();
     for (const schema of uncachedSchemas) {
       const cacheKey = this.generateOptimizedCacheKey(schema);
-      const className = this.generateClassName(schema.name, schema.version.toString());
+      const className = this.generateClassName(schema.name);
 
       try {
         const DynamicClass = this.generateWithRuntimeApproach(className, schema);
@@ -164,7 +164,6 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
       } catch (error) {
         this.logger.error('Failed to generate DTO in batch', {
           schema: schema.name,
-          version: schema.version.toString(),
           error: error instanceof Error ? error.message : 'Unknown error',
         });
         throw error;
@@ -233,15 +232,14 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
     return DynamicClass;
   }
 
-  private generateClassName(name: string, version: string): string {
-    return `${name}_v${version.replace(/\./g, '_')}`;
+  private generateClassName(name: string): string {
+    return `${name}DTO`;
   }
 
   private generateOptimizedCacheKey(schema: DynamicSchemaEntity): string {
     // Create a highly efficient cache key using crypto hashing
     const schemaFingerprint = this.generateSchemaFingerprint(schema);
-    const versionString = schema.version.toString();
-    return `${schema.name}:${versionString}:${schemaFingerprint}`;
+    return `${schema.name}:${schemaFingerprint}`;
   }
 
   private generateSchemaFingerprint(schema: DynamicSchemaEntity): string {

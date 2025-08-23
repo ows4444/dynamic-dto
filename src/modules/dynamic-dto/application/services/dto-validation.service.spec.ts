@@ -3,7 +3,6 @@ import { Logger } from '@nestjs/common';
 import { DtoValidationService } from './dto-validation.service';
 import { ValidationPipeline } from '../pipelines/validation.pipeline';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
-import { SchemaVersion } from '../../domain/value-objects/schema-version.vo';
 import { FieldType } from '../../core/types/field.types';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
 import * as classValidator from 'class-validator';
@@ -24,7 +23,6 @@ describe('DtoValidationService', () => {
       name: { type: FieldType.string, expose: true },
       age: { type: FieldType.number, expose: true },
     },
-    new SchemaVersion(1, 0, 0),
     ['name'],
     false,
   );
@@ -124,7 +122,7 @@ describe('DtoValidationService', () => {
     it('should return valid schemas and count invalid ones', () => {
       // Arrange
       const schema1 = mockSchema;
-      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, new SchemaVersion(1, 0, 0), ['email'], false);
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
       const schemas = [schema1, schema2];
 
       validationPipeline.validate.mockReturnValueOnce({ isValid: true, errors: [] }).mockReturnValueOnce({ isValid: false, errors: ['Invalid schema'] });

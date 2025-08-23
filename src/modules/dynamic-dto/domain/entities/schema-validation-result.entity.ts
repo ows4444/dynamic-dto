@@ -6,7 +6,6 @@ export class SchemaValidationResultEntity {
     public readonly validationResult: ValidationResult,
     public readonly validatedAt: Date,
     public readonly validatorType: string,
-    public readonly schemaVersion?: string,
     public readonly userId?: string,
   ) {}
 
@@ -36,7 +35,6 @@ export class SchemaValidationResultEntity {
       warningCount: this.warningCount,
       validatedAt: this.validatedAt,
       validatorType: this.validatorType,
-      schemaVersion: this.schemaVersion,
       userId: this.userId,
     };
   }

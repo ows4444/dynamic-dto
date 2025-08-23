@@ -11,14 +11,7 @@ import {
   FieldSecurityValidationError,
   FieldTypeValidationError,
 } from './field-validation.error';
-import {
-  SchemaBusinessRuleError,
-  SchemaCircularReferenceError,
-  SchemaCrossFieldValidationError,
-  SchemaFieldNamingError,
-  SchemaStructureValidationError,
-  SchemaVersionValidationError,
-} from './schema-validation.error';
+import { SchemaBusinessRuleError, SchemaCircularReferenceError, SchemaCrossFieldValidationError, SchemaFieldNamingError, SchemaStructureValidationError } from './schema-validation.error';
 
 export interface ValidationErrorMetrics {
   totalErrors: number;
@@ -77,7 +70,7 @@ export class ValidationErrorService {
    * Create optimized schema validation errors
    */
   createSchemaError(
-    errorType: 'STRUCTURE' | 'VERSION' | 'CIRCULAR_REFERENCE' | 'FIELD_NAMING' | 'BUSINESS_RULE' | 'CROSS_FIELD',
+    errorType: 'STRUCTURE' | 'CIRCULAR_REFERENCE' | 'FIELD_NAMING' | 'BUSINESS_RULE' | 'CROSS_FIELD',
     schemaName: string,
     details: Record<string, any>,
     context?: ValidationErrorContext,
@@ -85,8 +78,6 @@ export class ValidationErrorService {
     switch (errorType) {
       case 'STRUCTURE':
         return new SchemaStructureValidationError(schemaName, details.structureIssue, context);
-      case 'VERSION':
-        return new SchemaVersionValidationError(schemaName, details.version, details.versionIssue, context);
       case 'CIRCULAR_REFERENCE':
         return new SchemaCircularReferenceError(schemaName, details.circularPath, context);
       case 'FIELD_NAMING':
@@ -268,17 +259,10 @@ export class ValidationErrorService {
   /**
    * Create context-aware error aggregator
    */
-  createContextAggregator(
-    schemaName?: string,
-    schemaVersion?: string,
-    userRoles?: readonly string[],
-    operation?: 'create' | 'read' | 'update' | 'delete',
-    requestId?: string,
-  ): ValidationErrorAggregator {
+  createContextAggregator(schemaName?: string, userRoles?: readonly string[], operation?: 'create' | 'read' | 'update' | 'delete', requestId?: string): ValidationErrorAggregator {
     const context: ValidationErrorContext = {
       fieldPath: '',
       ...(schemaName && { schemaName }),
-      ...(schemaVersion && { schemaVersion }),
       ...(userRoles && { userRoles }),
       ...(operation && { operation }),
       ...(requestId && { requestId }),
