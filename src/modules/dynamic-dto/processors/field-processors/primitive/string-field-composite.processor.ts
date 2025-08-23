@@ -7,16 +7,15 @@ import type { FieldSchema } from '../../../core/interfaces/schema';
 import { StringProcessorFactory } from './string-processor.factory';
 
 /**
- * StringFieldProcessorComposite coordinates specialized string processors.
- * Uses factory pattern to eliminate circular dependency risks while maintaining
- * the same external interface.
+ * StringFieldProcessorComposite coordinates specialized string processors using composition pattern.
+ * Refactored to eliminate inheritance complexity and improve maintainability.
  *
  * Responsibilities:
- * - Delegates validation to specialized processors via factory
- * - Combines transformation functions from all processors
- * - Maintains proper ordering of transformations
- * - Provides a clean interface that adheres to SRP
- * - Eliminates circular dependency risks through lazy loading
+ * - Delegates to specialized processors with clear separation of concerns
+ * - Combines transformation functions with proper ordering
+ * - Uses shared utilities for common operations
+ * - Maintains clean factory pattern for dependency management
+ * - Provides unified interface while preserving individual processor responsibilities
  */
 @FieldProcessor({ type: FieldType.string, priority: 1, category: 'primitive' })
 @Injectable()

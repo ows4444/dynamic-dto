@@ -5,9 +5,9 @@ import { StringTransformationProcessor } from './string-transformation.processor
 import { StringAutoGenerationProcessor } from './string-auto-generation.processor';
 
 /**
- * Factory for creating and managing string field processors
- * This eliminates circular dependency risks by using factory pattern
- * instead of direct constructor injection in the composite
+ * Factory for creating and managing string field processors.
+ * Simplified factory pattern with cleaner interface and better maintainability.
+ * Eliminates circular dependency risks through dependency injection composition.
  */
 @Injectable()
 export class StringProcessorFactory {

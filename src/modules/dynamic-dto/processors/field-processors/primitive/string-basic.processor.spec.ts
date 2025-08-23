@@ -3,6 +3,7 @@ import { StringBasicProcessor } from './string-basic.processor';
 import { StringFieldSchema, CaseTransform, AutoGenerationType } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import { StringFormat } from '../../../core/enums/string.enums';
+import { StringValidationUtils } from './utils/string-validation.utils';
 
 describe('StringBasicProcessor', () => {
   let processor: StringBasicProcessor;
@@ -195,8 +196,8 @@ describe('StringBasicProcessor', () => {
     });
 
     it('should clear regex cache when it gets too large', () => {
-      // This would normally be tested by calling the static method
-      expect(() => StringBasicProcessor.clearRegexCache()).not.toThrow();
+      // Cache clearing is now handled by the StringValidationUtils
+      expect(() => StringValidationUtils.clearRegexCache()).not.toThrow();
     });
   });
 });

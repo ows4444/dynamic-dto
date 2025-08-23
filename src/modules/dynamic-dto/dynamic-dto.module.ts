@@ -1,7 +1,10 @@
-import { DynamicModule, Module, Type } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 
 // Consolidated provider factories for simplified module configuration
 import { createCoreServicesProviders, createFieldProcessingProviders, createInfrastructureProviders, createValidationProviders } from './infrastructure/factories/consolidated';
+
+// Explicit export registry to replace complex runtime filtering
+import { ExportRegistry } from './infrastructure/registries/export.registry';
 
 // Configuration
 import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
@@ -27,28 +30,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         ...createInfrastructureProviders(options),
         ...createValidationProviders(),
       ],
-      exports: this.createExports(),
+      exports: ExportRegistry.getAllExports(),
     };
-  }
-
-  /**
-   * Creates the exports array for the module by extracting exportable services from provider factories
-   */
-  private static createExports(): Type[] {
-    // Get core services from factory
-    const coreServices = createCoreServicesProviders().filter((provider): provider is Type => typeof provider === 'function');
-
-    // Get field processing services from factory
-    const fieldProcessingServices = createFieldProcessingProviders().filter(
-      (provider): provider is Type => typeof provider === 'function' && (provider.name.includes('Registry') || provider.name.includes('Service')),
-    );
-
-    // Get infrastructure services from factory
-    const infrastructureServices = createInfrastructureProviders({}).filter(
-      (provider): provider is Type => typeof provider === 'function' && (provider.name.includes('Monitor') || provider.name.includes('Manager')),
-    );
-
-    // Combine all exportable services
-    return [...coreServices, ...fieldProcessingServices, ...infrastructureServices];
   }
 }
