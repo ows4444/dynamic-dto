@@ -28,11 +28,7 @@ export class CacheModule {
           useClass: CacheManagerService,
         },
       ],
-      exports: [
-        'ICacheStrategy',
-        'ICacheManager',
-        CacheManagerService,
-      ],
+      exports: ['ICacheStrategy', 'ICacheManager', CacheManagerService],
     };
   }
 }

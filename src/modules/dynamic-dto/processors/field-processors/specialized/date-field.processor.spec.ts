@@ -327,9 +327,9 @@ describe('DateFieldProcessor', () => {
       const nonDate = 'not a date';
 
       // Condition should return true for Date objects
-      expect(formatTransformation?.condition?.({} as any, { value: date })).toBe(true);
+      expect(formatTransformation?.condition?.({} as any, { value: date, obj: {}, key: 'test' })).toBe(true);
       // Condition should return false/undefined for non-Date objects
-      expect(formatTransformation?.condition?.({} as any, { value: nonDate })).toBeFalsy();
+      expect(formatTransformation?.condition?.({} as any, { value: nonDate, obj: {}, key: 'test' })).toBeFalsy();
     });
   });
 

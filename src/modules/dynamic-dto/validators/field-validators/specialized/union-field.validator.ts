@@ -108,7 +108,7 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
     }
 
     // Check for conflicting configurations
-    if (schema.strategy === UnionValidationStrategy.all_valid && schema.allowAmbiguous === false) {
+    if (schema.strategy === UnionValidationStrategy.allValid && schema.allowAmbiguous === false) {
       issues.push({
         code: 'UNION_CONFLICTING_CONFIG',
         message: 'all_valid strategy conflicts with allowAmbiguous=false',
@@ -132,20 +132,20 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
     }
 
     // Validate based on strategy
-    const strategy = schema.strategy ?? UnionValidationStrategy.first_match;
+    const strategy = schema.strategy ?? UnionValidationStrategy.firstMatch;
     const typeMatchResults = this.analyzeTypeMatches(value, schema);
 
     switch (strategy) {
-      case UnionValidationStrategy.strict:
+      case UnionValidationStrategy.oneOf:
         return this.validateStrict(value, schema, typeMatchResults, issues);
 
-      case UnionValidationStrategy.first_match:
+      case UnionValidationStrategy.firstMatch:
         return this.validateFirstMatch(value, schema, typeMatchResults, issues);
 
-      case UnionValidationStrategy.best_match:
+      case UnionValidationStrategy.bestMatch:
         return this.validateBestMatch(value, schema, typeMatchResults, issues);
 
-      case UnionValidationStrategy.all_valid:
+      case UnionValidationStrategy.allValid:
         return this.validateAllValid(value, schema, typeMatchResults, issues);
 
       case UnionValidationStrategy.discriminated:

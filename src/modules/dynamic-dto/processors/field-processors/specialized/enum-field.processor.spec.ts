@@ -280,8 +280,8 @@ describe('EnumFieldProcessor', () => {
       const transformation = transformations[0];
 
       expect(transformation?.condition).toBeDefined();
-      expect(transformation?.condition?.({} as any, { value: undefined })).toBe(true);
-      expect(transformation?.condition?.({} as any, { value: 'existing' })).toBe(false);
+      expect(transformation?.condition?.({} as any, { value: undefined, obj: {}, key: 'test' })).toBe(true);
+      expect(transformation?.condition?.({} as any, { value: 'existing', obj: {}, key: 'test' })).toBe(false);
     });
   });
 
@@ -324,8 +324,8 @@ describe('EnumFieldProcessor', () => {
       const trans = transformations[0];
 
       expect(trans?.condition).toBeDefined();
-      expect(trans?.condition?.({} as any, { value: 'string' })).toBe(true);
-      expect(trans?.condition?.({} as any, { value: 123 })).toBe(false);
+      expect(trans?.condition?.({} as any, { value: 'string', obj: {}, key: 'test' })).toBe(true);
+      expect(trans?.condition?.({} as any, { value: 123, obj: {}, key: 'test' })).toBe(false);
     });
   });
 

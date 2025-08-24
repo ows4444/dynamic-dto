@@ -190,24 +190,24 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
           validate: (value: unknown): boolean => {
             if (value === undefined || value === null) return true;
 
-            const strategy = schema.strategy ?? UnionValidationStrategy.first_match;
+            const strategy = schema.strategy ?? UnionValidationStrategy.firstMatch;
             const matchResults = this.validateAgainstAllTypes(value, schema);
 
             switch (strategy) {
-              case UnionValidationStrategy.strict: {
+              case UnionValidationStrategy.oneOf: {
                 const validMatches = matchResults.filter((r) => r.valid);
                 return validMatches.length === 1;
               }
 
-              case UnionValidationStrategy.first_match:
+              case UnionValidationStrategy.firstMatch:
                 return matchResults.some((r) => r.valid);
 
-              case UnionValidationStrategy.best_match: {
+              case UnionValidationStrategy.bestMatch: {
                 const bestMatch = this.findBestMatch(matchResults);
                 return bestMatch?.valid ?? false;
               }
 
-              case UnionValidationStrategy.all_valid:
+              case UnionValidationStrategy.allValid:
                 return matchResults.every((r) => r.valid);
 
               case UnionValidationStrategy.discriminated:

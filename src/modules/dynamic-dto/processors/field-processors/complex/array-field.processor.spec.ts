@@ -312,8 +312,8 @@ describe('ArrayFieldProcessor', () => {
       const transformation = transformations[1];
 
       expect(transformation?.condition).toBeDefined();
-      expect(transformation?.condition?.({} as any, { value: [] })).toBe(true);
-      expect(transformation?.condition?.({} as any, { value: 'not an array' })).toBe(false);
+      expect(transformation?.condition?.({} as any, { value: [], obj: {}, key: 'test' })).toBe(true);
+      expect(transformation?.condition?.({} as any, { value: 'not an array', obj: {}, key: 'test' })).toBe(false);
     });
 
     it('should handle arrays with mixed types', () => {
@@ -391,8 +391,8 @@ describe('ArrayFieldProcessor', () => {
       const transformation = transformations[2];
 
       expect(transformation?.condition).toBeDefined();
-      expect(transformation?.condition?.({} as any, { value: [] })).toBe(true);
-      expect(transformation?.condition?.({} as any, { value: 'not an array' })).toBe(false);
+      expect(transformation?.condition?.({} as any, { value: [], obj: {}, key: 'test' })).toBe(true);
+      expect(transformation?.condition?.({} as any, { value: 'not an array', obj: {}, key: 'test' })).toBe(false);
     });
 
     it('should handle nested objects', () => {

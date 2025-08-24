@@ -27,10 +27,16 @@ export class NumberFieldValidator extends BaseFieldValidator<NumberFieldSchema> 
     }
 
     if (schema.exclusiveMin !== undefined && schema.exclusiveMax !== undefined && schema.exclusiveMin >= schema.exclusiveMax) {
-      builder.addError('NUMBER_INVALID_EXCLUSIVE_RANGE', `exclusiveMin (${schema.exclusiveMin}) must be less than exclusiveMax (${schema.exclusiveMax})`, {
-        exclusiveMin: schema.exclusiveMin,
-        exclusiveMax: schema.exclusiveMax,
-      }, undefined, { exclusiveMin: schema.exclusiveMin, exclusiveMax: schema.exclusiveMax });
+      builder.addError(
+        'NUMBER_INVALID_EXCLUSIVE_RANGE',
+        `exclusiveMin (${schema.exclusiveMin}) must be less than exclusiveMax (${schema.exclusiveMax})`,
+        {
+          exclusiveMin: schema.exclusiveMin,
+          exclusiveMax: schema.exclusiveMax,
+        },
+        undefined,
+        { exclusiveMin: schema.exclusiveMin, exclusiveMax: schema.exclusiveMax },
+      );
     }
 
     // Validate precision constraints
@@ -43,7 +49,10 @@ export class NumberFieldValidator extends BaseFieldValidator<NumberFieldSchema> 
     }
 
     if (schema.precision !== undefined && schema.scale !== undefined && schema.scale > schema.precision) {
-      builder.addError('NUMBER_SCALE_EXCEEDS_PRECISION', `scale (${schema.scale}) cannot exceed precision (${schema.precision})`, { precision: schema.precision, scale: schema.scale }, undefined, { precision: schema.precision, scale: schema.scale });
+      builder.addError('NUMBER_SCALE_EXCEEDS_PRECISION', `scale (${schema.scale}) cannot exceed precision (${schema.precision})`, { precision: schema.precision, scale: schema.scale }, undefined, {
+        precision: schema.precision,
+        scale: schema.scale,
+      });
     }
 
     return builder.build();

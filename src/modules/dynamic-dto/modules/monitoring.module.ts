@@ -21,10 +21,7 @@ export class MonitoringModule {
         // Enhanced cache monitor service
         EnhancedCacheMonitorService,
       ],
-      exports: [
-        'CACHE_MONITOR_CONFIG',
-        EnhancedCacheMonitorService,
-      ],
+      exports: ['CACHE_MONITOR_CONFIG', EnhancedCacheMonitorService],
     };
   }
 }
