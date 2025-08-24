@@ -275,7 +275,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.errors).toHaveLength(0);
       expect(result.warnings).toHaveLength(1);
       expect(result.warnings?.[0]?.code).toBe('BOOLEAN_EMPTY_FALSE_VALUES');
-      expect(result.warnings?.[0]?.message).toBe('falseValues array is empty');
+      expect(result.warnings?.[0]?.message).toBe("Field 'test.field' falseValues array is empty");
     });
 
     it('should warn when both arrays are empty', () => {
