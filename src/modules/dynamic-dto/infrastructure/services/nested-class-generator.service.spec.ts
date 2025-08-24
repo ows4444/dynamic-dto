@@ -3,7 +3,6 @@ import { NestedClassGeneratorService } from './nested-class-generator.service';
 import { CacheMonitorService } from '../monitoring/cache-monitor.service';
 import { FieldProcessorRegistry } from '../registries/field-processor.registry';
 import { FieldType } from '../../core/types/field.types';
-import type { FieldSchema } from '../../core/interfaces/schema';
 import type { StringFieldSchema } from '../../core/interfaces/schema/primitive/string-field.schema';
 import type { NumberFieldSchema } from '../../core/interfaces/schema/primitive/number-field.schema';
 
@@ -25,12 +24,8 @@ describe('NestedClassGeneratorService', () => {
   });
 
   beforeEach(async () => {
-    const mockDecorators = {
-      validationDecorators: [],
-      transformationDecorators: [],
-      serializationDecorators: [],
-      customDecorators: [],
-    };
+    // The processField method should return PropertyDecorator[], not an object with decorator arrays
+    const mockDecorators: PropertyDecorator[] = [];
 
     mockCacheMonitor = {
       registerCache: jest.fn(),
@@ -105,7 +100,7 @@ describe('NestedClassGeneratorService', () => {
 
       expect(GeneratedClass).toBeDefined();
       expect(typeof GeneratedClass).toBe('function');
-      expect(GeneratedClass.name).toMatch(/^DynamicNestedClass_\d+$/);
+      expect(GeneratedClass.name).toMatch(/^DynamicNested\d+_\d+$/);
     });
 
     it('should generate a nested class with multiple properties', () => {
@@ -296,8 +291,8 @@ describe('NestedClassGeneratorService', () => {
       const Class1 = service.generateNestedClass(properties1);
       const Class2 = service.generateNestedClass(properties2);
 
-      expect(Class1.name).toMatch(/^DynamicNestedClass_\d+$/);
-      expect(Class2.name).toMatch(/^DynamicNestedClass_\d+$/);
+      expect(Class1.name).toMatch(/^DynamicNested\d+_\d+$/);
+      expect(Class2.name).toMatch(/^DynamicNested\d+_\d+$/);
       expect(Class1.name).not.toBe(Class2.name);
     });
   });

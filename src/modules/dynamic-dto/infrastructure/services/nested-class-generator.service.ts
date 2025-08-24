@@ -14,7 +14,7 @@ export interface INestedClassGenerator {
 @Injectable()
 export class NestedClassGeneratorService implements INestedClassGenerator {
   private readonly logger = new Logger(NestedClassGeneratorService.name);
-  private readonly generatedClasses = new LRUCache<string, classConstructor<any>>(300); // Max 300 nested classes
+  private readonly generatedClasses = new LRUCache<string, classConstructor<unknown>>(300); // Max 300 nested classes
   private classCounter = 0;
 
   constructor(
@@ -137,14 +137,30 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
 
   private applyDecorators<T extends Record<string, FieldSchema>>(targetClass: classConstructor<{ [K in keyof T]: unknown }>, propertyName: string, decorators: PropertyDecorator[]): void {
     if (!Array.isArray(decorators)) {
+      this.logger.error(`Invalid decorators format for field ${propertyName}`, {
+        decorators,
+        typeof: typeof decorators,
+        isArray: Array.isArray(decorators),
+      });
       throw new Error('Decorators must be an array');
     }
 
-    decorators.forEach((decorator) => {
+    decorators.forEach((decorator, index) => {
       if (typeof decorator !== 'function') {
+        this.logger.error(`Invalid decorator at index ${index} for field ${propertyName}`, {
+          decorator,
+          typeof: typeof decorator,
+        });
         throw new Error(`Invalid decorator: expected function, got ${typeof decorator}`);
       }
-      decorator(targetClass.prototype, propertyName);
+      try {
+        decorator(targetClass.prototype, propertyName);
+      } catch (error) {
+        this.logger.error(`Failed to apply decorator ${index} to field ${propertyName}`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
     });
   }
 }
