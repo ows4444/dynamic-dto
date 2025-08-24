@@ -176,7 +176,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_CONFLICTING_VALUES');
       expect(result.errors?.[0]?.message).toBe("Field 'test.field' Values appear in both trueValues and falseValues: maybe (received: [1 items])");
-      expect(result.errors?.[0]?.metadata).toEqual(['maybe']);
+      expect(result.errors?.[0]?.metadata?.conflicts).toEqual(['maybe']);
     });
 
     it('should fail validation when multiple values conflict', () => {
@@ -192,7 +192,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_CONFLICTING_VALUES');
       expect(result.errors?.[0]?.message).toBe("Field 'test.field' Values appear in both trueValues and falseValues: maybe, unknown (received: [2 items])");
-      expect(result.errors?.[0]?.metadata).toEqual(['maybe', 'unknown']);
+      expect(result.errors?.[0]?.metadata?.conflicts).toEqual(['maybe', 'unknown']);
     });
 
     it('should pass validation with valid boolean default value', () => {
@@ -230,8 +230,8 @@ describe('BooleanFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_INVALID_DEFAULT');
-      expect(result.errors?.[0]?.message).toBe('Default value must be a boolean');
-      expect(result.errors?.[0]?.metadata).toBe('invalid');
+      expect(result.errors?.[0]?.message).toBe("Field 'test.field' Default value must be a boolean (received: \"invalid\")");
+      expect(result.errors?.[0]?.value).toBe('invalid');
     });
 
     it('should fail validation with numeric default value', () => {
@@ -245,7 +245,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_INVALID_DEFAULT');
-      expect(result.errors?.[0]?.metadata).toBe(1);
+      expect(result.errors?.[0]?.value).toBe(1);
     });
 
     it('should warn when trueValues array is empty', () => {
@@ -260,7 +260,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.errors).toHaveLength(0);
       expect(result.warnings).toHaveLength(1);
       expect(result.warnings?.[0]?.code).toBe('BOOLEAN_EMPTY_TRUE_VALUES');
-      expect(result.warnings?.[0]?.message).toBe('trueValues array is empty');
+      expect(result.warnings?.[0]?.message).toBe("Field 'test.field' trueValues array is empty");
     });
 
     it('should warn when falseValues array is empty', () => {

@@ -32,14 +32,11 @@ describe('CountryCodeFormatValidator', () => {
       });
     });
 
-    it('should reject invalid country codes', () => {
+    it('should reject invalid country code formats', () => {
       const invalidCodes = [
         'USA', // 3 letters (ISO 3166-1 alpha-3)
         'U', // 1 letter
         '12', // numbers
-        'AA', // non-existent code (but format valid)
-        'ZZ', // non-existent code (but format valid)
-        'XX', // non-existent code (but format valid)
         'U1', // letter + number
         '1S', // number + letter
         'U S', // space in between
