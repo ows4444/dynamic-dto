@@ -3,28 +3,17 @@ import { ValidationSeverity } from '../enums/validation.enums';
 import type { ValidationResult, ValidationIssue } from '../interfaces';
 
 describe('ValidationResultMerger', () => {
-  const createValidationResult = (
-    isValid: boolean,
-    issues: ValidationIssue[],
-    fieldPath = '',
-    metadata?: Record<string, unknown>
-  ): ValidationResult => ({
+  const createValidationResult = (isValid: boolean, issues: ValidationIssue[], fieldPath = '', metadata?: Record<string, unknown>): ValidationResult => ({
     isValid,
     issues,
     fieldPath,
     metadata,
-    errors: issues.filter(i => i.severity === ValidationSeverity.error),
-    warnings: issues.filter(i => i.severity === ValidationSeverity.warning),
-    infos: issues.filter(i => i.severity === ValidationSeverity.info),
+    errors: issues.filter((i) => i.severity === ValidationSeverity.error),
+    warnings: issues.filter((i) => i.severity === ValidationSeverity.warning),
+    infos: issues.filter((i) => i.severity === ValidationSeverity.info),
   });
 
-  const createIssue = (
-    severity: ValidationSeverity,
-    code: string,
-    message: string,
-    fieldPath?: string,
-    value?: unknown
-  ): ValidationIssue => ({
+  const createIssue = (severity: ValidationSeverity, code: string, message: string, fieldPath?: string, value?: unknown): ValidationIssue => ({
     severity,
     code,
     message,
@@ -58,12 +47,7 @@ describe('ValidationResultMerger', () => {
     });
 
     it('should return single result unchanged when only one result provided', () => {
-      const singleResult = createValidationResult(
-        false,
-        [createIssue(ValidationSeverity.error, 'TEST_ERROR', 'Test error')],
-        'test.field',
-        { source: 'test' }
-      );
+      const singleResult = createValidationResult(false, [createIssue(ValidationSeverity.error, 'TEST_ERROR', 'Test error')], 'test.field', { source: 'test' });
 
       const result = ValidationResultMerger.mergeResults([singleResult]);
 
@@ -71,17 +55,9 @@ describe('ValidationResultMerger', () => {
     });
 
     it('should merge multiple valid results into valid result', () => {
-      const result1 = createValidationResult(
-        true,
-        [createIssue(ValidationSeverity.warning, 'WARN_1', 'Warning 1')],
-        'field1'
-      );
+      const result1 = createValidationResult(true, [createIssue(ValidationSeverity.warning, 'WARN_1', 'Warning 1')], 'field1');
 
-      const result2 = createValidationResult(
-        true,
-        [createIssue(ValidationSeverity.info, 'INFO_1', 'Info 1')],
-        'field2'
-      );
+      const result2 = createValidationResult(true, [createIssue(ValidationSeverity.info, 'INFO_1', 'Info 1')], 'field2');
 
       const merged = ValidationResultMerger.mergeResults([result1, result2]);
 
@@ -93,17 +69,9 @@ describe('ValidationResultMerger', () => {
     });
 
     it('should merge results with errors into invalid result', () => {
-      const result1 = createValidationResult(
-        true,
-        [createIssue(ValidationSeverity.warning, 'WARN_1', 'Warning 1')],
-        'field1'
-      );
+      const result1 = createValidationResult(true, [createIssue(ValidationSeverity.warning, 'WARN_1', 'Warning 1')], 'field1');
 
-      const result2 = createValidationResult(
-        false,
-        [createIssue(ValidationSeverity.error, 'ERROR_1', 'Error 1')],
-        'field2'
-      );
+      const result2 = createValidationResult(false, [createIssue(ValidationSeverity.error, 'ERROR_1', 'Error 1')], 'field2');
 
       const merged = ValidationResultMerger.mergeResults([result1, result2]);
 
@@ -164,8 +132,8 @@ describe('ValidationResultMerger', () => {
       const merged = ValidationResultMerger.mergeResults([result1, result2]);
 
       expect(merged.issues).toHaveLength(2);
-      expect(merged.issues.find(i => i.code === 'DUPLICATE_ERROR')?.message).toBe('Error 1');
-      expect(merged.issues.find(i => i.code === 'DIFFERENT_ERROR')).toBeDefined();
+      expect(merged.issues.find((i) => i.code === 'DUPLICATE_ERROR')?.message).toBe('Error 1');
+      expect(merged.issues.find((i) => i.code === 'DIFFERENT_ERROR')).toBeDefined();
     });
 
     it('should not deduplicate issues with different field paths', () => {
@@ -207,15 +175,9 @@ describe('ValidationResultMerger', () => {
 
   describe('mergeWithSeverityGrouping', () => {
     it('should merge results and group issues by severity', () => {
-      const result1 = createValidationResult(false, [
-        createIssue(ValidationSeverity.error, 'ERROR_1', 'Error 1'),
-        createIssue(ValidationSeverity.warning, 'WARNING_1', 'Warning 1'),
-      ]);
+      const result1 = createValidationResult(false, [createIssue(ValidationSeverity.error, 'ERROR_1', 'Error 1'), createIssue(ValidationSeverity.warning, 'WARNING_1', 'Warning 1')]);
 
-      const result2 = createValidationResult(false, [
-        createIssue(ValidationSeverity.error, 'ERROR_2', 'Error 2'),
-        createIssue(ValidationSeverity.info, 'INFO_1', 'Info 1'),
-      ]);
+      const result2 = createValidationResult(false, [createIssue(ValidationSeverity.error, 'ERROR_2', 'Error 2'), createIssue(ValidationSeverity.info, 'INFO_1', 'Info 1')]);
 
       const merged = ValidationResultMerger.mergeWithSeverityGrouping([result1, result2]);
 
@@ -226,9 +188,7 @@ describe('ValidationResultMerger', () => {
     });
 
     it('should handle empty severity groups', () => {
-      const result = createValidationResult(false, [
-        createIssue(ValidationSeverity.error, 'ERROR_1', 'Error 1'),
-      ]);
+      const result = createValidationResult(false, [createIssue(ValidationSeverity.error, 'ERROR_1', 'Error 1')]);
 
       const merged = ValidationResultMerger.mergeWithSeverityGrouping([result]);
 

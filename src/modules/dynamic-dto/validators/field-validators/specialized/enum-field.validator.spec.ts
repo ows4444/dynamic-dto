@@ -126,7 +126,7 @@ describe('EnumFieldValidator', () => {
       const result = validator.validateFieldSchema(mixedCaseInsensitiveSchema);
 
       expect(result.isValid).toBe(true);
-      expect(result.issues.some(issue => issue.code === 'ENUM_MIXED_TYPES')).toBe(false);
+      expect(result.issues.some((issue) => issue.code === 'ENUM_MIXED_TYPES')).toBe(false);
     });
 
     it('should fail validation when enum has duplicate values', () => {
@@ -331,11 +331,11 @@ describe('EnumFieldValidator', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.issues.length).toBeGreaterThanOrEqual(4);
-      expect(result.issues.some(i => i.code === 'ENUM_DUPLICATE_VALUES')).toBe(true);
-      expect(result.issues.some(i => i.code === 'ENUM_INVALID_DEFAULT')).toBe(true);
-      expect(result.issues.some(i => i.code === 'ENUM_INVALID_LABELS')).toBe(true);
-      expect(result.issues.some(i => i.code === 'ENUM_INVALID_DEPRECATED')).toBe(true);
-      expect(result.issues.some(i => i.code === 'ENUM_MULTIPLE_CASE_INSENSITIVE')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'ENUM_DUPLICATE_VALUES')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'ENUM_INVALID_DEFAULT')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'ENUM_INVALID_LABELS')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'ENUM_INVALID_DEPRECATED')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'ENUM_MULTIPLE_CASE_INSENSITIVE')).toBe(true);
     });
 
     it('should handle case insensitive default values', () => {
@@ -513,7 +513,7 @@ describe('EnumFieldValidator', () => {
   describe('validateStructure', () => {
     it('should delegate to validateFieldSchema', () => {
       const spy = jest.spyOn(validator, 'validateFieldSchema');
-      
+
       validator.validateStructure(basicEnumSchema, validationContext);
 
       expect(spy).toHaveBeenCalledWith(basicEnumSchema);
@@ -527,7 +527,7 @@ describe('EnumFieldValidator', () => {
         ...validationContext,
         data: 'red',
       };
-      
+
       validator.validateConstraints(basicEnumSchema, contextWithData);
 
       expect(spy).toHaveBeenCalledWith('red', basicEnumSchema);
@@ -574,7 +574,7 @@ describe('EnumFieldValidator', () => {
       const schemaResult = validator.validateFieldSchema(mixedSchema);
 
       expect(schemaResult.isValid).toBe(true);
-      expect(schemaResult.issues.some(i => i.code === 'ENUM_MIXED_TYPES')).toBe(false);
+      expect(schemaResult.issues.some((i) => i.code === 'ENUM_MIXED_TYPES')).toBe(false);
     });
 
     it('should validate complex multiple selection scenarios', () => {
@@ -617,8 +617,8 @@ describe('EnumFieldValidator', () => {
 
     it('should handle all possible default configuration types', () => {
       const defaultTypes = ['first', 'random', 'computed'];
-      
-      defaultTypes.forEach(type => {
+
+      defaultTypes.forEach((type) => {
         const schema: EnumFieldSchema = {
           ...basicEnumSchema,
           default: { type } as any,

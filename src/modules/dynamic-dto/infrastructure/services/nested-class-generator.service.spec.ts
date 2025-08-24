@@ -54,11 +54,7 @@ describe('NestedClassGeneratorService', () => {
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        NestedClassGeneratorService,
-        { provide: CacheMonitorService, useValue: mockCacheMonitor },
-        { provide: 'FieldProcessorRegistry', useValue: mockFieldProcessorRegistry },
-      ],
+      providers: [NestedClassGeneratorService, { provide: CacheMonitorService, useValue: mockCacheMonitor }, { provide: 'FieldProcessorRegistry', useValue: mockFieldProcessorRegistry }],
     }).compile();
 
     service = module.get<NestedClassGeneratorService>(NestedClassGeneratorService);
@@ -70,19 +66,12 @@ describe('NestedClassGeneratorService', () => {
     });
 
     it('should register cache with monitor service', () => {
-      expect(mockCacheMonitor.registerCache).toHaveBeenCalledWith(
-        'nested-class-generator',
-        expect.any(Object)
-      );
+      expect(mockCacheMonitor.registerCache).toHaveBeenCalledWith('nested-class-generator', expect.any(Object));
     });
 
     it('should work without cache monitor service', async () => {
       const module: TestingModule = await Test.createTestingModule({
-        providers: [
-          NestedClassGeneratorService,
-          { provide: CacheMonitorService, useValue: undefined },
-          { provide: 'FieldProcessorRegistry', useValue: mockFieldProcessorRegistry },
-        ],
+        providers: [NestedClassGeneratorService, { provide: CacheMonitorService, useValue: undefined }, { provide: 'FieldProcessorRegistry', useValue: mockFieldProcessorRegistry }],
       }).compile();
 
       const serviceWithoutMonitor = module.get<NestedClassGeneratorService>(NestedClassGeneratorService);
@@ -349,7 +338,7 @@ describe('NestedClassGeneratorService', () => {
       expect(mockFieldProcessorRegistry.processField).toHaveBeenCalledWith(
         properties.name,
         false, // isRequired defaults to false
-        false  // exclude parameter passed as false
+        false, // exclude parameter passed as false
       );
     });
 
@@ -364,7 +353,7 @@ describe('NestedClassGeneratorService', () => {
       expect(mockFieldProcessorRegistry.processField).toHaveBeenCalledWith(
         properties.name,
         true, // isRequired is true
-        false // exclude parameter passed as false
+        false, // exclude parameter passed as false
       );
     });
   });

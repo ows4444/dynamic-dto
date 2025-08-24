@@ -9,7 +9,7 @@ class TestSchemaValidator extends BaseSchemaValidator {
 
   validateStructure(schema: FieldSchema): ValidationResult {
     const issues: any[] = [];
-    
+
     if (!schema.type) {
       issues.push({
         code: 'MISSING_TYPE',
@@ -29,7 +29,7 @@ class TestSchemaValidator extends BaseSchemaValidator {
     }
 
     return {
-      isValid: issues.filter(issue => issue.severity === 'error').length === 0,
+      isValid: issues.filter((issue) => issue.severity === 'error').length === 0,
       issues,
     };
   }
@@ -47,7 +47,7 @@ class TestSchemaValidator extends BaseSchemaValidator {
     }
 
     return {
-      isValid: issues.filter(issue => issue.severity === 'error').length === 0,
+      isValid: issues.filter((issue) => issue.severity === 'error').length === 0,
       issues,
     };
   }
@@ -114,7 +114,7 @@ describe('BaseSchemaValidator', () => {
     it('should pass validation when no constraints conflict', () => {
       const schema: FieldSchema = { type: 'test' as any, expose: true, required: true };
       const contextData = { allowRequired: true };
-      
+
       const result = validator.validateConstraints(schema, contextData);
 
       expect(result.isValid).toBe(true);
@@ -124,7 +124,7 @@ describe('BaseSchemaValidator', () => {
     it('should generate warning when required field not allowed in context', () => {
       const schema: FieldSchema = { type: 'test' as any, expose: true, required: true };
       const contextData = { allowRequired: false };
-      
+
       const result = validator.validateConstraints(schema, contextData);
 
       // Should be valid because warning doesn't make it invalid
@@ -140,7 +140,7 @@ describe('BaseSchemaValidator', () => {
 
     it('should handle undefined context data', () => {
       const schema: FieldSchema = { type: 'test' as any, expose: true, required: true };
-      
+
       const result = validator.validateConstraints(schema);
 
       expect(result.isValid).toBe(true);
@@ -150,7 +150,7 @@ describe('BaseSchemaValidator', () => {
     it('should handle schema without required field', () => {
       const schema: FieldSchema = { type: 'test' as any, expose: true };
       const contextData = { allowRequired: false };
-      
+
       const result = validator.validateConstraints(schema, contextData);
 
       expect(result.isValid).toBe(true);

@@ -204,8 +204,8 @@ describe('DtoGenerationPipeline', () => {
       // Assert
       expect(results.size).toBe(2);
       const keys = Array.from(results.keys());
-      expect(keys.some(key => key.includes('TestSchema'))).toBe(true);
-      expect(keys.some(key => key.includes('TestSchema2'))).toBe(true);
+      expect(keys.some((key) => key.includes('TestSchema'))).toBe(true);
+      expect(keys.some((key) => key.includes('TestSchema2'))).toBe(true);
     });
 
     it('should handle cache hits in batch processing', () => {
@@ -339,7 +339,7 @@ describe('DtoGenerationPipeline', () => {
     it('should handle cleanup interval', () => {
       // Arrange
       const cleanupSpy = jest.spyOn(pipeline as any, 'performDeterministicCleanup');
-      
+
       // Act - trigger cleanup manually
       (pipeline as any).performDeterministicCleanup();
 

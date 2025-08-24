@@ -190,12 +190,12 @@ describe('LRUCache', () => {
 
       // Assert
       expect(cache.size()).toBe(0);
-      
+
       const stats = cache.getStats();
       expect(stats.hitCount).toBe(0);
       expect(stats.missCount).toBe(0);
       expect(stats.evictionCount).toBe(0);
-      
+
       // Verify keys are actually cleared by trying to get them
       // These calls should not affect the cleared statistics
       const postClearValue1 = cache.get('key1');
@@ -410,7 +410,7 @@ describe('LRUCache', () => {
 
       // Assert
       expect(cache.get('d')).toBe('4'); // Still there
-      expect(cache.get('c')).toBe('3'); // Still there  
+      expect(cache.get('c')).toBe('3'); // Still there
       expect(cache.get('e')).toBe('5'); // Latest addition
       expect(cache.get('a')).toBeUndefined(); // Evicted in final step
       expect(cache.get('b')).toBeUndefined(); // Evicted first

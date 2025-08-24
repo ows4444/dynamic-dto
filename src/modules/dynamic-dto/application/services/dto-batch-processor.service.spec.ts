@@ -13,12 +13,7 @@ describe('DtoBatchProcessor', () => {
   let cacheService: jest.Mocked<DtoCacheService>;
   let validationService: jest.Mocked<DtoValidationService>;
 
-  const mockSchema = new DynamicSchemaEntity(
-    'test-schema',
-    'TestDto',
-    { name: { type: 'string', expose: true } },
-    ['name']
-  );
+  const mockSchema = new DynamicSchemaEntity('test-schema', 'TestDto', { name: { type: 'string', expose: true } }, ['name']);
 
   const mockGeneratedClass = class TestDto {
     name!: string;
@@ -114,20 +109,17 @@ describe('DtoBatchProcessor', () => {
       const cachedSchema = new DynamicSchemaEntity('cached', 'CachedDto', { id: { type: 'number', expose: true } }, ['id']);
       const uncachedSchema = mockSchema;
       const schemas = [cachedSchema, uncachedSchema];
-      
+
       const cachedKey = 'cached-key';
       const uncachedKey = 'uncached-key';
-      const cachedClass = class CachedDto { id!: number; } as classConstructor<object>;
-      
-      cacheService.get
-        .mockResolvedValueOnce(cachedClass)
-        .mockResolvedValueOnce(null);
-      
-      cacheService.generateCacheKey
-        .mockReturnValueOnce(cachedKey)
-        .mockReturnValueOnce(uncachedKey)
-        .mockReturnValue(uncachedKey);
-      
+      const cachedClass = class CachedDto {
+        id!: number;
+      } as classConstructor<object>;
+
+      cacheService.get.mockResolvedValueOnce(cachedClass).mockResolvedValueOnce(null);
+
+      cacheService.generateCacheKey.mockReturnValueOnce(cachedKey).mockReturnValueOnce(uncachedKey).mockReturnValue(uncachedKey);
+
       cacheService.calculateAdaptiveTtl.mockResolvedValue(30000);
       validationService.validateSchemas.mockReturnValue({ validSchemas: [uncachedSchema], invalidCount: 0 });
       generationPipeline.generateBatch.mockReturnValue(new Map([[uncachedKey, mockGeneratedClass]]));
@@ -167,14 +159,14 @@ describe('DtoBatchProcessor', () => {
       const cachedSchema = new DynamicSchemaEntity('cached', 'CachedDto', { id: { type: 'number', expose: true } }, ['id']);
       const uncachedSchema = mockSchema;
       const schemas = [cachedSchema, uncachedSchema];
-      
+
       const cachedKey = 'cached-key';
-      const cachedClass = class CachedDto { id!: number; } as classConstructor<object>;
-      
-      cacheService.get
-        .mockResolvedValueOnce(cachedClass)
-        .mockResolvedValueOnce(null);
-      
+      const cachedClass = class CachedDto {
+        id!: number;
+      } as classConstructor<object>;
+
+      cacheService.get.mockResolvedValueOnce(cachedClass).mockResolvedValueOnce(null);
+
       cacheService.generateCacheKey.mockReturnValue(cachedKey);
 
       const result = await service.getCachedResults(schemas);
@@ -212,7 +204,7 @@ describe('DtoBatchProcessor', () => {
   describe('error handling', () => {
     it('should handle cache service errors gracefully', async () => {
       const schemas = [mockSchema];
-      
+
       cacheService.get.mockRejectedValue(new Error('Cache error'));
 
       await expect(service.processBatch(schemas)).rejects.toThrow('Cache error');
@@ -220,7 +212,7 @@ describe('DtoBatchProcessor', () => {
 
     it('should handle validation service errors', async () => {
       const schemas = [mockSchema];
-      
+
       cacheService.get.mockResolvedValue(null);
       validationService.validateSchemas.mockImplementation(() => {
         throw new Error('Validation error');
@@ -231,7 +223,7 @@ describe('DtoBatchProcessor', () => {
 
     it('should handle generation pipeline errors', async () => {
       const schemas = [mockSchema];
-      
+
       cacheService.get.mockResolvedValue(null);
       validationService.validateSchemas.mockReturnValue({ validSchemas: schemas, invalidCount: 0 });
       generationPipeline.generateBatch.mockImplementation(() => {

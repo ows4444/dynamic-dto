@@ -221,9 +221,7 @@ describe('ObjectFieldValidator', () => {
           name: { type: FieldType.string, expose: true },
         },
         inheritance: {
-          allOf: [
-            { type: FieldType.object, properties: { id: { type: FieldType.string, expose: true } }, expose: true },
-          ],
+          allOf: [{ type: FieldType.object, properties: { id: { type: FieldType.string, expose: true } }, expose: true }],
         },
       };
 
@@ -412,8 +410,8 @@ describe('ObjectFieldValidator', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(2);
-      expect(result.errors.some(e => e.code === 'OBJECT_REQUIRED_FIELD_NOT_DEFINED')).toBe(true);
-      expect(result.errors.some(e => e.code === 'OBJECT_INVALID_SIZE_RANGE')).toBe(true);
+      expect(result.errors.some((e) => e.code === 'OBJECT_REQUIRED_FIELD_NOT_DEFINED')).toBe(true);
+      expect(result.errors.some((e) => e.code === 'OBJECT_INVALID_SIZE_RANGE')).toBe(true);
     });
 
     it('should validate comprehensive object schema', () => {

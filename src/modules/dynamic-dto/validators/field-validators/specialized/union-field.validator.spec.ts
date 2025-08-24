@@ -122,7 +122,7 @@ describe('UnionFieldValidator', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.issues.length).toBeGreaterThanOrEqual(2);
-      expect(result.issues.some(i => i.code === 'UNION_INVALID_TYPE_SCHEMA')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'UNION_INVALID_TYPE_SCHEMA')).toBe(true);
     });
 
     it('should validate discriminator configuration', () => {
@@ -241,7 +241,7 @@ describe('UnionFieldValidator', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.issues.length).toBeGreaterThanOrEqual(2);
-      expect(result.issues.some(i => i.code === 'UNION_INVALID_TYPE_HINT_INDEX')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'UNION_INVALID_TYPE_HINT_INDEX')).toBe(true);
     });
 
     it('should validate preferred type', () => {
@@ -313,9 +313,9 @@ describe('UnionFieldValidator', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.issues.length).toBeGreaterThanOrEqual(3);
-      expect(result.issues.some(i => i.code === 'UNION_INVALID_TYPE_SCHEMA')).toBe(true);
-      expect(result.issues.some(i => i.code === 'UNION_INVALID_STRATEGY')).toBe(true);
-      expect(result.issues.some(i => i.code === 'UNION_INVALID_TYPE_HINT_INDEX')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'UNION_INVALID_TYPE_SCHEMA')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'UNION_INVALID_STRATEGY')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'UNION_INVALID_TYPE_HINT_INDEX')).toBe(true);
     });
 
     it('should handle nested union types', () => {
@@ -361,14 +361,9 @@ describe('UnionFieldValidator', () => {
     });
 
     it('should handle all validation strategies', () => {
-      const strategies = [
-        UnionValidationStrategy.oneOf,
-        UnionValidationStrategy.anyOf,
-        UnionValidationStrategy.discriminated,
-        UnionValidationStrategy.firstMatch,
-      ];
+      const strategies = [UnionValidationStrategy.oneOf, UnionValidationStrategy.anyOf, UnionValidationStrategy.discriminated, UnionValidationStrategy.firstMatch];
 
-      strategies.forEach(strategy => {
+      strategies.forEach((strategy) => {
         const schema: UnionFieldSchema = {
           type: FieldType.union,
           expose: true,
@@ -419,18 +414,13 @@ describe('UnionFieldValidator', () => {
       const nullTypesSchema: UnionFieldSchema = {
         type: FieldType.union,
         expose: true,
-        unionTypes: [
-          { type: FieldType.string, expose: true },
-          null as any,
-          undefined as any,
-          { type: FieldType.number, expose: true },
-        ],
+        unionTypes: [{ type: FieldType.string, expose: true }, null as any, undefined as any, { type: FieldType.number, expose: true }],
       };
 
       const result = validator.validateFieldSchema(nullTypesSchema);
 
       expect(result.isValid).toBe(false);
-      expect(result.issues.some(i => i.code === 'UNION_INVALID_TYPE_SCHEMA')).toBe(true);
+      expect(result.issues.some((i) => i.code === 'UNION_INVALID_TYPE_SCHEMA')).toBe(true);
     });
   });
 });

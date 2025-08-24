@@ -65,10 +65,10 @@ describe('Core Services Factory', () => {
 
     it('should create module with all core service providers', async () => {
       const providers = createCoreServicesProviders();
-      
+
       const testModule = await Test.createTestingModule({
         providers: [
-          ...providers.map(provider => ({
+          ...providers.map((provider) => ({
             provide: provider,
             useValue: {},
           })),
@@ -96,32 +96,18 @@ describe('Core Services Factory', () => {
 
     it('should include correct number of orchestration services', () => {
       const providers = createCoreServicesProviders();
-      const orchestrationServices = [
-        DtoCacheService,
-        DtoValidationService,
-        DtoBatchProcessor,
-        DtoOrchestratorService,
-        SchemaOrchestratorService,
-      ];
+      const orchestrationServices = [DtoCacheService, DtoValidationService, DtoBatchProcessor, DtoOrchestratorService, SchemaOrchestratorService];
 
-      const includedOrchestrationServices = providers.filter(provider =>
-        orchestrationServices.includes(provider as any)
-      );
+      const includedOrchestrationServices = providers.filter((provider) => orchestrationServices.includes(provider as any));
 
       expect(includedOrchestrationServices).toHaveLength(5);
     });
 
     it('should include correct number of processing pipelines', () => {
       const providers = createCoreServicesProviders();
-      const processingPipelines = [
-        DtoGenerationPipeline,
-        ValidationPipeline,
-        SchemaValidationPipeline,
-      ];
+      const processingPipelines = [DtoGenerationPipeline, ValidationPipeline, SchemaValidationPipeline];
 
-      const includedPipelines = providers.filter(provider =>
-        processingPipelines.includes(provider as any)
-      );
+      const includedPipelines = providers.filter((provider) => processingPipelines.includes(provider as any));
 
       expect(includedPipelines).toHaveLength(3);
     });
@@ -147,11 +133,11 @@ describe('Core Services Factory', () => {
   describe('provider dependencies', () => {
     it('should have all services available when needed', () => {
       const providers = createCoreServicesProviders();
-      
+
       // Verify all expected services are present
       const serviceTypes = [
         'DtoCacheService',
-        'DtoValidationService', 
+        'DtoValidationService',
         'DtoBatchProcessor',
         'DtoOrchestratorService',
         'SchemaOrchestratorService',
@@ -160,11 +146,8 @@ describe('Core Services Factory', () => {
         'SchemaValidationPipeline',
       ];
 
-      serviceTypes.forEach(serviceType => {
-        const hasService = providers.some(provider => 
-          provider.name === serviceType || 
-          (typeof provider === 'function' && provider.name === serviceType)
-        );
+      serviceTypes.forEach((serviceType) => {
+        const hasService = providers.some((provider) => provider.name === serviceType || (typeof provider === 'function' && provider.name === serviceType));
         expect(hasService).toBe(true);
       });
     });
@@ -181,9 +164,9 @@ describe('Core Services Factory', () => {
     it('should not mutate returned array', () => {
       const providers = createCoreServicesProviders();
       const originalLength = providers.length;
-      
+
       providers.push({} as any);
-      
+
       const newProviders = createCoreServicesProviders();
       expect(newProviders.length).toBe(originalLength);
     });

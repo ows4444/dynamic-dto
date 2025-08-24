@@ -27,20 +27,13 @@ describe('Infrastructure Factory', () => {
 
     it('should include caching providers', () => {
       const providers = createInfrastructureProviders();
-      const cachingProvider = providers.find(
-        (p) => typeof p === 'object' && 'provide' in p && 
-        (String(p.provide).toLowerCase().includes('cache') || 
-         String(p.provide).toLowerCase().includes('lru'))
-      );
+      const cachingProvider = providers.find((p) => typeof p === 'object' && 'provide' in p && (String(p.provide).toLowerCase().includes('cache') || String(p.provide).toLowerCase().includes('lru')));
       expect(cachingProvider).toBeDefined();
     });
 
     it('should include monitoring providers', () => {
       const providers = createInfrastructureProviders();
-      const monitoringProvider = providers.find(
-        (p) => typeof p === 'object' && 'provide' in p && 
-        String(p.provide).toLowerCase().includes('monitor')
-      );
+      const monitoringProvider = providers.find((p) => typeof p === 'object' && 'provide' in p && String(p.provide).toLowerCase().includes('monitor'));
       expect(monitoringProvider).toBeDefined();
     });
   });
@@ -58,8 +51,8 @@ describe('Infrastructure Factory', () => {
   describe('factory output validation', () => {
     it('should return valid NestJS provider format', () => {
       const providers = createInfrastructureProviders();
-      
-      providers.forEach(provider => {
+
+      providers.forEach((provider) => {
         if (typeof provider === 'function') {
           expect(typeof provider).toBe('function');
         } else if (typeof provider === 'object' && provider !== null) {
@@ -85,15 +78,15 @@ describe('Infrastructure Factory', () => {
     it('should not have duplicate provider tokens', () => {
       const providers = createInfrastructureProviders();
       const tokens = new Set();
-      
-      providers.forEach(provider => {
+
+      providers.forEach((provider) => {
         let token;
         if (typeof provider === 'function') {
           token = provider;
         } else if (typeof provider === 'object' && 'provide' in provider) {
           token = provider.provide;
         }
-        
+
         if (token) {
           expect(tokens.has(token)).toBe(false);
           tokens.add(token);
@@ -105,9 +98,9 @@ describe('Infrastructure Factory', () => {
   describe('provider dependencies', () => {
     it('should create providers with proper dependency injection setup', () => {
       const providers = createInfrastructureProviders();
-      
+
       // Validate that each provider has proper structure
-      providers.forEach(provider => {
+      providers.forEach((provider) => {
         if (typeof provider === 'object' && provider !== null && 'useFactory' in provider) {
           expect(provider.useFactory).toBeInstanceOf(Function);
           if (provider.inject) {
@@ -121,20 +114,17 @@ describe('Infrastructure Factory', () => {
   describe('infrastructure factory requirements', () => {
     it('should provide essential infrastructure services', () => {
       const providers = createInfrastructureProviders();
-      
+
       // Check that we have providers for key infrastructure components
-      expect(providers.some(p => 
-        typeof p === 'object' && 'provide' in p && 
-        String(p.provide).includes('Cache')
-      )).toBe(true);
+      expect(providers.some((p) => typeof p === 'object' && 'provide' in p && String(p.provide).includes('Cache'))).toBe(true);
     });
 
     it('should handle configuration parameters', () => {
-      const providersWithConfig = createInfrastructureProviders({ 
-        cache: { maxSize: 100, ttl: 300000 }
+      const providersWithConfig = createInfrastructureProviders({
+        cache: { maxSize: 100, ttl: 300000 },
       });
       const providersWithoutConfig = createInfrastructureProviders();
-      
+
       expect(Array.isArray(providersWithConfig)).toBe(true);
       expect(Array.isArray(providersWithoutConfig)).toBe(true);
       expect(providersWithConfig.length).toBeGreaterThan(0);

@@ -62,11 +62,7 @@ describe('ValidationPipeline', () => {
     const mockStrategyFactory = {
       createValidationChain: jest.fn().mockReturnValue(mockValidationChain),
       createCustomValidationChain: jest.fn().mockReturnValue(mockValidationChain),
-      getAllStrategies: jest.fn().mockReturnValue([
-        { name: 'structural' },
-        { name: 'field' },
-        { name: 'cross-field' },
-      ]),
+      getAllStrategies: jest.fn().mockReturnValue([{ name: 'structural' }, { name: 'field' }, { name: 'cross-field' }]),
     };
 
     const module: TestingModule = await Test.createTestingModule({

@@ -101,10 +101,7 @@ describe('SchemaValidationPipeline', () => {
 
       // Assert
       expect(result.isValid).toBe(true);
-      expect(schemaOrchestrator.validateSchema).toHaveBeenCalledWith(
-        mockSchema.properties,
-        { userRoles: ['admin', 'user'] },
-      );
+      expect(schemaOrchestrator.validateSchema).toHaveBeenCalledWith(mockSchema.properties, { userRoles: ['admin', 'user'] });
     });
 
     it('should validate schema with integrity check enabled', () => {
@@ -120,10 +117,7 @@ describe('SchemaValidationPipeline', () => {
 
       // Assert
       expect(result.isValid).toBe(true);
-      expect(schemaOrchestrator.validateSchema).toHaveBeenCalledWith(
-        mockSchema.properties,
-        { userRoles: ['admin'] },
-      );
+      expect(schemaOrchestrator.validateSchema).toHaveBeenCalledWith(mockSchema.properties, { userRoles: ['admin'] });
     });
 
     it('should handle schema orchestrator validation failure', () => {
@@ -319,10 +313,7 @@ describe('SchemaValidationPipeline', () => {
       pipeline.execute(mockSchema, options);
 
       // Assert
-      expect(schemaOrchestrator.validateSchema).toHaveBeenCalledWith(
-        mockSchema.properties,
-        { userRoles: ['admin', 'moderator'] },
-      );
+      expect(schemaOrchestrator.validateSchema).toHaveBeenCalledWith(mockSchema.properties, { userRoles: ['admin', 'moderator'] });
     });
   });
 });

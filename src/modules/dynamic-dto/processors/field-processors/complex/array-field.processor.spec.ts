@@ -22,8 +22,8 @@ describe('ArrayFieldProcessor', () => {
 
   const objectArraySchema: ArrayFieldSchema = {
     type: FieldType.array,
-    items: { 
-      type: FieldType.object, 
+    items: {
+      type: FieldType.object,
       properties: {
         name: { type: FieldType.string, expose: true },
         age: { type: FieldType.number, expose: true },
@@ -121,11 +121,11 @@ describe('ArrayFieldProcessor', () => {
       fieldProcessorRegistry.processField.mockReturnValue(itemDecorators as any);
 
       const decorators = processor.generateValidationDecorators(basicArraySchema, true);
-      
+
       expect(fieldProcessorRegistry.processField).toHaveBeenCalledWith(
         basicArraySchema.items,
         true, // isRequired
-        true  // parentIsArray
+        true, // parentIsArray
       );
       expect(decorators.length).toBeGreaterThanOrEqual(4); // IsDefined + IsArray + item decorators
     });
@@ -183,7 +183,7 @@ describe('ArrayFieldProcessor', () => {
       const transformations = processor.getTypeSpecificTransformations(basicArraySchema);
 
       expect(transformations).toHaveLength(2);
-      expect(transformations.every(t => t.name !== 'item_validation')).toBe(true);
+      expect(transformations.every((t) => t.name !== 'item_validation')).toBe(true);
     });
 
     it('should not include item validation for tuple arrays', () => {
@@ -198,7 +198,7 @@ describe('ArrayFieldProcessor', () => {
 
       const transformations = processor.getTypeSpecificTransformations(tupleArraySchema);
       expect(transformations).toHaveLength(2);
-      expect(transformations.every(t => t.name !== 'item_validation')).toBe(true);
+      expect(transformations.every((t) => t.name !== 'item_validation')).toBe(true);
     });
   });
 
@@ -246,7 +246,7 @@ describe('ArrayFieldProcessor', () => {
 
       const nonArrayValues = ['string', 42, true, null, undefined, {}];
 
-      nonArrayValues.forEach(value => {
+      nonArrayValues.forEach((value) => {
         expect(processingTransform?.({ value, obj: {}, key: 'test' })).toBe(value);
       });
     });
@@ -339,21 +339,17 @@ describe('ArrayFieldProcessor', () => {
 
       const mixedArray = [
         { name: 'John', age: 30 }, // Valid object
-        'string',                  // Invalid - string
-        42,                       // Invalid - number
-        { name: 'Jane' },         // Valid object
-        null,                     // Invalid - null
-        undefined,                // Invalid - undefined
-        [],                       // Invalid - array
-        { id: 1 },               // Valid object
+        'string', // Invalid - string
+        42, // Invalid - number
+        { name: 'Jane' }, // Valid object
+        null, // Invalid - null
+        undefined, // Invalid - undefined
+        [], // Invalid - array
+        { id: 1 }, // Valid object
       ];
 
       const result = itemValidationTransform?.({ value: mixedArray, obj: {}, key: 'test' });
-      const validObjects = [
-        { name: 'John', age: 30 },
-        { name: 'Jane' },
-        { id: 1 },
-      ];
+      const validObjects = [{ name: 'John', age: 30 }, { name: 'Jane' }, { id: 1 }];
 
       expect(result).toEqual(validObjects);
     });
@@ -364,7 +360,7 @@ describe('ArrayFieldProcessor', () => {
 
       const nonArrayValues = ['string', 42, true, null, undefined, {}];
 
-      nonArrayValues.forEach(value => {
+      nonArrayValues.forEach((value) => {
         expect(itemValidationTransform?.({ value, obj: {}, key: 'test' })).toBe(value);
       });
     });
@@ -399,11 +395,7 @@ describe('ArrayFieldProcessor', () => {
       const transformations = processor.getTypeSpecificTransformations(objectArraySchema);
       const itemValidationTransform = transformations[2]?.transform;
 
-      const nestedArray = [
-        { user: { name: 'John', profile: { age: 30 } } },
-        'invalid',
-        { data: { items: [1, 2, 3], meta: { count: 3 } } },
-      ];
+      const nestedArray = [{ user: { name: 'John', profile: { age: 30 } } }, 'invalid', { data: { items: [1, 2, 3], meta: { count: 3 } } }];
 
       const result = itemValidationTransform?.({ value: nestedArray, obj: {}, key: 'test' });
       expect(result).toHaveLength(2);
@@ -486,7 +478,7 @@ describe('ArrayFieldProcessor', () => {
       };
 
       const decorators = processor.generateValidationDecorators(complexArraySchema, true);
-      
+
       // Should include: IsDefined, IsArray, ArrayMinSize, ArrayMaxSize, ValidateNested
       expect(decorators.length).toBeGreaterThanOrEqual(5);
     });
@@ -500,7 +492,7 @@ describe('ArrayFieldProcessor', () => {
       expect(fieldProcessorRegistry.processField).toHaveBeenCalledWith(
         numberArraySchema.items,
         true, // isRequired
-        true  // parentIsArray
+        true, // parentIsArray
       );
 
       expect(numberArrayDecorators.length).toBeGreaterThanOrEqual(5); // IsDefined + IsArray + mock decorators
@@ -552,7 +544,7 @@ describe('ArrayFieldProcessor', () => {
         if (transformation.condition) {
           // Test that conditions work correctly
           expect(typeof transformation.condition).toBe('function');
-          
+
           if (transformation.name === 'array_processing' || transformation.name === 'item_validation') {
             expect(transformation.condition({} as any, { value: [], obj: {}, key: 'test' })).toBe(true);
             expect(transformation.condition({} as any, { value: 'not array', obj: {}, key: 'test' })).toBe(false);

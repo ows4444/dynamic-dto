@@ -41,20 +41,24 @@ describe('BaseFieldValidator', () => {
     protected override validateSecurity(schema: BaseFieldSchema, context: ValidationContext): ValidationResult {
       return {
         isValid: true,
-        issues: [{
-          severity: ValidationSeverity.warning,
-          code: 'SECURITY_WARNING',
-          message: 'Security validation warning',
-          fieldPath: context.fieldPath,
-        }],
+        issues: [
+          {
+            severity: ValidationSeverity.warning,
+            code: 'SECURITY_WARNING',
+            message: 'Security validation warning',
+            fieldPath: context.fieldPath,
+          },
+        ],
         fieldPath: context.fieldPath,
         errors: [],
-        warnings: [{
-          severity: ValidationSeverity.warning,
-          code: 'SECURITY_WARNING',
-          message: 'Security validation warning',
-          fieldPath: context.fieldPath,
-        }],
+        warnings: [
+          {
+            severity: ValidationSeverity.warning,
+            code: 'SECURITY_WARNING',
+            message: 'Security validation warning',
+            fieldPath: context.fieldPath,
+          },
+        ],
         infos: [],
       };
     }
@@ -62,19 +66,23 @@ describe('BaseFieldValidator', () => {
     protected override validatePerformance(schema: BaseFieldSchema, context: ValidationContext): ValidationResult {
       return {
         isValid: false,
-        issues: [{
-          severity: ValidationSeverity.error,
-          code: 'PERFORMANCE_ERROR',
-          message: 'Performance validation error',
-          fieldPath: context.fieldPath,
-        }],
+        issues: [
+          {
+            severity: ValidationSeverity.error,
+            code: 'PERFORMANCE_ERROR',
+            message: 'Performance validation error',
+            fieldPath: context.fieldPath,
+          },
+        ],
         fieldPath: context.fieldPath,
-        errors: [{
-          severity: ValidationSeverity.error,
-          code: 'PERFORMANCE_ERROR',
-          message: 'Performance validation error',
-          fieldPath: context.fieldPath,
-        }],
+        errors: [
+          {
+            severity: ValidationSeverity.error,
+            code: 'PERFORMANCE_ERROR',
+            message: 'Performance validation error',
+            fieldPath: context.fieldPath,
+          },
+        ],
         warnings: [],
         infos: [],
       };
@@ -164,12 +172,14 @@ describe('BaseFieldValidator', () => {
           ],
           fieldPath: 'field1',
           errors: [],
-          warnings: [{
-            severity: ValidationSeverity.warning,
-            code: 'WARNING_1',
-            message: 'Warning message',
-            fieldPath: 'field1',
-          }],
+          warnings: [
+            {
+              severity: ValidationSeverity.warning,
+              code: 'WARNING_1',
+              message: 'Warning message',
+              fieldPath: 'field1',
+            },
+          ],
           infos: [],
         },
         {
@@ -183,12 +193,14 @@ describe('BaseFieldValidator', () => {
             },
           ],
           fieldPath: 'field2',
-          errors: [{
-            severity: ValidationSeverity.error,
-            code: 'ERROR_1',
-            message: 'Error message',
-            fieldPath: 'field2',
-          }],
+          errors: [
+            {
+              severity: ValidationSeverity.error,
+              code: 'ERROR_1',
+              message: 'Error message',
+              fieldPath: 'field2',
+            },
+          ],
           warnings: [],
           infos: [],
         },

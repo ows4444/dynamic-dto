@@ -31,12 +31,7 @@ describe('SchemaValidationResultEntity', () => {
 
   describe('constructor', () => {
     it('should create entity with required properties', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockValidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockValidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.schemaId).toBe('schema-123');
       expect(entity.validationResult).toBe(mockValidValidationResult);
@@ -46,13 +41,7 @@ describe('SchemaValidationResultEntity', () => {
     });
 
     it('should create entity with optional userId', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockValidValidationResult,
-        validatedAt,
-        'structural-validator',
-        'user-456'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockValidValidationResult, validatedAt, 'structural-validator', 'user-456');
 
       expect(entity.userId).toBe('user-456');
     });
@@ -60,23 +49,13 @@ describe('SchemaValidationResultEntity', () => {
 
   describe('isValid getter', () => {
     it('should return true for valid validation result', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockValidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockValidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.isValid).toBe(true);
     });
 
     it('should return false for invalid validation result', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockInvalidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockInvalidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.isValid).toBe(false);
     });
@@ -84,23 +63,13 @@ describe('SchemaValidationResultEntity', () => {
 
   describe('hasWarnings getter', () => {
     it('should return false when no warnings', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockValidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockValidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.hasWarnings).toBe(false);
     });
 
     it('should return true when warnings exist', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockInvalidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockInvalidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.hasWarnings).toBe(true);
     });
@@ -112,12 +81,7 @@ describe('SchemaValidationResultEntity', () => {
         warnings: undefined,
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        resultWithoutWarnings,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', resultWithoutWarnings, validatedAt, 'structural-validator');
 
       expect(entity.hasWarnings).toBe(false);
     });
@@ -129,12 +93,7 @@ describe('SchemaValidationResultEntity', () => {
         warnings: [],
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        resultWithEmptyWarnings,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', resultWithEmptyWarnings, validatedAt, 'structural-validator');
 
       expect(entity.hasWarnings).toBe(false);
     });
@@ -142,23 +101,13 @@ describe('SchemaValidationResultEntity', () => {
 
   describe('errorCount getter', () => {
     it('should return 0 when no errors', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockValidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockValidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.errorCount).toBe(0);
     });
 
     it('should return correct error count', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockInvalidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockInvalidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.errorCount).toBe(1);
     });
@@ -170,12 +119,7 @@ describe('SchemaValidationResultEntity', () => {
         errors: undefined,
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        resultWithoutErrors,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', resultWithoutErrors, validatedAt, 'structural-validator');
 
       expect(entity.errorCount).toBe(0);
     });
@@ -187,12 +131,7 @@ describe('SchemaValidationResultEntity', () => {
         errors: [mockErrorIssue, mockErrorIssue, mockErrorIssue],
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        multipleErrorsResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', multipleErrorsResult, validatedAt, 'structural-validator');
 
       expect(entity.errorCount).toBe(3);
     });
@@ -200,23 +139,13 @@ describe('SchemaValidationResultEntity', () => {
 
   describe('warningCount getter', () => {
     it('should return 0 when no warnings', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockValidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockValidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.warningCount).toBe(0);
     });
 
     it('should return correct warning count', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockInvalidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockInvalidValidationResult, validatedAt, 'structural-validator');
 
       expect(entity.warningCount).toBe(1);
     });
@@ -228,12 +157,7 @@ describe('SchemaValidationResultEntity', () => {
         warnings: undefined,
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        resultWithoutWarnings,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', resultWithoutWarnings, validatedAt, 'structural-validator');
 
       expect(entity.warningCount).toBe(0);
     });
@@ -245,12 +169,7 @@ describe('SchemaValidationResultEntity', () => {
         warnings: [mockWarningIssue, mockWarningIssue],
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        multipleWarningsResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', multipleWarningsResult, validatedAt, 'structural-validator');
 
       expect(entity.warningCount).toBe(2);
     });
@@ -258,12 +177,7 @@ describe('SchemaValidationResultEntity', () => {
 
   describe('toJSON method', () => {
     it('should serialize entity to JSON without userId', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockValidValidationResult,
-        validatedAt,
-        'structural-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockValidValidationResult, validatedAt, 'structural-validator');
 
       const json = entity.toJSON();
 
@@ -281,13 +195,7 @@ describe('SchemaValidationResultEntity', () => {
     });
 
     it('should serialize entity to JSON with userId', () => {
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        mockInvalidValidationResult,
-        validatedAt,
-        'structural-validator',
-        'user-456'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', mockInvalidValidationResult, validatedAt, 'structural-validator', 'user-456');
 
       const json = entity.toJSON();
 
@@ -314,13 +222,7 @@ describe('SchemaValidationResultEntity', () => {
         metadata: { context: 'test' },
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'complex-schema',
-        complexResult,
-        validatedAt,
-        'enhanced-validator',
-        'admin-user'
-      );
+      const entity = new SchemaValidationResultEntity('complex-schema', complexResult, validatedAt, 'enhanced-validator', 'admin-user');
 
       const json = entity.toJSON();
 
@@ -342,12 +244,7 @@ describe('SchemaValidationResultEntity', () => {
         warnings: null as any,
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'schema-123',
-        nullArraysResult,
-        validatedAt,
-        'null-validator'
-      );
+      const entity = new SchemaValidationResultEntity('schema-123', nullArraysResult, validatedAt, 'null-validator');
 
       expect(entity.errorCount).toBe(0);
       expect(entity.warningCount).toBe(0);
@@ -355,12 +252,7 @@ describe('SchemaValidationResultEntity', () => {
     });
 
     it('should handle empty schema ID', () => {
-      const entity = new SchemaValidationResultEntity(
-        '',
-        mockValidValidationResult,
-        validatedAt,
-        'empty-validator'
-      );
+      const entity = new SchemaValidationResultEntity('', mockValidValidationResult, validatedAt, 'empty-validator');
 
       expect(entity.schemaId).toBe('');
       expect(entity.toJSON().schemaId).toBe('');
@@ -368,24 +260,14 @@ describe('SchemaValidationResultEntity', () => {
 
     it('should handle future date', () => {
       const futureDate = new Date('2030-01-01T00:00:00Z');
-      const entity = new SchemaValidationResultEntity(
-        'future-schema',
-        mockValidValidationResult,
-        futureDate,
-        'future-validator'
-      );
+      const entity = new SchemaValidationResultEntity('future-schema', mockValidValidationResult, futureDate, 'future-validator');
 
       expect(entity.validatedAt).toBe(futureDate);
       expect(entity.toJSON().validatedAt).toBe(futureDate);
     });
 
     it('should be immutable after creation', () => {
-      const entity = new SchemaValidationResultEntity(
-        'immutable-schema',
-        mockValidValidationResult,
-        validatedAt,
-        'immutable-validator'
-      );
+      const entity = new SchemaValidationResultEntity('immutable-schema', mockValidValidationResult, validatedAt, 'immutable-validator');
 
       // Properties should be readonly
       expect(() => {
@@ -426,17 +308,11 @@ describe('SchemaValidationResultEntity', () => {
       const complexResult: ValidationResult = {
         isValid: false,
         issues: multipleIssues,
-        errors: multipleIssues.filter(i => i.severity === ValidationSeverity.error),
-        warnings: multipleIssues.filter(i => i.severity === ValidationSeverity.warning),
+        errors: multipleIssues.filter((i) => i.severity === ValidationSeverity.error),
+        warnings: multipleIssues.filter((i) => i.severity === ValidationSeverity.warning),
       };
 
-      const entity = new SchemaValidationResultEntity(
-        'complex-multi-error-schema',
-        complexResult,
-        validatedAt,
-        'comprehensive-validator',
-        'test-user'
-      );
+      const entity = new SchemaValidationResultEntity('complex-multi-error-schema', complexResult, validatedAt, 'comprehensive-validator', 'test-user');
 
       expect(entity.isValid).toBe(false);
       expect(entity.errorCount).toBe(2);

@@ -22,10 +22,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        EnhancedStructuralSchemaValidator,
-        { provide: FieldHandlerRegistry, useValue: mockFieldHandlerRegistry },
-      ],
+      providers: [EnhancedStructuralSchemaValidator, { provide: FieldHandlerRegistry, useValue: mockFieldHandlerRegistry }],
     }).compile();
 
     validator = module.get<EnhancedStructuralSchemaValidator>(EnhancedStructuralSchemaValidator);
@@ -128,7 +125,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
       const result = validator.validate({ root: deepSchema });
 
       // Should detect max depth exceeded
-      expect(result.errors?.some(error => error.code === 'MAX_SCHEMA_DEPTH_EXCEEDED')).toBe(true);
+      expect(result.errors?.some((error) => error.code === 'MAX_SCHEMA_DEPTH_EXCEEDED')).toBe(true);
     });
 
     it('should validate normal nested schemas without false positives', () => {
@@ -158,7 +155,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
 
       // Should validate successfully without circular reference warnings
       expect(result.isValid).toBe(true);
-      expect(result.warnings?.filter(w => w.code === 'POTENTIAL_CIRCULAR_REFERENCE')).toHaveLength(0);
+      expect(result.warnings?.filter((w) => w.code === 'POTENTIAL_CIRCULAR_REFERENCE')).toHaveLength(0);
     });
 
     it('should handle validation errors gracefully', () => {
@@ -201,7 +198,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
 
       // Should not detect false circular references
       expect(result.isValid).toBe(true);
-      expect(result.warnings?.filter(w => w.code === 'POTENTIAL_CIRCULAR_REFERENCE')).toHaveLength(0);
+      expect(result.warnings?.filter((w) => w.code === 'POTENTIAL_CIRCULAR_REFERENCE')).toHaveLength(0);
     });
 
     it('should detect self-referencing schemas with same property structure', () => {
@@ -276,7 +273,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
           fieldPath: 'test',
           depth: 0,
           userRoles: ['admin'],
-        })
+        }),
       );
       expect(result.isValid).toBe(true);
     });
@@ -287,7 +284,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
       const result = validator.validate(emptySchema);
 
       expect(result.isValid).toBe(true);
-      expect(result.warnings?.some(w => w.code === 'EMPTY_SCHEMA')).toBe(true);
+      expect(result.warnings?.some((w) => w.code === 'EMPTY_SCHEMA')).toBe(true);
     });
 
     it('should handle invalid schema input', () => {
@@ -296,7 +293,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
       const result = validator.validate(invalidSchema);
 
       expect(result.isValid).toBe(true); // Empty schema is structurally valid
-      expect(result.warnings?.some(e => e.code === 'EMPTY_SCHEMA')).toBe(true);
+      expect(result.warnings?.some((e) => e.code === 'EMPTY_SCHEMA')).toBe(true);
     });
   });
 

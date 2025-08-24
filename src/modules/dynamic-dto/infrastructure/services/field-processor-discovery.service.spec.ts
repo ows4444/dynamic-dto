@@ -70,11 +70,7 @@ describe('FieldProcessorDiscoveryService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        FieldProcessorDiscoveryService,
-        { provide: DiscoveryService, useValue: mockDiscoveryService },
-        { provide: Reflector, useValue: mockReflector },
-      ],
+      providers: [FieldProcessorDiscoveryService, { provide: DiscoveryService, useValue: mockDiscoveryService }, { provide: Reflector, useValue: mockReflector }],
     }).compile();
 
     service = module.get<FieldProcessorDiscoveryService>(FieldProcessorDiscoveryService);
@@ -145,21 +141,19 @@ describe('FieldProcessorDiscoveryService', () => {
     it('should sort processors by priority descending', () => {
       const lowPriorityMetadata = { ...mockMetadata, priority: 1 };
       const highPriorityMetadata = { ...mockMetadata, priority: 5 };
-      
+
       const lowPriorityWrapper = {
         metatype: MockFieldProcessor,
         instance: new MockFieldProcessor(),
       };
-      
+
       const highPriorityWrapper = {
         metatype: MockFieldProcessor,
         instance: new MockFieldProcessor(),
       };
 
       discoveryService.getProviders.mockReturnValue([lowPriorityWrapper, highPriorityWrapper] as any);
-      reflector.get
-        .mockReturnValueOnce(lowPriorityMetadata)
-        .mockReturnValueOnce(highPriorityMetadata);
+      reflector.get.mockReturnValueOnce(lowPriorityMetadata).mockReturnValueOnce(highPriorityMetadata);
 
       const processors = service.discoverProcessors();
 
@@ -170,7 +164,7 @@ describe('FieldProcessorDiscoveryService', () => {
 
     it('should handle processors without priority', () => {
       const noPriorityMetadata = { type: 'string', category: 'primitive' } as FieldProcessorMetadata;
-      
+
       discoveryService.getProviders.mockReturnValue([mockWrapper] as any);
       reflector.get.mockReturnValue(noPriorityMetadata);
 
@@ -189,9 +183,7 @@ describe('FieldProcessorDiscoveryService', () => {
 
       service.discoverProcessors();
 
-      expect(debugSpy).toHaveBeenCalledWith(
-        `Discovered field processor: ${MockFieldProcessor.name} for type: ${mockMetadata.type}`
-      );
+      expect(debugSpy).toHaveBeenCalledWith(`Discovered field processor: ${MockFieldProcessor.name} for type: ${mockMetadata.type}`);
       expect(logSpy).toHaveBeenCalledWith('Discovered 1 field processors');
     });
 
@@ -232,9 +224,7 @@ describe('FieldProcessorDiscoveryService', () => {
       };
 
       discoveryService.getProviders.mockReturnValue([primitiveWrapper, specializedWrapper] as any);
-      reflector.get
-        .mockReturnValueOnce(primitiveMetadata)
-        .mockReturnValueOnce(specializedMetadata);
+      reflector.get.mockReturnValueOnce(primitiveMetadata).mockReturnValueOnce(specializedMetadata);
 
       const grouped = service.getProcessorsByCategory();
 
@@ -284,9 +274,7 @@ describe('FieldProcessorDiscoveryService', () => {
       };
 
       discoveryService.getProviders.mockReturnValue([stringWrapper, numberWrapper] as any);
-      reflector.get
-        .mockReturnValueOnce(stringMetadata)
-        .mockReturnValueOnce(numberMetadata);
+      reflector.get.mockReturnValueOnce(stringMetadata).mockReturnValueOnce(numberMetadata);
 
       const supportedTypes = service.getSupportedTypes();
 
@@ -331,9 +319,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const isValid = service.validateProcessorCompatibility(processor);
 
       expect(isValid).toBe(false);
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Processor type mismatch')
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Processor type mismatch'));
     });
 
     it('should handle validation errors', () => {
@@ -341,7 +327,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const faultyProcessor = {
         get supportedType() {
           throw new Error('Property access error');
-        }
+        },
       } as any;
 
       const processor: DiscoveredProcessor = {
@@ -353,10 +339,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const isValid = service.validateProcessorCompatibility(processor);
 
       expect(isValid).toBe(false);
-      expect(errorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Processor validation failed'),
-        'Property access error'
-      );
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Processor validation failed'), 'Property access error');
     });
 
     it('should handle unknown errors during validation', () => {
@@ -364,7 +347,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const faultyProcessor = {
         get supportedType() {
           throw 'String error';
-        }
+        },
       } as any;
 
       const processor: DiscoveredProcessor = {
@@ -376,26 +359,23 @@ describe('FieldProcessorDiscoveryService', () => {
       const isValid = service.validateProcessorCompatibility(processor);
 
       expect(isValid).toBe(false);
-      expect(errorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Processor validation failed'),
-        'Unknown error'
-      );
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Processor validation failed'), 'Unknown error');
     });
   });
 
   describe('isFieldProcessorInstance (private method)', () => {
     it('should identify valid field processor instances', () => {
       const validInstance = new MockFieldProcessor();
-      
+
       // Access private method through type assertion
       const isFieldProcessorInstance = (service as any).isFieldProcessorInstance.bind(service);
-      
+
       expect(isFieldProcessorInstance(validInstance)).toBe(true);
     });
 
     it('should reject invalid instances', () => {
       const isFieldProcessorInstance = (service as any).isFieldProcessorInstance.bind(service);
-      
+
       expect(isFieldProcessorInstance(null)).toBe(false);
       expect(isFieldProcessorInstance(undefined)).toBe(false);
       expect(isFieldProcessorInstance({})).toBe(false);
@@ -405,25 +385,25 @@ describe('FieldProcessorDiscoveryService', () => {
 
     it('should validate required methods', () => {
       const isFieldProcessorInstance = (service as any).isFieldProcessorInstance.bind(service);
-      
+
       const partialInstance = {
         supportedType: 'string',
         canProcess: jest.fn(),
         // Missing generateValidationDecorators
       };
-      
+
       expect(isFieldProcessorInstance(partialInstance)).toBe(false);
     });
 
     it('should validate method types', () => {
       const isFieldProcessorInstance = (service as any).isFieldProcessorInstance.bind(service);
-      
+
       const invalidMethodsInstance = {
         supportedType: 'string',
         canProcess: 'not a function',
         generateValidationDecorators: jest.fn(),
       };
-      
+
       expect(isFieldProcessorInstance(invalidMethodsInstance)).toBe(false);
     });
   });
@@ -434,9 +414,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const invalidWrapper = mockInvalidWrapper;
 
       discoveryService.getProviders.mockReturnValue([validWrapper, invalidWrapper] as any);
-      reflector.get
-        .mockReturnValueOnce(mockMetadata)
-        .mockReturnValueOnce(mockMetadata);
+      reflector.get.mockReturnValueOnce(mockMetadata).mockReturnValueOnce(mockMetadata);
 
       const processors = service.discoverProcessors();
 
@@ -452,7 +430,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const supportedTypes = service.getSupportedTypes();
 
       expect(processors).toEqual([]);
-      expect(Object.values(grouped).every(arr => arr.length === 0)).toBe(true);
+      expect(Object.values(grouped).every((arr) => arr.length === 0)).toBe(true);
       expect(supportedTypes).toEqual([]);
     });
   });

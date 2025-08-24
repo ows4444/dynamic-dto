@@ -26,7 +26,7 @@ describe('CrossFieldValidationStrategy', () => {
           name: { type: FieldType.string, expose: true },
           age: { type: FieldType.number, expose: true },
         },
-        ['name']
+        ['name'],
       );
 
       const context: ValidationContext = {
@@ -50,7 +50,7 @@ describe('CrossFieldValidationStrategy', () => {
           password: { type: FieldType.string, expose: true },
           confirmPassword: { type: FieldType.string, expose: true },
         },
-        ['password', 'confirmPassword']
+        ['password', 'confirmPassword'],
       );
 
       const validContext: ValidationContext = {
@@ -82,14 +82,14 @@ describe('CrossFieldValidationStrategy', () => {
           startDate: { type: FieldType.date, expose: true },
           endDate: { type: FieldType.date, expose: true },
         },
-        ['startDate', 'endDate']
+        ['startDate', 'endDate'],
       );
 
       const validContext: ValidationContext = {
         schema,
-        data: { 
-          startDate: '2024-01-01T00:00:00Z', 
-          endDate: '2024-01-02T00:00:00Z' 
+        data: {
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-02T00:00:00Z',
         },
         path: '',
         schemaPath: '',
@@ -97,9 +97,9 @@ describe('CrossFieldValidationStrategy', () => {
 
       const invalidContext: ValidationContext = {
         schema,
-        data: { 
-          startDate: '2024-01-02T00:00:00Z', 
-          endDate: '2024-01-01T00:00:00Z' 
+        data: {
+          startDate: '2024-01-02T00:00:00Z',
+          endDate: '2024-01-01T00:00:00Z',
         },
         path: '',
         schemaPath: '',
@@ -120,7 +120,7 @@ describe('CrossFieldValidationStrategy', () => {
           field1: { type: FieldType.string, expose: true },
           field2: { type: FieldType.string, expose: true },
         },
-        []
+        [],
       );
 
       const context: ValidationContext = {
@@ -144,7 +144,7 @@ describe('CrossFieldValidationStrategy', () => {
         {
           field1: { type: FieldType.string, expose: true },
         },
-        []
+        [],
       );
 
       const nullContext: ValidationContext = {
@@ -180,7 +180,7 @@ describe('CrossFieldValidationStrategy', () => {
           field1: { type: FieldType.string, expose: true },
           field2: { type: FieldType.string, expose: true },
         },
-        []
+        [],
       );
 
       const context: ValidationContext = {
@@ -200,7 +200,7 @@ describe('CrossFieldValidationStrategy', () => {
         {
           field1: { type: FieldType.string, expose: true },
         },
-        []
+        [],
       );
 
       const context: ValidationContext = {
@@ -223,7 +223,7 @@ describe('CrossFieldValidationStrategy', () => {
         {
           field1: { type: FieldType.string, expose: true },
         },
-        []
+        [],
       );
 
       const context: ValidationContext = {

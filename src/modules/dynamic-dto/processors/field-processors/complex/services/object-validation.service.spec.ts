@@ -230,7 +230,7 @@ describe('ObjectValidationService', () => {
         type: FieldType.object,
         expose: true,
         properties: {
-          items: { type: FieldType.array, expose: true , items: []},
+          items: { type: FieldType.array, expose: true, items: [] },
         },
       };
       const input = { items: [1, 2, 3] };

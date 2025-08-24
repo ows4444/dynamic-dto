@@ -197,10 +197,10 @@ describe('EnumFieldProcessor', () => {
       expect(transformations).toHaveLength(4);
 
       // Check order is maintained
-      const orders = transformations.map(t => t.order);
+      const orders = transformations.map((t) => t.order);
       expect(orders).toEqual([10, 20, 30, 40]);
 
-      const names = transformations.map(t => t.name);
+      const names = transformations.map((t) => t.name);
       expect(names).toEqual(['enum_default', 'enum_case_normalize', 'enum_transform', 'enum_multiple_processing']);
     });
   });
@@ -258,9 +258,9 @@ describe('EnumFieldProcessor', () => {
     it('should handle computed default type', () => {
       const computedDefaultSchema: EnumFieldSchema = {
         ...basicEnumSchema,
-        default: { 
+        default: {
           type: 'computed',
-          strategy: 'first' 
+          strategy: 'first',
         } as any,
       };
 
@@ -375,9 +375,9 @@ describe('EnumFieldProcessor', () => {
         ...basicEnumSchema,
         transform: EnumTransform.label,
         labels: {
-          'red': 'Red Color',
-          'green': 'Green Color',
-          'blue': 'Blue Color',
+          red: 'Red Color',
+          green: 'Green Color',
+          blue: 'Blue Color',
         },
       };
 
@@ -450,9 +450,9 @@ describe('EnumFieldProcessor', () => {
     const testComputeDefaultValue = (strategy: string, expected?: any) => {
       const computedSchema: EnumFieldSchema = {
         ...basicEnumSchema,
-        default: { 
+        default: {
           type: 'computed',
-          strategy 
+          strategy,
         } as any,
       };
 
@@ -490,16 +490,16 @@ describe('EnumFieldProcessor', () => {
     it('should handle weighted random with custom weights', () => {
       const weightedSchema: EnumFieldSchema = {
         ...basicEnumSchema,
-        default: { 
+        default: {
           type: 'computed',
           strategy: 'random_weighted',
-          weights: { 'red': 10, 'green': 1, 'blue': 1 }
+          weights: { red: 10, green: 1, blue: 1 },
         } as any,
       };
 
       const transformations = processor.getTypeSpecificTransformations(weightedSchema);
       const transform = transformations[0]?.transform;
-      
+
       // Test multiple times to ensure weighted selection works
       const results = [];
       for (let i = 0; i < 100; i++) {
@@ -507,16 +507,16 @@ describe('EnumFieldProcessor', () => {
       }
 
       // Red should appear more frequently due to higher weight
-      const redCount = results.filter(r => r === 'red').length;
+      const redCount = results.filter((r) => r === 'red').length;
       expect(redCount).toBeGreaterThan(50); // Should be roughly 83% (10/12)
     });
 
     it('should handle expression-based defaults', () => {
       const expressionSchema: EnumFieldSchema = {
         ...basicEnumSchema,
-        default: { 
+        default: {
           type: 'computed',
-          expression: 'first'
+          expression: 'first',
         } as any,
       };
 
@@ -563,7 +563,7 @@ describe('EnumFieldProcessor', () => {
       const frequencySchema: EnumFieldSchema = {
         ...sortTestSchema,
         sort: EnumSortOrder.frequency,
-        labels: { 'apple': 'Apple Label' }, // apple gets boosted
+        labels: { apple: 'Apple Label' }, // apple gets boosted
       };
 
       const transformations = processor.getTypeSpecificTransformations(frequencySchema);
@@ -600,9 +600,9 @@ describe('EnumFieldProcessor', () => {
     it('should handle weighted random with no weights', () => {
       const noWeightsSchema: EnumFieldSchema = {
         ...basicEnumSchema,
-        default: { 
+        default: {
           type: 'computed',
-          strategy: 'random_weighted'
+          strategy: 'random_weighted',
         } as any,
       };
 
@@ -615,13 +615,13 @@ describe('EnumFieldProcessor', () => {
 
     it('should handle expressions for enum evaluation', () => {
       const expressions = ['first', 'last', 'random', 'unknown'];
-      
-      expressions.forEach(expression => {
+
+      expressions.forEach((expression) => {
         const expressionSchema: EnumFieldSchema = {
           ...basicEnumSchema,
-          default: { 
+          default: {
             type: 'computed',
-            expression 
+            expression,
           } as any,
         };
 
@@ -636,7 +636,7 @@ describe('EnumFieldProcessor', () => {
     it('should handle complex scenarios', () => {
       const complexSchema: EnumFieldSchema = {
         ...basicEnumSchema,
-        default: { type: 'computed', strategy: 'random_weighted', weights: { 'red': 2 } } as any,
+        default: { type: 'computed', strategy: 'random_weighted', weights: { red: 2 } } as any,
         caseSensitive: false,
         transform: EnumTransform.uppercase,
         allowMultiple: true,

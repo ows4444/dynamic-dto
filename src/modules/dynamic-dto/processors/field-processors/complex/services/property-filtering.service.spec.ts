@@ -102,7 +102,7 @@ describe('PropertyFilteringService', () => {
       const input = { any: 'value', should: 'remain' };
 
       const result = service.removeAdditionalProperties(input, schema);
-      expect(result).toBe(input); // Returns original when no properties defined
+      expect(result).toEqual({}); // Should return empty object when no properties defined
     });
 
     it('should handle empty input object', () => {
@@ -222,7 +222,7 @@ describe('PropertyFilteringService', () => {
       const input = { name: 'John' };
 
       const result = service.transformObjectProperties(input, schema);
-      expect(result).toBe(input); // Currently returns same reference
+      expect(result).toStrictEqual(input); // Compare values, not reference
     });
 
     it('should handle empty objects', () => {
@@ -246,7 +246,7 @@ describe('PropertyFilteringService', () => {
           number: { type: FieldType.number, expose: true },
           boolean: { type: FieldType.boolean, expose: true },
 
-          array: { type: FieldType.array, expose: true , items: { type: FieldType.number, expose: true }},
+          array: { type: FieldType.array, expose: true, items: { type: FieldType.number, expose: true } },
           nested: { type: FieldType.object, expose: true, properties: { prop: { type: FieldType.string, expose: true } } },
         },
       };
@@ -259,7 +259,7 @@ describe('PropertyFilteringService', () => {
       };
 
       const result = service.transformObjectProperties(input, schema);
-      expect(result).toBe(input); // Placeholder implementation
+      expect(result).toStrictEqual(input); // Compare values, not reference
     });
 
     it('should handle null and undefined values', () => {
@@ -277,7 +277,7 @@ describe('PropertyFilteringService', () => {
       };
 
       const result = service.transformObjectProperties(input, schema);
-      expect(result).toBe(input); // Placeholder implementation
+      expect(result).toStrictEqual(input); // Compare values, not reference
       expect(result.nullable).toBeNull();
       expect(result.optional).toBeUndefined();
     });

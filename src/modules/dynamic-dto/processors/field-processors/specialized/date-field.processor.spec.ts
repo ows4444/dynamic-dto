@@ -181,7 +181,7 @@ describe('DateFieldProcessor', () => {
       const transformations = processor.getTypeSpecificTransformations(basicDateSchema);
 
       expect(transformations).toHaveLength(1);
-      expect(transformations.every(t => t.name !== 'date_formatting')).toBe(true);
+      expect(transformations.every((t) => t.name !== 'date_formatting')).toBe(true);
     });
   });
 
@@ -213,14 +213,9 @@ describe('DateFieldProcessor', () => {
     });
 
     it('should parse common date string formats', () => {
-      const dateStrings = [
-        '2023-06-15',
-        '2023/06/15',
-        'June 15, 2023',
-        '2023-06-15T10:30:00',
-      ];
+      const dateStrings = ['2023-06-15', '2023/06/15', 'June 15, 2023', '2023-06-15T10:30:00'];
 
-      dateStrings.forEach(dateString => {
+      dateStrings.forEach((dateString) => {
         const result = transformation?.({ value: dateString, obj: {}, key: 'test' });
         expect(result).toBeInstanceOf(Date);
         expect(isNaN((result as Date).getTime())).toBe(false);
@@ -237,7 +232,7 @@ describe('DateFieldProcessor', () => {
     it('should preserve invalid date strings', () => {
       const invalidStrings = ['invalid-date', 'abc123', 'not-a-date'];
 
-      invalidStrings.forEach(invalidString => {
+      invalidStrings.forEach((invalidString) => {
         const result = transformation?.({ value: invalidString, obj: {}, key: 'test' });
         expect(result).toBe(invalidString);
       });
@@ -258,7 +253,7 @@ describe('DateFieldProcessor', () => {
     it('should preserve non-string, non-number, non-Date values', () => {
       const values = [true, false, {}, [], Symbol('test')];
 
-      values.forEach(value => {
+      values.forEach((value) => {
         const result = transformation?.({ value, obj: {}, key: 'test' });
         expect(result).toBe(value);
       });
@@ -306,7 +301,7 @@ describe('DateFieldProcessor', () => {
 
       const values = ['string', 123, null, undefined, {}, []];
 
-      values.forEach(value => {
+      values.forEach((value) => {
         const result = formatTransformation?.({ value, obj: {}, key: 'test' });
         expect(result).toBe(value);
       });

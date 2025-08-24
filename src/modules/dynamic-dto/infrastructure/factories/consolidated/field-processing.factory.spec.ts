@@ -29,18 +29,13 @@ describe('Field Processing Factory', () => {
 
     it('should include FieldProcessorRegistry provider', () => {
       const providers = createFieldProcessingProviders();
-      const registryProvider = providers.find(
-        (p) => typeof p === 'object' && 'provide' in p && p.provide === 'FieldProcessorRegistry'
-      );
+      const registryProvider = providers.find((p) => typeof p === 'object' && 'provide' in p && p.provide === 'FieldProcessorRegistry');
       expect(registryProvider).toBeDefined();
     });
 
     it('should include FieldProcessorDiscoveryService', () => {
       const providers = createFieldProcessingProviders();
-      const discoveryProvider = providers.find(
-        (p) => p === FieldProcessorDiscoveryService || 
-        (typeof p === 'object' && 'useClass' in p && p.useClass === FieldProcessorDiscoveryService)
-      );
+      const discoveryProvider = providers.find((p) => p === FieldProcessorDiscoveryService || (typeof p === 'object' && 'useClass' in p && p.useClass === FieldProcessorDiscoveryService));
       expect(discoveryProvider).toBeDefined();
     });
   });
@@ -73,8 +68,8 @@ describe('Field Processing Factory', () => {
   describe('factory output validation', () => {
     it('should return valid NestJS provider format', () => {
       const providers = createFieldProcessingProviders();
-      
-      providers.forEach(provider => {
+
+      providers.forEach((provider) => {
         if (typeof provider === 'function') {
           expect(typeof provider).toBe('function');
         } else if (typeof provider === 'object' && provider !== null) {
@@ -100,15 +95,15 @@ describe('Field Processing Factory', () => {
     it('should not have duplicate provider tokens', () => {
       const providers = createFieldProcessingProviders();
       const tokens = new Set();
-      
-      providers.forEach(provider => {
+
+      providers.forEach((provider) => {
         let token;
         if (typeof provider === 'function') {
           token = provider;
         } else if (typeof provider === 'object' && 'provide' in provider) {
           token = provider.provide;
         }
-        
+
         if (token) {
           expect(tokens.has(token)).toBe(false);
           tokens.add(token);

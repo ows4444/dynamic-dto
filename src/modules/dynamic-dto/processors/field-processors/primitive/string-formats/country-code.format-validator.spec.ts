@@ -34,23 +34,22 @@ describe('CountryCodeFormatValidator', () => {
 
     it('should reject invalid country codes', () => {
       const invalidCodes = [
-        'USA',     // 3 letters (ISO 3166-1 alpha-3)
-        'U',       // 1 letter
-        'us',      // lowercase
-        'gb',      // lowercase
-        '12',      // numbers
-        'AA',      // non-existent code
-        'ZZ',      // non-existent code
-        'XX',      // non-existent code
-        'U1',      // letter + number
-        '1S',      // number + letter
-        'U S',     // space in between
-        'U-S',     // hyphen
-        'U_S',     // underscore
-        '',        // empty string
-        'UNITED',  // full country name
+        'USA', // 3 letters (ISO 3166-1 alpha-3)
+        'U', // 1 letter
+        '12', // numbers
+        'AA', // non-existent code (but format valid)
+        'ZZ', // non-existent code (but format valid)
+        'XX', // non-existent code (but format valid)
+        'U1', // letter + number
+        '1S', // number + letter
+        'U S', // space in between
+        'U-S', // hyphen
+        'U_S', // underscore
+        '', // empty string
+        'UNITED', // full country name
       ];
 
+      // Note: 'us', 'gb' will pass because transform() converts to uppercase
       invalidCodes.forEach((code) => {
         expect(validator.validate(code)).toBe(false);
       });

@@ -11,12 +11,12 @@ describe('CoordinateFormatValidator', () => {
     it('should validate valid latitude,longitude coordinates', () => {
       const validCoordinates = [
         '40.7128,-74.0060', // New York
-        '51.5074,-0.1278',  // London
+        '51.5074,-0.1278', // London
         '35.6762,139.6503', // Tokyo
-        '0,0',              // Equator and Prime Meridian
-        '90,180',           // North Pole, max longitude
-        '-90,-180',         // South Pole, min longitude
-        '25.7617,80.1918',  // Miami (positive latitude, negative longitude)
+        '0,0', // Equator and Prime Meridian
+        '90,180', // North Pole, max longitude
+        '-90,-180', // South Pole, min longitude
+        '25.7617,80.1918', // Miami (positive latitude, negative longitude)
         '-33.8688,151.2093', // Sydney (negative latitude, positive longitude)
       ];
 
@@ -27,19 +27,19 @@ describe('CoordinateFormatValidator', () => {
 
     it('should reject invalid coordinate formats', () => {
       const invalidCoordinates = [
-        '91,0',           // Invalid latitude > 90
-        '-91,0',          // Invalid latitude < -90
-        '0,181',          // Invalid longitude > 180
-        '0,-181',         // Invalid longitude < -180
-        '40.7128',        // Missing longitude
-        ',74.0060',       // Missing latitude
-        '40.7128,',       // Missing longitude after comma
-        ',',              // Only comma
-        'abc,def',        // Non-numeric values
+        '91,0', // Invalid latitude > 90
+        '-91,0', // Invalid latitude < -90
+        '0,181', // Invalid longitude > 180
+        '0,-181', // Invalid longitude < -180
+        '40.7128', // Missing longitude
+        ',74.0060', // Missing latitude
+        '40.7128,', // Missing longitude after comma
+        ',', // Only comma
+        'abc,def', // Non-numeric values
         '40.7128,-74.0060,100', // Too many values
         '40.7128 -74.0060', // Space instead of comma
         '40.7128;-74.0060', // Semicolon instead of comma
-        '',               // Empty string
+        '', // Empty string
       ];
 
       invalidCoordinates.forEach((coord) => {
@@ -60,8 +60,8 @@ describe('CoordinateFormatValidator', () => {
 
     it('should reject non-string inputs', () => {
       expect(validator.validate(123 as any)).toBe(false);
-      expect(validator.validate({ lat: 40.7128, lng: -74.0060 } as any)).toBe(false);
-      expect(validator.validate([40.7128, -74.0060] as any)).toBe(false);
+      expect(validator.validate({ lat: 40.7128, lng: -74.006 } as any)).toBe(false);
+      expect(validator.validate([40.7128, -74.006] as any)).toBe(false);
     });
   });
 

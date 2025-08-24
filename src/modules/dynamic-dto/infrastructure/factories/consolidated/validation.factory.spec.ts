@@ -27,19 +27,13 @@ describe('Validation Factory', () => {
 
     it('should include validation strategy providers', () => {
       const providers = createValidationProviders();
-      const strategyProvider = providers.find(
-        (p) => typeof p === 'object' && 'provide' in p && 
-        String(p.provide).toLowerCase().includes('strategy')
-      );
+      const strategyProvider = providers.find((p) => typeof p === 'object' && 'provide' in p && String(p.provide).toLowerCase().includes('strategy'));
       expect(strategyProvider).toBeDefined();
     });
 
     it('should include validation pipeline providers', () => {
       const providers = createValidationProviders();
-      const pipelineProvider = providers.find(
-        (p) => typeof p === 'object' && 'provide' in p && 
-        String(p.provide).toLowerCase().includes('pipeline')
-      );
+      const pipelineProvider = providers.find((p) => typeof p === 'object' && 'provide' in p && String(p.provide).toLowerCase().includes('pipeline'));
       expect(pipelineProvider).toBeDefined();
     });
   });
@@ -47,8 +41,8 @@ describe('Validation Factory', () => {
   describe('factory output validation', () => {
     it('should return valid NestJS provider format', () => {
       const providers = createValidationProviders();
-      
-      providers.forEach(provider => {
+
+      providers.forEach((provider) => {
         if (typeof provider === 'function') {
           expect(typeof provider).toBe('function');
         } else if (typeof provider === 'object' && provider !== null) {
@@ -74,15 +68,15 @@ describe('Validation Factory', () => {
     it('should not have duplicate provider tokens', () => {
       const providers = createValidationProviders();
       const tokens = new Set();
-      
-      providers.forEach(provider => {
+
+      providers.forEach((provider) => {
         let token;
         if (typeof provider === 'function') {
           token = provider;
         } else if (typeof provider === 'object' && 'provide' in provider) {
           token = provider.provide;
         }
-        
+
         if (token) {
           expect(tokens.has(token)).toBe(false);
           tokens.add(token);
@@ -94,12 +88,9 @@ describe('Validation Factory', () => {
   describe('validation factory requirements', () => {
     it('should provide essential validation services', () => {
       const providers = createValidationProviders();
-      
+
       // Check that we have providers for key validation components
-      expect(providers.some(p => 
-        typeof p === 'object' && 'provide' in p && 
-        (String(p.provide).includes('Validation') || String(p.provide).includes('Strategy'))
-      )).toBe(true);
+      expect(providers.some((p) => typeof p === 'object' && 'provide' in p && (String(p.provide).includes('Validation') || String(p.provide).includes('Strategy')))).toBe(true);
     });
 
     it('should handle optional configuration', () => {
@@ -121,9 +112,9 @@ describe('Validation Factory', () => {
   describe('provider dependencies', () => {
     it('should create providers with proper dependency injection setup', () => {
       const providers = createValidationProviders();
-      
+
       // Validate that each provider has proper structure
-      providers.forEach(provider => {
+      providers.forEach((provider) => {
         if (typeof provider === 'object' && provider !== null && 'useFactory' in provider) {
           expect(provider.useFactory).toBeInstanceOf(Function);
           if (provider.inject) {

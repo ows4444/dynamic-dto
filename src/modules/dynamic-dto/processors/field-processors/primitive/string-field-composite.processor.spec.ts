@@ -18,14 +18,7 @@ describe('StringFieldProcessorComposite', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        StringFieldProcessorComposite,
-        StringBasicProcessor,
-        StringFormatProcessor,
-        StringTransformationProcessor,
-        StringAutoGenerationProcessor,
-        StringFormatProcessorFactory,
-      ],
+      providers: [StringFieldProcessorComposite, StringBasicProcessor, StringFormatProcessor, StringTransformationProcessor, StringAutoGenerationProcessor, StringFormatProcessorFactory],
     }).compile();
 
     composite = module.get<StringFieldProcessorComposite>(StringFieldProcessorComposite);
