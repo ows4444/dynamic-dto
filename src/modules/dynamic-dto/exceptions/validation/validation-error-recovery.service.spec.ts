@@ -1,7 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ValidationErrorRecoveryService } from './validation-error-recovery.service';
-import { ValidationResult } from '../../core/interfaces/validation/validation-result.interface';
-import { ValidationError } from '../../core/interfaces/validation/validation-error.interface';
+import type { ValidationResult } from '../../core/interfaces/validation/validation-result.interface';
+import type { ValidationError } from '../../core/interfaces/validation/validation-error.interface';
 import { FieldType } from '../../core/enums/field-type.enums';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 
@@ -14,9 +15,9 @@ describe('ValidationErrorRecoveryService', () => {
     {
       name: { type: FieldType.string, expose: true, minLength: 2 },
       age: { type: FieldType.number, expose: true, min: 0, max: 120 },
-      email: { type: FieldType.string, expose: true, format: 'email' }
+      email: { type: FieldType.string, expose: true, format: 'email' },
     },
-    ['name', 'email']
+    ['name', 'email'],
   );
 
   const sampleValidationError: ValidationError = {
@@ -29,8 +30,8 @@ describe('ValidationErrorRecoveryService', () => {
       fieldPath: 'name',
       constraint: 'minLength',
       expectedValue: 2,
-      actualValue: 1
-    }
+      actualValue: 1,
+    },
   };
 
   const sampleValidationResult: ValidationResult = {
@@ -48,11 +49,11 @@ describe('ValidationErrorRecoveryService', () => {
           fieldPath: 'email',
           constraint: 'format',
           expectedValue: 'email',
-          actualValue: 'invalid-email'
-        }
-      }
+          actualValue: 'invalid-email',
+        },
+      },
     ],
-    warnings: []
+    warnings: [],
   };
 
   beforeEach(async () => {
@@ -82,7 +83,7 @@ describe('ValidationErrorRecoveryService', () => {
         isValid: true,
         data: { name: 'John', age: 25, email: 'john@example.com' },
         errors: [],
-        warnings: []
+        warnings: [],
       };
 
       const result = await service.attemptRecovery(validResult, mockSchema);
@@ -104,9 +105,9 @@ describe('ValidationErrorRecoveryService', () => {
           name: { type: FieldType.string, expose: true },
           count: { type: FieldType.number, expose: true },
           active: { type: FieldType.boolean, expose: true },
-          tags: { type: FieldType.array, expose: true, items: { type: FieldType.string } }
+          tags: { type: FieldType.array, expose: true, items: { type: FieldType.string } },
         },
-        ['name']
+        ['name'],
       );
 
       const complexValidationResult: ValidationResult = {
@@ -118,10 +119,10 @@ describe('ValidationErrorRecoveryService', () => {
             value: '',
             message: 'Name is required',
             code: 'REQUIRED_FIELD',
-            context: { schemaId: 'complex-schema', fieldPath: 'name' }
-          }
+            context: { schemaId: 'complex-schema', fieldPath: 'name' },
+          },
         ],
-        warnings: []
+        warnings: [],
       };
 
       const result = await service.attemptRecovery(complexValidationResult, complexSchema);
@@ -133,7 +134,7 @@ describe('ValidationErrorRecoveryService', () => {
         isValid: false,
         data: {},
         errors: [],
-        warnings: []
+        warnings: [],
       };
 
       const result = await service.attemptRecovery(emptyResult, mockSchema);
@@ -151,9 +152,9 @@ describe('ValidationErrorRecoveryService', () => {
             value: 25,
             message: 'Age seems low for this context',
             code: 'AGE_WARNING',
-            context: { schemaId: 'test-schema', fieldPath: 'age' }
-          }
-        ]
+            context: { schemaId: 'test-schema', fieldPath: 'age' },
+          },
+        ],
       };
 
       const result = await service.attemptRecovery(warningResult, mockSchema);
@@ -169,7 +170,7 @@ describe('ValidationErrorRecoveryService', () => {
         value: '',
         message: 'Name is required',
         code: 'REQUIRED_FIELD',
-        context: { schemaId: 'test-schema', fieldPath: 'name' }
+        context: { schemaId: 'test-schema', fieldPath: 'name' },
       };
 
       const result = service.canRecover(recoverableError);
@@ -182,7 +183,7 @@ describe('ValidationErrorRecoveryService', () => {
         value: null,
         message: 'Name cannot be null',
         code: 'NULL_VALUE',
-        context: { schemaId: 'test-schema', fieldPath: 'name' }
+        context: { schemaId: 'test-schema', fieldPath: 'name' },
       };
 
       const result = service.canRecover(errorWithNullValue);
@@ -194,7 +195,7 @@ describe('ValidationErrorRecoveryService', () => {
         field: 'name',
         value: 'x',
         message: 'Invalid name',
-        code: 'INVALID_VALUE'
+        code: 'INVALID_VALUE',
       };
 
       const result = service.canRecover(errorWithoutContext);
@@ -214,7 +215,7 @@ describe('ValidationErrorRecoveryService', () => {
         value: 'completely-invalid-email-format',
         message: 'Email format is completely invalid',
         code: 'UNRECOVERABLE_EMAIL_FORMAT',
-        context: { schemaId: 'test-schema', fieldPath: 'email' }
+        context: { schemaId: 'test-schema', fieldPath: 'email' },
       };
 
       const result = await service.recoverError(unrecoverableError, mockSchema);
@@ -227,7 +228,7 @@ describe('ValidationErrorRecoveryService', () => {
         value: 'value',
         message: 'Field does not exist',
         code: 'FIELD_NOT_FOUND',
-        context: { schemaId: 'test-schema', fieldPath: 'nonExistentField' }
+        context: { schemaId: 'test-schema', fieldPath: 'nonExistentField' },
       };
 
       const result = await service.recoverError(nonExistentFieldError, mockSchema);
@@ -241,7 +242,7 @@ describe('ValidationErrorRecoveryService', () => {
         isValid: false,
         data: null,
         errors: null,
-        warnings: null
+        warnings: null,
       } as any;
 
       await expect(service.attemptRecovery(malformedResult, mockSchema)).resolves.toBeDefined();
@@ -263,14 +264,14 @@ describe('ValidationErrorRecoveryService', () => {
         value: `value${i}`,
         message: `Error for field${i}`,
         code: 'VALIDATION_ERROR',
-        context: { schemaId: 'test-schema', fieldPath: `field${i}` }
+        context: { schemaId: 'test-schema', fieldPath: `field${i}` },
       }));
 
       const largeValidationResult: ValidationResult = {
         isValid: false,
         data: {},
         errors: largeErrors,
-        warnings: []
+        warnings: [],
       };
 
       const startTime = Date.now();
@@ -282,13 +283,11 @@ describe('ValidationErrorRecoveryService', () => {
     });
 
     it('should handle concurrent recovery requests', async () => {
-      const promises = Array.from({ length: 10 }, () =>
-        service.attemptRecovery(sampleValidationResult, mockSchema)
-      );
+      const promises = Array.from({ length: 10 }, () => service.attemptRecovery(sampleValidationResult, mockSchema));
 
       const results = await Promise.all(promises);
       expect(results).toHaveLength(10);
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toBeDefined();
       });
     });

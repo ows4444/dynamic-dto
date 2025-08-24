@@ -1,6 +1,6 @@
 import { FieldProcessingModule } from './field-processing.module';
 import { FieldProcessorRegistry } from '../infrastructure/registries/field-processor.registry';
-import { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
+import type { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
 
 describe('FieldProcessingModule', () => {
   describe('forRoot', () => {

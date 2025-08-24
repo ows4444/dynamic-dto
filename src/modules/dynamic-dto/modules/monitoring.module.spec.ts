@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { MonitoringModule } from './monitoring.module';
 import { EnhancedCacheMonitorService } from '../infrastructure/monitoring/enhanced-cache-monitor.service';
 
@@ -52,7 +53,7 @@ describe('MonitoringModule', () => {
       expect(() => cacheMonitorService.recordCacheHit('test-key')).not.toThrow();
       expect(() => cacheMonitorService.recordCacheMiss('missing-key')).not.toThrow();
       expect(() => cacheMonitorService.recordCacheEviction('evicted-key', 'TTL_EXPIRED')).not.toThrow();
-      
+
       const metrics = cacheMonitorService.getMetrics();
       expect(metrics).toBeDefined();
       expect(metrics.hits).toBeGreaterThanOrEqual(1);
@@ -74,13 +75,13 @@ describe('MonitoringModule', () => {
     it('should allow metrics reset', () => {
       cacheMonitorService.recordCacheHit('key1');
       cacheMonitorService.recordCacheMiss('key2');
-      
+
       let metrics = cacheMonitorService.getMetrics();
       expect(metrics.hits).toBeGreaterThan(0);
       expect(metrics.misses).toBeGreaterThan(0);
-      
+
       cacheMonitorService.reset();
-      
+
       metrics = cacheMonitorService.getMetrics();
       expect(metrics.hits).toBe(0);
       expect(metrics.misses).toBe(0);
@@ -148,9 +149,9 @@ describe('MonitoringModule', () => {
         providers: [
           {
             provide: 'TEST_CONFIG',
-            useValue: { monitoringEnabled: true }
-          }
-        ]
+            useValue: { monitoringEnabled: true },
+          },
+        ],
       }).compile();
 
       expect(testModule.get('TEST_CONFIG')).toEqual({ monitoringEnabled: true });
@@ -178,10 +179,10 @@ describe('MonitoringModule', () => {
             useFactory: () => ({
               enabled: true,
               metricsInterval: 60000,
-              detailedReporting: true
-            })
-          }
-        ]
+              detailedReporting: true,
+            }),
+          },
+        ],
       }).compile();
 
       const config = testModule.get('MONITORING_CONFIG');
@@ -199,9 +200,9 @@ describe('MonitoringModule', () => {
       }).compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
-      
+
       expect(monitor).toBeDefined();
-      
+
       // Service should be initialized and ready
       const initialMetrics = monitor.getMetrics();
       expect(initialMetrics.startTime).toBeGreaterThan(0);
@@ -286,7 +287,7 @@ describe('MonitoringModule', () => {
           Promise.resolve().then(() => {
             monitor.recordCacheHit(`key-${i}`);
             monitor.updateMemoryUsage(i * 100);
-          })
+          }),
         );
       }
 
@@ -327,7 +328,7 @@ describe('MonitoringModule', () => {
         expect(monitor).toBeDefined();
 
         monitor.recordCacheHit(`test-${i}`);
-        
+
         await testModule.close();
       }
     });
@@ -372,9 +373,9 @@ describe('MonitoringModule', () => {
         providers: [
           {
             provide: 'LOGGER_SERVICE',
-            useValue: { log: jest.fn(), error: jest.fn() }
-          }
-        ]
+            useValue: { log: jest.fn(), error: jest.fn() },
+          },
+        ],
       }).compile();
 
       expect(testModule.get('LOGGER_SERVICE')).toBeDefined();
@@ -387,7 +388,7 @@ describe('MonitoringModule', () => {
       const customConfig = {
         enableDetailedMetrics: true,
         reportingInterval: 30000,
-        maxHistorySize: 1000
+        maxHistorySize: 1000,
       };
 
       const testModule = await Test.createTestingModule({
@@ -395,9 +396,9 @@ describe('MonitoringModule', () => {
         providers: [
           {
             provide: 'MONITORING_OPTIONS',
-            useValue: customConfig
-          }
-        ]
+            useValue: customConfig,
+          },
+        ],
       }).compile();
 
       const config = testModule.get('MONITORING_OPTIONS');
@@ -418,7 +419,7 @@ describe('MonitoringModule', () => {
         updateCacheSize: jest.fn(),
         getMetrics: jest.fn(() => ({ hits: 0, misses: 0 })),
         getDetailedReport: jest.fn(() => ({ summary: {} })),
-        reset: jest.fn()
+        reset: jest.fn(),
       };
 
       const testModule = await Test.createTestingModule({

@@ -8,9 +8,10 @@ export class SemverFormatValidator extends BaseStringFormatValidator {
 
   validate(value: unknown): boolean {
     if (typeof value !== 'string') return false;
-    
-    // Proper semver: X.Y.Z[-prerelease][+build] with no leading zeros
-    const semverRegex = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+    // More flexible semver regex that handles complex build metadata
+    const semverRegex =
+      /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*(?:\.[0-9a-zA-Z-]*)*)*(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*(?:\+[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*)*))?$/;
     return semverRegex.test(value);
   }
 

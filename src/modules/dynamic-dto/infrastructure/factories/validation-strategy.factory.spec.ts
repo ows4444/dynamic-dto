@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ValidationStrategyFactory } from './validation-strategy.factory';
 import { ValidationChain } from '../../core/patterns/validation-chain';
 import { StructuralValidationStrategy } from '../../application/strategies/validation/structural-validation.strategy';
@@ -56,7 +57,7 @@ describe('ValidationStrategyFactory', () => {
 
     it('should add strategies in correct order', () => {
       jest.spyOn(ValidationChain.prototype, 'addStrategy');
-      
+
       const chain = factory.createValidationChain();
 
       expect(ValidationChain.prototype.addStrategy).toHaveBeenCalledTimes(3);

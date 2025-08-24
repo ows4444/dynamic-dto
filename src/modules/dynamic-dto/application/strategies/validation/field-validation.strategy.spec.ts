@@ -1,9 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { FieldValidationStrategy } from './field-validation.strategy';
-import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.entity';
+import type { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.entity';
 import { FieldHandlerRegistry } from '../../../infrastructure/registries/field-handler.registry';
 import { ValidationResultMerger } from '../../../core/utils/validation-result-merger';
-import { ValidationContext, ValidationResult } from '../../../core/interfaces/validation';
+import type { ValidationContext, ValidationResult } from '../../../core/interfaces/validation';
 import { FieldType } from '../../../core/types/field.types';
 import { ValidationSeverity } from '../../../core/enums/validation.enums';
 
@@ -25,10 +26,7 @@ describe('FieldValidationStrategy', () => {
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        FieldValidationStrategy,
-        { provide: FieldHandlerRegistry, useValue: mockFieldHandlerRegistry },
-      ],
+      providers: [FieldValidationStrategy, { provide: FieldHandlerRegistry, useValue: mockFieldHandlerRegistry }],
     }).compile();
 
     strategy = module.get<FieldValidationStrategy>(FieldValidationStrategy);
@@ -94,7 +92,7 @@ describe('FieldValidationStrategy', () => {
           depth: 0,
           parentType: 'schema',
           schemaName: 'TestSchema',
-        })
+        }),
       );
       expect(mockFieldHandlerRegistry.validateField).toHaveBeenCalledWith(
         mockSchema.properties.age,
@@ -103,7 +101,7 @@ describe('FieldValidationStrategy', () => {
           depth: 0,
           parentType: 'schema',
           schemaName: 'TestSchema',
-        })
+        }),
       );
     });
 
@@ -116,7 +114,7 @@ describe('FieldValidationStrategy', () => {
         expect.any(Object),
         expect.objectContaining({
           userRoles: ['admin', 'user'],
-        })
+        }),
       );
     });
 
@@ -129,7 +127,7 @@ describe('FieldValidationStrategy', () => {
         expect.any(Object),
         expect.objectContaining({
           data: { testData: 'value' },
-        })
+        }),
       );
     });
 
@@ -177,24 +175,29 @@ describe('FieldValidationStrategy', () => {
     });
 
     it('should fail validation when required fields are missing', () => {
-      mockSchema.hasField = jest.fn()
-        .mockReturnValueOnce(true)  // name exists
+      mockSchema.hasField = jest
+        .fn()
+        .mockReturnValueOnce(true) // name exists
         .mockReturnValueOnce(false); // email missing
 
       jest.spyOn(ValidationResultMerger, 'mergeResults').mockReturnValue({
         isValid: false,
-        issues: [{
-          message: "Required field 'email' is missing in schema",
-          code: 'MISSING_REQUIRED_FIELD',
-          severity: ValidationSeverity.error,
-          fieldPath: 'email',
-        }],
-        errors: [{
-          message: "Required field 'email' is missing in schema",
-          code: 'MISSING_REQUIRED_FIELD',
-          severity: ValidationSeverity.error,
-          fieldPath: 'email',
-        }],
+        issues: [
+          {
+            message: "Required field 'email' is missing in schema",
+            code: 'MISSING_REQUIRED_FIELD',
+            severity: ValidationSeverity.error,
+            fieldPath: 'email',
+          },
+        ],
+        errors: [
+          {
+            message: "Required field 'email' is missing in schema",
+            code: 'MISSING_REQUIRED_FIELD',
+            severity: ValidationSeverity.error,
+            fieldPath: 'email',
+          },
+        ],
         warnings: [],
         infos: [],
       });
@@ -213,20 +216,24 @@ describe('FieldValidationStrategy', () => {
 
       jest.spyOn(ValidationResultMerger, 'mergeResults').mockReturnValue({
         isValid: true,
-        issues: [{
-          message: 'Schema has empty metadata object',
-          code: 'EMPTY_SCHEMA_METADATA',
-          severity: ValidationSeverity.info,
-          fieldPath: 'metadata',
-        }],
+        issues: [
+          {
+            message: 'Schema has empty metadata object',
+            code: 'EMPTY_SCHEMA_METADATA',
+            severity: ValidationSeverity.info,
+            fieldPath: 'metadata',
+          },
+        ],
         errors: [],
         warnings: [],
-        infos: [{
-          message: 'Schema has empty metadata object',
-          code: 'EMPTY_SCHEMA_METADATA',
-          severity: ValidationSeverity.info,
-          fieldPath: 'metadata',
-        }],
+        infos: [
+          {
+            message: 'Schema has empty metadata object',
+            code: 'EMPTY_SCHEMA_METADATA',
+            severity: ValidationSeverity.info,
+            fieldPath: 'metadata',
+          },
+        ],
       });
 
       const result = strategy.execute(mockSchema);

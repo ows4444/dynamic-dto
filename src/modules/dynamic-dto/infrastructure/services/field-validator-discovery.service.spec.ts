@@ -1,9 +1,12 @@
-import { Logger } from '@nestjs/common';
+import type { Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
-import { Test, TestingModule } from '@nestjs/testing';
-import { FieldValidatorDiscoveryService, DiscoveredValidator } from './field-validator-discovery.service';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { DiscoveredValidator } from './field-validator-discovery.service';
+import { FieldValidatorDiscoveryService } from './field-validator-discovery.service';
 import { BaseFieldValidator } from '../../core/abstractions/base-field-validator.abstract';
-import { FIELD_VALIDATOR_METADATA_KEY, FieldValidatorMetadata } from '../../core/decorators/field-validator.decorator';
+import type { FieldValidatorMetadata } from '../../core/decorators/field-validator.decorator';
+import { FIELD_VALIDATOR_METADATA_KEY } from '../../core/decorators/field-validator.decorator';
 import { FieldType } from '../../core/types/field.types';
 import type { BaseFieldSchema } from '../../core/interfaces/schema';
 import type { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
@@ -121,7 +124,7 @@ describe('FieldValidatorDiscoveryService', () => {
     }).compile();
 
     service = module.get<FieldValidatorDiscoveryService>(FieldValidatorDiscoveryService);
-    
+
     // Replace logger with mock
     (service as any).logger = mockLogger;
   });
@@ -156,9 +159,7 @@ describe('FieldValidatorDiscoveryService', () => {
       };
 
       mockDiscoveryService.getProviders.mockReturnValue(mockProviders as any);
-      mockReflector.get
-        .mockReturnValueOnce(stringMetadata)
-        .mockReturnValueOnce(numberMetadata);
+      mockReflector.get.mockReturnValueOnce(stringMetadata).mockReturnValueOnce(numberMetadata);
 
       const result = service.discoverValidators();
 
@@ -308,7 +309,7 @@ describe('FieldValidatorDiscoveryService', () => {
       // Create new mock instances with modified priorities
       const negativeInstance = new MockStringValidator();
       Object.defineProperty(negativeInstance, 'priority', { value: -1, writable: false });
-      
+
       const highPriorityInstance = new MockStringValidator();
       Object.defineProperty(highPriorityInstance, 'priority', { value: 1001, writable: false });
 
@@ -371,9 +372,7 @@ describe('FieldValidatorDiscoveryService', () => {
       };
 
       mockDiscoveryService.getProviders.mockReturnValue(mockProviders as any);
-      mockReflector.get
-        .mockReturnValueOnce(stringMetadata)
-        .mockReturnValueOnce(numberMetadata);
+      mockReflector.get.mockReturnValueOnce(stringMetadata).mockReturnValueOnce(numberMetadata);
 
       const result = service.getValidatorsByCategory();
 
@@ -454,9 +453,7 @@ describe('FieldValidatorDiscoveryService', () => {
       };
 
       mockDiscoveryService.getProviders.mockReturnValue(mockProviders as any);
-      mockReflector.get
-        .mockReturnValueOnce(numberMetadata)
-        .mockReturnValueOnce(stringMetadata);
+      mockReflector.get.mockReturnValueOnce(numberMetadata).mockReturnValueOnce(stringMetadata);
 
       const result = service.getValidatorsByPriority();
 
@@ -515,9 +512,7 @@ describe('FieldValidatorDiscoveryService', () => {
       };
 
       mockDiscoveryService.getProviders.mockReturnValue(mockProviders as any);
-      mockReflector.get
-        .mockReturnValueOnce(stringMetadata)
-        .mockReturnValueOnce(numberMetadata);
+      mockReflector.get.mockReturnValueOnce(stringMetadata).mockReturnValueOnce(numberMetadata);
 
       const result = service.findValidatorForType(FieldType.number);
 

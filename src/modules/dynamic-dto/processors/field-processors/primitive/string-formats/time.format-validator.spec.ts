@@ -24,77 +24,33 @@ describe('TimeFormatValidator', () => {
 
   describe('validate', () => {
     it('should validate 24-hour time format (HH:mm)', () => {
-      const valid24HourTimes = [
-        '00:00',
-        '01:30',
-        '12:00',
-        '13:45',
-        '23:59',
-        '09:15',
-        '18:30',
-        '06:45',
-        '14:20',
-        '22:10'
-      ];
+      const valid24HourTimes = ['00:00', '01:30', '12:00', '13:45', '23:59', '09:15', '18:30', '06:45', '14:20', '22:10'];
 
-      valid24HourTimes.forEach(time => {
+      valid24HourTimes.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
 
     it('should validate 24-hour time format with seconds (HH:mm:ss)', () => {
-      const valid24HourTimesWithSeconds = [
-        '00:00:00',
-        '01:30:45',
-        '12:00:30',
-        '13:45:59',
-        '23:59:59',
-        '09:15:01',
-        '18:30:30',
-        '06:45:15',
-        '14:20:40',
-        '22:10:25'
-      ];
+      const valid24HourTimesWithSeconds = ['00:00:00', '01:30:45', '12:00:30', '13:45:59', '23:59:59', '09:15:01', '18:30:30', '06:45:15', '14:20:40', '22:10:25'];
 
-      valid24HourTimesWithSeconds.forEach(time => {
+      valid24HourTimesWithSeconds.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
 
     it('should validate 12-hour time format with AM/PM', () => {
-      const valid12HourTimes = [
-        '12:00 AM',
-        '12:00 PM',
-        '01:30 AM',
-        '01:30 PM',
-        '11:59 PM',
-        '06:45 AM',
-        '06:45 PM',
-        '09:15 AM',
-        '09:15 PM',
-        '03:30 AM',
-        '03:30 PM'
-      ];
+      const valid12HourTimes = ['12:00 AM', '12:00 PM', '01:30 AM', '01:30 PM', '11:59 PM', '06:45 AM', '06:45 PM', '09:15 AM', '09:15 PM', '03:30 AM', '03:30 PM'];
 
-      valid12HourTimes.forEach(time => {
+      valid12HourTimes.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
 
     it('should validate 12-hour time format with seconds and AM/PM', () => {
-      const valid12HourTimesWithSeconds = [
-        '12:00:00 AM',
-        '12:00:30 PM',
-        '01:30:45 AM',
-        '01:30:15 PM',
-        '11:59:59 PM',
-        '06:45:30 AM',
-        '06:45:45 PM',
-        '09:15:01 AM',
-        '09:15:59 PM'
-      ];
+      const valid12HourTimesWithSeconds = ['12:00:00 AM', '12:00:30 PM', '01:30:45 AM', '01:30:15 PM', '11:59:59 PM', '06:45:30 AM', '06:45:45 PM', '09:15:01 AM', '09:15:59 PM'];
 
-      valid12HourTimesWithSeconds.forEach(time => {
+      valid12HourTimesWithSeconds.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
@@ -109,24 +65,15 @@ describe('TimeFormatValidator', () => {
         '23:59:59', // one second before midnight
       ];
 
-      timeVariations.forEach(time => {
+      timeVariations.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
 
     it('should validate different AM/PM case variations', () => {
-      const amPmVariations = [
-        '09:00 AM',
-        '09:00 PM',
-        '09:00 am',
-        '09:00 pm',
-        '09:00 Am',
-        '09:00 Pm',
-        '09:00 aM',
-        '09:00 pM'
-      ];
+      const amPmVariations = ['09:00 AM', '09:00 PM', '09:00 am', '09:00 pm', '09:00 Am', '09:00 Pm', '09:00 aM', '09:00 pM'];
 
-      amPmVariations.forEach(time => {
+      amPmVariations.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
@@ -164,7 +111,7 @@ describe('TimeFormatValidator', () => {
         '12:30:abc', // non-numeric second
       ];
 
-      invalidTimes.forEach(time => {
+      invalidTimes.forEach((time) => {
         expect(validator.validate(time)).toBe(false);
       });
     });
@@ -186,7 +133,7 @@ describe('TimeFormatValidator', () => {
         -1, // negative number
       ];
 
-      nonStringInputs.forEach(input => {
+      nonStringInputs.forEach((input) => {
         expect(validator.validate(input)).toBe(false);
       });
     });
@@ -205,7 +152,7 @@ describe('TimeFormatValidator', () => {
         '01:00 PM', // 1 PM (12-hour)
       ];
 
-      edgeCases.forEach(time => {
+      edgeCases.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
@@ -223,13 +170,13 @@ describe('TimeFormatValidator', () => {
         '12:30:45..123', // double dots
       ];
 
-      preciseTimesValid.forEach(time => {
+      preciseTimesValid.forEach((time) => {
         const result = validator.validate(time);
         // This depends on implementation - may or may not support milliseconds
         expect(typeof result).toBe('boolean');
       });
 
-      preciseTimesInvalid.forEach(time => {
+      preciseTimesInvalid.forEach((time) => {
         expect(validator.validate(time)).toBe(false);
       });
     });
@@ -249,13 +196,13 @@ describe('TimeFormatValidator', () => {
         '12:30Z+05:30', // Z with offset
       ];
 
-      timezonesValid.forEach(time => {
+      timezonesValid.forEach((time) => {
         const result = validator.validate(time);
         // This depends on implementation - may or may not support timezones
         expect(typeof result).toBe('boolean');
       });
 
-      timezonesInvalid.forEach(time => {
+      timezonesInvalid.forEach((time) => {
         expect(validator.validate(time)).toBe(false);
       });
     });
@@ -275,7 +222,7 @@ describe('TimeFormatValidator', () => {
     it('should handle different property names', () => {
       const properties = ['time', 'startTime', 'endTime', 'appointmentTime', 'clockTime'];
 
-      properties.forEach(property => {
+      properties.forEach((property) => {
         const mockArgs = { property } as any;
         const message = validator.getDefaultMessage(mockArgs);
 
@@ -289,13 +236,7 @@ describe('TimeFormatValidator', () => {
       const message = validator.getDefaultMessage(mockArgs);
 
       const lowerMessage = message.toLowerCase();
-      expect(
-        lowerMessage.includes('hh:mm') ||
-        lowerMessage.includes('24-hour') ||
-        lowerMessage.includes('12-hour') ||
-        lowerMessage.includes('format') ||
-        lowerMessage.includes('am/pm')
-      ).toBe(true);
+      expect(lowerMessage.includes('hh:mm') || lowerMessage.includes('24-hour') || lowerMessage.includes('12-hour') || lowerMessage.includes('format') || lowerMessage.includes('am/pm')).toBe(true);
     });
 
     it('should handle null args gracefully', () => {
@@ -357,20 +298,9 @@ describe('TimeFormatValidator', () => {
     });
 
     it('should preserve valid time formats', () => {
-      const validTimes = [
-        '12:30',
-        '09:15',
-        '23:59',
-        '00:00',
-        '12:30:45',
-        '09:15:30',
-        '12:30 AM',
-        '09:15 PM',
-        '12:30:45 AM',
-        '09:15:30 PM',
-      ];
+      const validTimes = ['12:30', '09:15', '23:59', '00:00', '12:30:45', '09:15:30', '12:30 AM', '09:15 PM', '12:30:45 AM', '09:15:30 PM'];
 
-      validTimes.forEach(time => {
+      validTimes.forEach((time) => {
         // After normalization, should remain valid
         const transformed = validator.transform(time);
         expect(transformed).toBeDefined();
@@ -397,15 +327,9 @@ describe('TimeFormatValidator', () => {
     });
 
     it('should not modify invalid time formats', () => {
-      const invalidTimes = [
-        '25:00',
-        '12:60',
-        'invalid-time',
-        '12:30:60',
-        'abc:def'
-      ];
+      const invalidTimes = ['25:00', '12:60', 'invalid-time', '12:30:60', 'abc:def'];
 
-      invalidTimes.forEach(time => {
+      invalidTimes.forEach((time) => {
         const transformed = validator.transform(time);
         // Should not crash, but result might vary based on implementation
         expect(typeof transformed).toBe('string');
@@ -433,7 +357,7 @@ describe('TimeFormatValidator', () => {
       const options = {
         message: 'Time must be in HH:mm format',
         format24Hour: true,
-        allowSeconds: true
+        allowSeconds: true,
       };
       const decorator = validator.createDecorator(options);
 
@@ -457,18 +381,9 @@ describe('TimeFormatValidator', () => {
     });
 
     it('should handle rapid successive validations', () => {
-      const times = [
-        '12:30',
-        '25:00',
-        '09:15 AM',
-        '13:00 AM',
-        '23:59:59',
-        'invalid',
-        '00:00',
-        '12:60'
-      ];
+      const times = ['12:30', '25:00', '09:15 AM', '13:00 AM', '23:59:59', 'invalid', '00:00', '12:60'];
 
-      const results = times.map(time => validator.validate(time));
+      const results = times.map((time) => validator.validate(time));
 
       expect(results[0]).toBe(true); // 12:30
       expect(results[1]).toBe(false); // 25:00
@@ -508,7 +423,7 @@ describe('TimeFormatValidator', () => {
         '13:15', // after noon
       ];
 
-      schedulingTimes.forEach(time => {
+      schedulingTimes.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
@@ -522,7 +437,7 @@ describe('TimeFormatValidator', () => {
         '11:30 PM', // 11:30 PM (12-hour)
       ];
 
-      internationalTimes.forEach(time => {
+      internationalTimes.forEach((time) => {
         expect(validator.validate(time)).toBe(true);
       });
     });
@@ -536,7 +451,7 @@ describe('TimeFormatValidator', () => {
         '12:00 MIDNIGHT', // word instead of AM/PM
       ];
 
-      ambiguousTimes.forEach(time => {
+      ambiguousTimes.forEach((time) => {
         expect(validator.validate(time)).toBe(false);
       });
     });

@@ -1,4 +1,4 @@
-import { FieldValidator, FIELD_VALIDATOR_METADATA_KEY } from './field-validator.decorator';
+import { FIELD_VALIDATOR_METADATA_KEY, FieldValidator } from './field-validator.decorator';
 import { FieldType } from '../types/field.types';
 
 describe('FieldValidator Decorator', () => {

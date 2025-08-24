@@ -1,6 +1,6 @@
 import { FieldValidationError } from './field-validation.error';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { ValidationErrorContext } from './base-validation.error';
+import type { ValidationErrorContext } from './base-validation.error';
 
 describe('FieldValidationError', () => {
   let mockContext: ValidationErrorContext;
@@ -13,12 +13,7 @@ describe('FieldValidationError', () => {
   });
 
   it('should create error with all parameters', () => {
-    const error = new FieldValidationError(
-      'INVALID_EMAIL',
-      'Invalid email format',
-      ValidationSeverity.error,
-      mockContext
-    );
+    const error = new FieldValidationError('INVALID_EMAIL', 'Invalid email format', ValidationSeverity.error, mockContext);
 
     expect(error.code).toBe('INVALID_EMAIL');
     expect(error.message).toBe('Invalid email format');
@@ -27,11 +22,7 @@ describe('FieldValidationError', () => {
   });
 
   it('should create error without context', () => {
-    const error = new FieldValidationError(
-      'REQUIRED_FIELD',
-      'Field is required',
-      ValidationSeverity.error
-    );
+    const error = new FieldValidationError('REQUIRED_FIELD', 'Field is required', ValidationSeverity.error);
 
     expect(error.code).toBe('REQUIRED_FIELD');
     expect(error.message).toBe('Field is required');
@@ -40,23 +31,11 @@ describe('FieldValidationError', () => {
   });
 
   it('should handle different severity levels', () => {
-    const errorSeverity = new FieldValidationError(
-      'ERROR_CODE',
-      'Error message',
-      ValidationSeverity.error
-    );
+    const errorSeverity = new FieldValidationError('ERROR_CODE', 'Error message', ValidationSeverity.error);
 
-    const warningSeverity = new FieldValidationError(
-      'WARNING_CODE',
-      'Warning message',
-      ValidationSeverity.warning
-    );
+    const warningSeverity = new FieldValidationError('WARNING_CODE', 'Warning message', ValidationSeverity.warning);
 
-    const infoSeverity = new FieldValidationError(
-      'INFO_CODE',
-      'Info message',
-      ValidationSeverity.info
-    );
+    const infoSeverity = new FieldValidationError('INFO_CODE', 'Info message', ValidationSeverity.info);
 
     expect(errorSeverity.severity).toBe(ValidationSeverity.error);
     expect(warningSeverity.severity).toBe(ValidationSeverity.warning);
@@ -64,11 +43,7 @@ describe('FieldValidationError', () => {
   });
 
   it('should inherit from BaseValidationError', () => {
-    const error = new FieldValidationError(
-      'TEST_CODE',
-      'Test message',
-      ValidationSeverity.error
-    );
+    const error = new FieldValidationError('TEST_CODE', 'Test message', ValidationSeverity.error);
 
     expect(error).toHaveProperty('code');
     expect(error).toHaveProperty('message');
@@ -78,11 +53,7 @@ describe('FieldValidationError', () => {
   });
 
   it('should handle empty message', () => {
-    const error = new FieldValidationError(
-      'EMPTY_MESSAGE',
-      '',
-      ValidationSeverity.error
-    );
+    const error = new FieldValidationError('EMPTY_MESSAGE', '', ValidationSeverity.error);
 
     expect(error.message).toBe('');
     expect(error.code).toBe('EMPTY_MESSAGE');
@@ -96,12 +67,7 @@ describe('FieldValidationError', () => {
       metadata: { source: 'validation' },
     };
 
-    const error = new FieldValidationError(
-      'CONTEXT_TEST',
-      'Context test message',
-      ValidationSeverity.warning,
-      fullContext
-    );
+    const error = new FieldValidationError('CONTEXT_TEST', 'Context test message', ValidationSeverity.warning, fullContext);
 
     expect(error.context).toEqual(fullContext);
     expect(error.context?.fieldPath).toBe('user.profile.email');

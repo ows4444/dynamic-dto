@@ -1,7 +1,8 @@
 import { ValidationErrorAggregator, ValidationErrorSummary } from './validation-error-aggregator';
-import { BaseValidationError, ValidationErrorContext } from './base-validation.error';
+import type { ValidationErrorContext } from './base-validation.error';
+import { BaseValidationError } from './base-validation.error';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { ValidationIssue, ValidationResult } from '../../core/interfaces/validation';
+import type { ValidationIssue, ValidationResult } from '../../core/interfaces/validation';
 
 describe('ValidationErrorAggregator', () => {
   let aggregator: ValidationErrorAggregator;
@@ -139,7 +140,7 @@ describe('ValidationErrorAggregator', () => {
             warningCount: 1,
             infoCount: 0,
           },
-        })
+        }),
       );
     });
 
@@ -163,7 +164,7 @@ describe('ValidationErrorAggregator', () => {
         mockValidationResult.issues,
         expect.objectContaining({
           fieldPath: 'test.field', // Still has the original context fieldPath
-        })
+        }),
       );
     });
   });
@@ -202,7 +203,7 @@ describe('ValidationErrorAggregator', () => {
 
   describe('hasCriticalErrors', () => {
     it('should return false when no critical errors', () => {
-      const nonCriticalError = { ...mockError, isCritical: jest.fn().mockReturnValue(false) } as any as any as BaseValidationError;
+      const nonCriticalError = { ...mockError, isCritical: jest.fn().mockReturnValue(false) } as any as BaseValidationError;
       aggregator.addError(nonCriticalError);
 
       expect(aggregator.hasCriticalErrors()).toBe(false);
@@ -234,7 +235,7 @@ describe('ValidationErrorAggregator', () => {
 
   describe('getErrorsBySeverity', () => {
     it('should return errors by severity', () => {
-      const warningError = { ...mockError, severity: ValidationSeverity.warning } as any as any as BaseValidationError;
+      const warningError = { ...mockError, severity: ValidationSeverity.warning } as any as BaseValidationError;
       aggregator.addError(mockError).addError(warningError);
 
       const errorSeverityErrors = aggregator.getErrorsBySeverity(ValidationSeverity.error);
@@ -390,7 +391,7 @@ describe('ValidationErrorAggregator', () => {
   describe('getCriticalErrorsAggregator', () => {
     it('should create new aggregator with only critical errors', () => {
       const criticalError = { ...mockError, severity: ValidationSeverity.error } as any as BaseValidationError;
-      const warningError = { ...mockError, severity: ValidationSeverity.warning } as any as any as BaseValidationError;
+      const warningError = { ...mockError, severity: ValidationSeverity.warning } as any as BaseValidationError;
 
       aggregator.addError(criticalError).addError(warningError);
 
@@ -406,7 +407,7 @@ describe('ValidationErrorAggregator', () => {
   describe('toValidationResult', () => {
     it('should convert to ValidationResult format', () => {
       const errorError = { ...mockError, severity: ValidationSeverity.error } as any as BaseValidationError;
-      const warningError = { ...mockError, severity: ValidationSeverity.warning } as any as any as BaseValidationError;
+      const warningError = { ...mockError, severity: ValidationSeverity.warning } as any as BaseValidationError;
 
       aggregator.addError(errorError).addError(warningError);
 
@@ -420,10 +421,10 @@ describe('ValidationErrorAggregator', () => {
     });
 
     it('should return valid result when no critical errors', () => {
-      const warningError = { 
-        ...mockError, 
+      const warningError = {
+        ...mockError,
         severity: ValidationSeverity.warning,
-        isCritical: jest.fn().mockReturnValue(false)
+        isCritical: jest.fn().mockReturnValue(false),
       } as any as BaseValidationError;
 
       // Use a new aggregator to ensure no existing errors

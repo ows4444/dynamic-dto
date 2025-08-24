@@ -24,18 +24,9 @@ describe('PasswordFormatValidator', () => {
 
   describe('validate', () => {
     it('should validate strong passwords with all character types', () => {
-      const strongPasswords = [
-        'MyStr0ng@Pass',
-        'S3cur3$Password',
-        'T3st&Password', 
-        'MyP@ssw0rd123',
-        'Str0ng*P4ss',
-        'Adm1n!P4ss',
-        'MyP@ss123',
-        'T3st123?Pass'
-      ];
+      const strongPasswords = ['MyStr0ng@Pass', 'S3cur3$Password', 'T3st&Password', 'MyP@ssw0rd123', 'Str0ng*P4ss', 'Adm1n!P4ss', 'MyP@ss123', 'T3st123?Pass'];
 
-      strongPasswords.forEach(password => {
+      strongPasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(true);
       });
     });
@@ -43,28 +34,20 @@ describe('PasswordFormatValidator', () => {
     it('should validate passwords with minimum length requirements', () => {
       const validLengthPasswords = [
         'Passw0rd!', // 9 characters
-        'MyP@ss123', // 9 characters  
-        'Test123!@&', // 10 characters  
-        'LongerPassword123!@$&' // 20+ characters
+        'MyP@ss123', // 9 characters
+        'Test123!@&', // 10 characters
+        'LongerPassword123!@$&', // 20+ characters
       ];
 
-      validLengthPasswords.forEach(password => {
+      validLengthPasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(true);
       });
     });
 
     it('should validate passwords with various special characters', () => {
-      const passwordsWithSpecialChars = [
-        'Password123!',
-        'Test123@',
-        'Str0ng$Pass',
-        'Pass%123Word',
-        'My&Pass123',
-        'Str0ng*Pass',
-        'My?Pass123'
-      ];
+      const passwordsWithSpecialChars = ['Password123!', 'Test123@', 'Str0ng$Pass', 'Pass%123Word', 'My&Pass123', 'Str0ng*Pass', 'My?Pass123'];
 
-      passwordsWithSpecialChars.forEach(password => {
+      passwordsWithSpecialChars.forEach((password) => {
         expect(validator.validate(password)).toBe(true);
       });
     });
@@ -75,99 +58,58 @@ describe('PasswordFormatValidator', () => {
         'P@s1', // 4 characters
         'Pas1!', // 5 characters
         'Pass1!', // 6 characters
-        'Passw1!' // 7 characters
+        'Passw1!', // 7 characters
       ];
 
-      shortPasswords.forEach(password => {
+      shortPasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(false);
       });
     });
 
     it('should reject passwords without uppercase letters', () => {
-      const noUppercasePasswords = [
-        'password123!',
-        'mypassword123@',
-        'test123#password',
-        'strong$pass123',
-        'nouppercasehere!123'
-      ];
+      const noUppercasePasswords = ['password123!', 'mypassword123@', 'test123#password', 'strong$pass123', 'nouppercasehere!123'];
 
-      noUppercasePasswords.forEach(password => {
+      noUppercasePasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(false);
       });
     });
 
     it('should reject passwords without lowercase letters', () => {
-      const noLowercasePasswords = [
-        'PASSWORD123!',
-        'MYPASSWORD123@',
-        'TEST123#PASSWORD',
-        'STRONG$PASS123',
-        'NOLOWERCASEHERE!123'
-      ];
+      const noLowercasePasswords = ['PASSWORD123!', 'MYPASSWORD123@', 'TEST123#PASSWORD', 'STRONG$PASS123', 'NOLOWERCASEHERE!123'];
 
-      noLowercasePasswords.forEach(password => {
+      noLowercasePasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(false);
       });
     });
 
     it('should reject passwords without numbers', () => {
-      const noNumberPasswords = [
-        'Password!',
-        'MyPassword@',
-        'TestPassword#',
-        'StrongPass$',
-        'NoNumbersHere!@#'
-      ];
+      const noNumberPasswords = ['Password!', 'MyPassword@', 'TestPassword#', 'StrongPass$', 'NoNumbersHere!@#'];
 
-      noNumberPasswords.forEach(password => {
+      noNumberPasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(false);
       });
     });
 
     it('should reject passwords without special characters', () => {
-      const noSpecialPasswords = [
-        'Password123',
-        'MyPassword123',
-        'TestPassword123',
-        'StrongPass123',
-        'NoSpecialChars123'
-      ];
+      const noSpecialPasswords = ['Password123', 'MyPassword123', 'TestPassword123', 'StrongPass123', 'NoSpecialChars123'];
 
-      noSpecialPasswords.forEach(password => {
+      noSpecialPasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(false);
       });
     });
 
     it('should reject common weak passwords', () => {
-      const weakPasswords = [
-        'password',
-        '12345678',
-        'qwerty123',
-        'abc123',
-        '123456789',
-        'password123',
-        'admin123',
-        'letmein',
-        'welcome123',
-        'monkey123'
-      ];
+      const weakPasswords = ['password', '12345678', 'qwerty123', 'abc123', '123456789', 'password123', 'admin123', 'letmein', 'welcome123', 'monkey123'];
 
-      weakPasswords.forEach(password => {
+      weakPasswords.forEach((password) => {
         expect(validator.validate(password)).toBe(false);
       });
     });
 
     it('should reject passwords with only repeating characters', () => {
-      const repeatingPasswords = [
-        'AAAAAAAA1!',
-        'Password111!',
-        'Test1111@',
-        'PPPPPPPP1!',
-        '!!!!!!1A'
-      ];
+      const repeatingPasswords = ['AAAAAAAA1!', 'Password111!', 'Test1111@', 'PPPPPPPP1!', '!!!!!!1A'];
 
-      repeatingPasswords.forEach(password => {
+      repeatingPasswords.forEach((password) => {
         // This depends on implementation - may or may not reject repeating patterns
         const result = validator.validate(password);
         expect(typeof result).toBe('boolean');
@@ -175,34 +117,17 @@ describe('PasswordFormatValidator', () => {
     });
 
     it('should reject non-string inputs', () => {
-      const nonStringInputs = [
-        null,
-        undefined,
-        123,
-        true,
-        false,
-        [],
-        {},
-        () => {},
-        Symbol('test'),
-        new Date()
-      ];
+      const nonStringInputs = [null, undefined, 123, true, false, [], {}, () => {}, Symbol('test'), new Date()];
 
-      nonStringInputs.forEach(input => {
+      nonStringInputs.forEach((input) => {
         expect(validator.validate(input)).toBe(false);
       });
     });
 
     it('should handle unicode characters in passwords', () => {
-      const unicodePasswords = [
-        'Pässwörd123!',
-        'Паróль123!',
-        'パスワード123!',
-        'Mötör123!@',
-        'Tést123!@#'
-      ];
+      const unicodePasswords = ['Pässwörd123!', 'Паróль123!', 'パスワード123!', 'Mötör123!@', 'Tést123!@#'];
 
-      unicodePasswords.forEach(password => {
+      unicodePasswords.forEach((password) => {
         const result = validator.validate(password);
         expect(typeof result).toBe('boolean');
         // Unicode handling depends on implementation
@@ -210,22 +135,15 @@ describe('PasswordFormatValidator', () => {
     });
 
     it('should handle very long passwords', () => {
-      const longPassword = 'VeryLong' + 'a'.repeat(100) + '123!@#';
+      const longPassword = `VeryLong${'a'.repeat(100)}123!@#`;
       const result = validator.validate(longPassword);
       expect(typeof result).toBe('boolean');
     });
 
     it('should handle passwords with whitespace', () => {
-      const passwordsWithWhitespace = [
-        'My Pass123!',
-        'Password 123!',
-        ' Password123!',
-        'Password123! ',
-        '\tPassword123!',
-        'Password123!\n'
-      ];
+      const passwordsWithWhitespace = ['My Pass123!', 'Password 123!', ' Password123!', 'Password123! ', '\tPassword123!', 'Password123!\n'];
 
-      passwordsWithWhitespace.forEach(password => {
+      passwordsWithWhitespace.forEach((password) => {
         const result = validator.validate(password);
         expect(typeof result).toBe('boolean');
         // Whitespace handling depends on implementation requirements
@@ -247,7 +165,7 @@ describe('PasswordFormatValidator', () => {
     it('should handle different property names', () => {
       const properties = ['password', 'newPassword', 'confirmPassword', 'currentPassword'];
 
-      properties.forEach(property => {
+      properties.forEach((property) => {
         const mockArgs = { property } as any;
         const message = validator.getDefaultMessage(mockArgs);
 
@@ -265,11 +183,11 @@ describe('PasswordFormatValidator', () => {
       const lowercaseMessage = message.toLowerCase();
       expect(
         lowercaseMessage.includes('uppercase') ||
-        lowercaseMessage.includes('lowercase') ||
-        lowercaseMessage.includes('number') ||
-        lowercaseMessage.includes('special') ||
-        lowercaseMessage.includes('character') ||
-        lowercaseMessage.includes('strong')
+          lowercaseMessage.includes('lowercase') ||
+          lowercaseMessage.includes('number') ||
+          lowercaseMessage.includes('special') ||
+          lowercaseMessage.includes('character') ||
+          lowercaseMessage.includes('strong'),
       ).toBe(true);
     });
 
@@ -297,10 +215,10 @@ describe('PasswordFormatValidator', () => {
         'S3cur3$Password',
         '  Password123!  ', // with whitespace
         'MixedCASE123!',
-        'password with spaces 123!'
+        'password with spaces 123!',
       ];
 
-      passwords.forEach(password => {
+      passwords.forEach((password) => {
         expect(validator.transform(password)).toBe(password);
       });
     });
@@ -312,26 +230,17 @@ describe('PasswordFormatValidator', () => {
     });
 
     it('should not modify special characters', () => {
-      const passwordsWithSpecialChars = [
-        'Test!@#$%^&*()',
-        'Pass+={[}]|\\:";\'<>?,./~`',
-        'Special_-Characters123!'
-      ];
+      const passwordsWithSpecialChars = ['Test!@#$%^&*()', 'Pass+={[}]|\\:";\'<>?,./~`', 'Special_-Characters123!'];
 
-      passwordsWithSpecialChars.forEach(password => {
+      passwordsWithSpecialChars.forEach((password) => {
         expect(validator.transform(password)).toBe(password);
       });
     });
 
     it('should not modify unicode characters', () => {
-      const unicodePasswords = [
-        'Pässwörd123!',
-        'Паróль123!',
-        'パスワード123!',
-        'Mötör123!@'
-      ];
+      const unicodePasswords = ['Pässwörd123!', 'Паróль123!', 'パスワード123!', 'Mötör123!@'];
 
-      unicodePasswords.forEach(password => {
+      unicodePasswords.forEach((password) => {
         expect(validator.transform(password)).toBe(password);
       });
     });
@@ -360,7 +269,7 @@ describe('PasswordFormatValidator', () => {
         minLowercase: 1,
         minUppercase: 1,
         minNumbers: 2,
-        minSymbols: 1
+        minSymbols: 1,
       };
       const decorator = validator.createDecorator(options);
 
@@ -385,17 +294,9 @@ describe('PasswordFormatValidator', () => {
     });
 
     it('should handle rapid successive validations', () => {
-      const passwords = [
-        'StrongPass123!',
-        'weak',
-        'AnotherStrong1@',
-        'password123',
-        'VeryStrong456&',
-        'short',
-        'ExcellentPass789$'
-      ];
+      const passwords = ['StrongPass123!', 'weak', 'AnotherStrong1@', 'password123', 'VeryStrong456&', 'short', 'ExcellentPass789$'];
 
-      const results = passwords.map(password => validator.validate(password));
+      const results = passwords.map((password) => validator.validate(password));
 
       expect(results[0]).toBe(true); // StrongPass123!
       expect(results[1]).toBe(false); // weak
@@ -423,7 +324,7 @@ describe('PasswordFormatValidator', () => {
         { password: 'Weak1!', expectedStrong: false },
         { password: 'Medium123!', expectedStrong: true },
         { password: 'VeryStr0ng@Password!', expectedStrong: true },
-        { password: 'ExtremelyC0mpl3x&S3cur3$P@ssw0rd!2024', expectedStrong: true }
+        { password: 'ExtremelyC0mpl3x&S3cur3$P@ssw0rd!2024', expectedStrong: true },
       ];
 
       passwordStrengths.forEach(({ password, expectedStrong }) => {
@@ -437,38 +338,19 @@ describe('PasswordFormatValidator', () => {
     });
 
     it('should handle common password attack patterns', () => {
-      const attackPatterns = [
-        'admin',
-        'password',
-        '123456',
-        'qwerty',
-        'letmein',
-        'welcome',
-        'monkey',
-        'dragon',
-        'master',
-        'shadow',
-        'football',
-        'baseball',
-        'superman'
-      ];
+      const attackPatterns = ['admin', 'password', '123456', 'qwerty', 'letmein', 'welcome', 'monkey', 'dragon', 'master', 'shadow', 'football', 'baseball', 'superman'];
 
-      attackPatterns.forEach(pattern => {
+      attackPatterns.forEach((pattern) => {
         expect(validator.validate(pattern)).toBe(false);
-        expect(validator.validate(pattern + '123')).toBe(false);
+        expect(validator.validate(`${pattern}123`)).toBe(false);
         expect(validator.validate(pattern.toUpperCase())).toBe(false);
       });
     });
 
     it('should validate against sequential patterns', () => {
-      const sequentialPatterns = [
-        'abcd123!A',
-        '1234567!A',
-        'qwerty123!A',
-        'asdf123!A'
-      ];
+      const sequentialPatterns = ['abcd123!A', '1234567!A', 'qwerty123!A', 'asdf123!A'];
 
-      sequentialPatterns.forEach(password => {
+      sequentialPatterns.forEach((password) => {
         const result = validator.validate(password);
         // This depends on implementation - may have sequential pattern detection
         expect(typeof result).toBe('boolean');

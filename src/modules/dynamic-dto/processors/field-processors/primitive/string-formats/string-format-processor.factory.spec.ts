@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { StringFormatProcessorFactory } from './string-format-processor.factory';
 import { EmailFormatValidator } from './email.format-validator';
 import { UrlFormatValidator } from './url.format-validator';
@@ -56,16 +57,12 @@ describe('StringFormatProcessorFactory', () => {
     it('should include all expected format validators', () => {
       const providers = factory.createProviders();
 
-      const providerTokens = providers.map(provider => 
-        typeof provider === 'function' ? provider.name : 
-        typeof provider === 'object' ? provider.provide || provider.constructor?.name : 
-        provider
-      );
+      const providerTokens = providers.map((provider) => (typeof provider === 'function' ? provider.name : typeof provider === 'object' ? provider.provide || provider.constructor?.name : provider));
 
       // Check for core format validators
       const expectedValidators = [
         'EmailFormatValidator',
-        'UrlFormatValidator', 
+        'UrlFormatValidator',
         'UuidFormatValidator',
         'PhoneFormatValidator',
         'CurrencyFormatValidator',
@@ -76,22 +73,20 @@ describe('StringFormatProcessorFactory', () => {
         'UsernameFormatValidator',
         'CronFormatValidator',
         'SemverFormatValidator',
-        'TimeFormatValidator'
+        'TimeFormatValidator',
       ];
 
-      expectedValidators.forEach(validator => {
-        expect(providerTokens.some(token => 
-          typeof token === 'string' && token.includes(validator.replace('FormatValidator', ''))
-        )).toBe(true);
+      expectedValidators.forEach((validator) => {
+        expect(providerTokens.some((token) => typeof token === 'string' && token.includes(validator.replace('FormatValidator', '')))).toBe(true);
       });
     });
 
     it('should return provider objects with correct structure', () => {
       const providers = factory.createProviders();
 
-      providers.forEach(provider => {
+      providers.forEach((provider) => {
         expect(provider).toBeDefined();
-        
+
         if (typeof provider === 'object' && provider.provide) {
           expect(provider.provide).toBeDefined();
           expect(provider.useClass || provider.useValue || provider.useFactory).toBeDefined();
@@ -104,7 +99,7 @@ describe('StringFormatProcessorFactory', () => {
     it('should create providers that can be instantiated', () => {
       const providers = factory.createProviders();
 
-      providers.forEach(provider => {
+      providers.forEach((provider) => {
         if (typeof provider === 'function') {
           expect(() => new provider()).not.toThrow();
         } else if (typeof provider === 'object' && provider.useClass) {
@@ -236,11 +231,11 @@ describe('StringFormatProcessorFactory', () => {
         UsernameFormatValidator,
         CronFormatValidator,
         SemverFormatValidator,
-        TimeFormatValidator
+        TimeFormatValidator,
       ];
 
-      validatorTypes.forEach(ValidatorClass => {
-        const hasValidator = validators.some(v => v instanceof ValidatorClass);
+      validatorTypes.forEach((ValidatorClass) => {
+        const hasValidator = validators.some((v) => v instanceof ValidatorClass);
         expect(hasValidator).toBe(true);
       });
     });
@@ -248,7 +243,7 @@ describe('StringFormatProcessorFactory', () => {
     it('should return validators with proper properties', () => {
       const validators = factory.getAllValidators();
 
-      validators.forEach(validator => {
+      validators.forEach((validator) => {
         expect(validator.format).toBeDefined();
         expect(validator.validatorName).toBeDefined();
         expect(typeof validator.validate).toBe('function');
@@ -259,7 +254,7 @@ describe('StringFormatProcessorFactory', () => {
 
     it('should return unique validator instances', () => {
       const validators = factory.getAllValidators();
-      const formats = validators.map(v => v.format);
+      const formats = validators.map((v) => v.format);
       const uniqueFormats = [...new Set(formats)];
 
       expect(formats.length).toBe(uniqueFormats.length);
@@ -278,23 +273,9 @@ describe('StringFormatProcessorFactory', () => {
     it('should include all expected format names', () => {
       const formats = factory.getSupportedFormats();
 
-      const expectedFormats = [
-        'email',
-        'url', 
-        'uuid',
-        'phone',
-        'currency',
-        'countryCode',
-        'coordinate',
-        'domain',
-        'password',
-        'username',
-        'cron',
-        'semver',
-        'time'
-      ];
+      const expectedFormats = ['email', 'url', 'uuid', 'phone', 'currency', 'countryCode', 'coordinate', 'domain', 'password', 'username', 'cron', 'semver', 'time'];
 
-      expectedFormats.forEach(format => {
+      expectedFormats.forEach((format) => {
         expect(formats).toContain(format);
       });
     });
@@ -309,7 +290,7 @@ describe('StringFormatProcessorFactory', () => {
     it('should return format names as strings', () => {
       const formats = factory.getSupportedFormats();
 
-      formats.forEach(format => {
+      formats.forEach((format) => {
         expect(typeof format).toBe('string');
         expect(format.length).toBeGreaterThan(0);
       });
@@ -318,37 +299,17 @@ describe('StringFormatProcessorFactory', () => {
 
   describe('isFormatSupported', () => {
     it('should return true for supported formats', () => {
-      const supportedFormats = [
-        'email',
-        'url',
-        'uuid',
-        'phone',
-        'currency',
-        'countryCode',
-        'coordinate',
-        'domain',
-        'password',
-        'username',
-        'cron',
-        'semver',
-        'time'
-      ];
+      const supportedFormats = ['email', 'url', 'uuid', 'phone', 'currency', 'countryCode', 'coordinate', 'domain', 'password', 'username', 'cron', 'semver', 'time'];
 
-      supportedFormats.forEach(format => {
+      supportedFormats.forEach((format) => {
         expect(factory.isFormatSupported(format)).toBe(true);
       });
     });
 
     it('should return false for unsupported formats', () => {
-      const unsupportedFormats = [
-        'unsupported-format',
-        'random',
-        'invalid',
-        'nonexistent',
-        'custom-format'
-      ];
+      const unsupportedFormats = ['unsupported-format', 'random', 'invalid', 'nonexistent', 'custom-format'];
 
-      unsupportedFormats.forEach(format => {
+      unsupportedFormats.forEach((format) => {
         expect(factory.isFormatSupported(format)).toBe(false);
       });
     });
@@ -375,7 +336,7 @@ describe('StringFormatProcessorFactory', () => {
   describe('validator functionality', () => {
     it('should return validators that can validate data', () => {
       const emailValidator = factory.getValidatorByFormat('email');
-      
+
       expect(emailValidator.validate('test@example.com')).toBe(true);
       expect(emailValidator.validate('invalid-email')).toBe(false);
     });
@@ -383,7 +344,7 @@ describe('StringFormatProcessorFactory', () => {
     it('should return validators with correct format property', () => {
       const validators = factory.getAllValidators();
 
-      validators.forEach(validator => {
+      validators.forEach((validator) => {
         const retrievedValidator = factory.getValidatorByFormat(validator.format);
         expect(retrievedValidator).toBe(validator);
       });
@@ -431,7 +392,7 @@ describe('StringFormatProcessorFactory', () => {
       const results = await Promise.all(promises);
 
       expect(results).toHaveLength(100);
-      results.forEach(validator => {
+      results.forEach((validator) => {
         expect(validator).toBeDefined();
         expect(validator.validate).toBeDefined();
       });
@@ -456,7 +417,7 @@ describe('StringFormatProcessorFactory', () => {
         'email-format', // with hyphen
       ];
 
-      malformedFormats.forEach(format => {
+      malformedFormats.forEach((format) => {
         const validator = factory.getValidatorByFormat(format);
         expect(validator).toBeNull();
         expect(factory.isFormatSupported(format)).toBe(false);
@@ -486,7 +447,7 @@ describe('StringFormatProcessorFactory', () => {
     it('should provide validators that integrate with validation framework', () => {
       const validators = factory.getAllValidators();
 
-      validators.forEach(validator => {
+      validators.forEach((validator) => {
         // Each validator should have properties needed for integration
         expect(validator.format).toBeDefined();
         expect(validator.validatorName).toBeDefined();
@@ -498,7 +459,7 @@ describe('StringFormatProcessorFactory', () => {
     it('should create providers compatible with NestJS DI', () => {
       const providers = factory.createProviders();
 
-      providers.forEach(provider => {
+      providers.forEach((provider) => {
         // Each provider should be valid for NestJS dependency injection
         if (typeof provider === 'object') {
           expect(provider.provide || provider.useClass || provider.useValue || provider.useFactory).toBeDefined();

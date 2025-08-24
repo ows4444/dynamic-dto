@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FieldHandlerDiscoveryService } from './field-handler-discovery.service';
-import { ModulesContainer, DiscoveryService } from '@nestjs/core';
+import { DiscoveryService, ModulesContainer } from '@nestjs/core';
 import { Injectable, Module } from '@nestjs/common';
 import { FieldType } from '../../core/enums/field-type.enums';
 
@@ -38,7 +38,7 @@ class MockNumberHandler {
 @Injectable()
 class NonHandlerService {
   readonly name = 'NonHandlerService';
-  
+
   someMethod(): string {
     return 'not a handler';
   }
@@ -247,7 +247,7 @@ describe('FieldHandlerDiscoveryService', () => {
         { supportedType: FieldType.string, priority: 1, name: 'Test', canHandle: () => true }, // Missing handle
       ];
 
-      incompleteHandlers.forEach(handler => {
+      incompleteHandlers.forEach((handler) => {
         expect(service.isValidHandler(handler)).toBe(false);
       });
     });
@@ -258,17 +258,9 @@ describe('FieldHandlerDiscoveryService', () => {
     });
 
     it('should reject non-objects', () => {
-      const nonObjects = [
-        'string',
-        123,
-        true,
-        false,
-        [],
-        () => {},
-        Symbol('test'),
-      ];
+      const nonObjects = ['string', 123, true, false, [], () => {}, Symbol('test')];
 
-      nonObjects.forEach(item => {
+      nonObjects.forEach((item) => {
         expect(service.isValidHandler(item)).toBe(false);
       });
     });
@@ -335,10 +327,7 @@ describe('FieldHandlerDiscoveryService', () => {
 
   describe('categorizeHandlers', () => {
     it('should categorize handlers by type', async () => {
-      const handlers = [
-        new MockStringHandler(),
-        new MockNumberHandler(),
-      ];
+      const handlers = [new MockStringHandler(), new MockNumberHandler()];
 
       const categorized = service.categorizeHandlers(handlers);
 
@@ -444,7 +433,7 @@ describe('FieldHandlerDiscoveryService', () => {
       const results = await Promise.all(promises);
 
       expect(results).toHaveLength(10);
-      results.forEach(handlers => {
+      results.forEach((handlers) => {
         expect(handlers).toHaveLength(1);
         expect(handlers[0]).toBeInstanceOf(MockStringHandler);
       });

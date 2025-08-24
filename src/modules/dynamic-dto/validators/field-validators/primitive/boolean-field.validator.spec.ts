@@ -230,7 +230,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_INVALID_DEFAULT');
-      expect(result.errors?.[0]?.message).toBe("Field 'test.field' Default value must be a boolean (received: \"invalid\")");
+      expect(result.errors?.[0]?.message).toBe('Field \'test.field\' Default value must be a boolean (received: "invalid")');
       expect(result.errors?.[0]?.value).toBe('invalid');
     });
 

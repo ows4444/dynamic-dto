@@ -1,7 +1,7 @@
 import { CacheModule } from './cache.module';
 import { CacheManagerService } from '../infrastructure/cache/cache-manager.service';
 import { MemoryCacheStrategy } from '../infrastructure/cache/strategies/memory-cache.strategy';
-import { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
+import type { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
 
 describe('CacheModule', () => {
   describe('forRoot', () => {
@@ -18,24 +18,18 @@ describe('CacheModule', () => {
       const moduleConfig = CacheModule.forRoot();
 
       expect(moduleConfig.providers).toHaveLength(3);
-      
+
       // Check ICacheStrategy provider
-      const cacheStrategyProvider = moduleConfig.providers?.find(
-        (p: any) => p.provide === 'ICacheStrategy'
-      );
+      const cacheStrategyProvider = moduleConfig.providers?.find((p: any) => p.provide === 'ICacheStrategy');
       expect(cacheStrategyProvider).toBeDefined();
       expect(cacheStrategyProvider.useClass).toBe(MemoryCacheStrategy);
 
       // Check CacheManagerService provider
-      const cacheManagerProvider = moduleConfig.providers?.find(
-        (p: any) => p === CacheManagerService
-      );
+      const cacheManagerProvider = moduleConfig.providers?.find((p: any) => p === CacheManagerService);
       expect(cacheManagerProvider).toBe(CacheManagerService);
 
       // Check ICacheManager provider
-      const cacheManagerInterfaceProvider = moduleConfig.providers?.find(
-        (p: any) => p.provide === 'ICacheManager'
-      );
+      const cacheManagerInterfaceProvider = moduleConfig.providers?.find((p: any) => p.provide === 'ICacheManager');
       expect(cacheManagerInterfaceProvider).toBeDefined();
       expect(cacheManagerInterfaceProvider.useClass).toBe(CacheManagerService);
     });
@@ -43,11 +37,7 @@ describe('CacheModule', () => {
     it('should configure exports correctly', () => {
       const moduleConfig = CacheModule.forRoot();
 
-      expect(moduleConfig.exports).toEqual([
-        'ICacheStrategy', 
-        'ICacheManager', 
-        CacheManagerService
-      ]);
+      expect(moduleConfig.exports).toEqual(['ICacheStrategy', 'ICacheManager', CacheManagerService]);
     });
 
     it('should handle custom options', () => {
@@ -98,16 +88,13 @@ describe('CacheModule', () => {
       const providers = moduleConfig.providers || [];
 
       // Check that all required DI tokens are provided
-      const provideTokens = providers
-        .filter((p: any) => p?.provide)
-        .map((p: any) => p.provide);
+      const provideTokens = providers.filter((p: any) => p?.provide).map((p: any) => p.provide);
 
       expect(provideTokens).toContain('ICacheStrategy');
       expect(provideTokens).toContain('ICacheManager');
 
       // Check that service classes are provided
-      const serviceClasses = providers
-        .filter((p: any) => typeof p === 'function');
+      const serviceClasses = providers.filter((p: any) => typeof p === 'function');
 
       expect(serviceClasses).toContain(CacheManagerService);
     });

@@ -235,13 +235,13 @@ describe('BaseFieldValidator', () => {
     });
 
     it('should validate deprecated fields', () => {
-      const deprecatedSchema = { 
-        ...basicSchema, 
-        deprecated: { 
+      const deprecatedSchema = {
+        ...basicSchema,
+        deprecated: {
           since: '1.0.0',
           reason: 'Field is no longer needed',
-          replacedBy: 'newField'
-        } 
+          replacedBy: 'newField',
+        },
       };
       const result = validator['validateCommonProperties'](deprecatedSchema, mockContext);
 
@@ -270,15 +270,17 @@ describe('BaseFieldValidator', () => {
         ...basicSchema,
         conditionalValidation: [
           {
-            condition: { 
-              field: 'otherField', 
+            condition: {
+              field: 'otherField',
               operator: 'eq',
-              value: 'someValue' 
+              value: 'someValue',
             },
-            validationRules: [{ 
-              type: 'required',
-              params: { required: true }
-            }],
+            validationRules: [
+              {
+                type: 'required',
+                params: { required: true },
+              },
+            ],
           },
         ] as ConditionalValidation[],
       };
@@ -297,12 +299,12 @@ describe('BaseFieldValidator', () => {
     });
 
     it('should return warning for deprecated field', () => {
-      const deprecatedSchema = { 
-        ...basicSchema, 
-        deprecated: { 
+      const deprecatedSchema = {
+        ...basicSchema,
+        deprecated: {
           since: '1.0.0',
-          reason: 'Field is no longer needed'
-        }
+          reason: 'Field is no longer needed',
+        },
       };
       const issues = validator['validateDeprecation'](deprecatedSchema, mockContext);
 

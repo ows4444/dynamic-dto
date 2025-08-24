@@ -24,35 +24,17 @@ describe('DomainFormatValidator', () => {
 
   describe('validate', () => {
     it('should validate simple domain names', () => {
-      const validDomains = [
-        'example.com',
-        'google.com',
-        'stackoverflow.com',
-        'github.com',
-        'amazon.co.uk',
-        'subdomain.example.com',
-        'very-long-subdomain.example-site.org'
-      ];
+      const validDomains = ['example.com', 'google.com', 'stackoverflow.com', 'github.com', 'amazon.co.uk', 'subdomain.example.com', 'very-long-subdomain.example-site.org'];
 
-      validDomains.forEach(domain => {
+      validDomains.forEach((domain) => {
         expect(validator.validate(domain)).toBe(true);
       });
     });
 
     it('should validate domains with various TLDs', () => {
-      const domainsWithTlds = [
-        'example.org',
-        'example.net',
-        'example.io',
-        'example.co',
-        'example.info',
-        'example.biz',
-        'example.museum',
-        'example.travel',
-        'site.photography'
-      ];
+      const domainsWithTlds = ['example.org', 'example.net', 'example.io', 'example.co', 'example.info', 'example.biz', 'example.museum', 'example.travel', 'site.photography'];
 
-      domainsWithTlds.forEach(domain => {
+      domainsWithTlds.forEach((domain) => {
         expect(validator.validate(domain)).toBe(true);
       });
     });
@@ -62,51 +44,34 @@ describe('DomainFormatValidator', () => {
         'xn--e1afmkfd.xn--p1ai', // пример.рф in punycode
         'xn--fsq.xn--0zwm56d', // 测试.测试 in punycode
         'example.xn--p1ai', // .рф TLD
-        'test.xn--j6w193g' // .香港 TLD
+        'test.xn--j6w193g', // .香港 TLD
       ];
 
-      internationalDomains.forEach(domain => {
+      internationalDomains.forEach((domain) => {
         expect(validator.validate(domain)).toBe(true);
       });
     });
 
     it('should validate domains with hyphens', () => {
-      const hyphenatedDomains = [
-        'my-site.com',
-        'example-domain.org',
-        'multi-word-domain.net',
-        'x-test.co.uk',
-        'a-b-c-d.example.com'
-      ];
+      const hyphenatedDomains = ['my-site.com', 'example-domain.org', 'multi-word-domain.net', 'x-test.co.uk', 'a-b-c-d.example.com'];
 
-      hyphenatedDomains.forEach(domain => {
+      hyphenatedDomains.forEach((domain) => {
         expect(validator.validate(domain)).toBe(true);
       });
     });
 
     it('should validate domains with numbers', () => {
-      const numericDomains = [
-        '123.com',
-        'example123.org',
-        'test-123.net',
-        'site2024.io',
-        '1-2-3.example.com'
-      ];
+      const numericDomains = ['123.com', 'example123.org', 'test-123.net', 'site2024.io', '1-2-3.example.com'];
 
-      numericDomains.forEach(domain => {
+      numericDomains.forEach((domain) => {
         expect(validator.validate(domain)).toBe(true);
       });
     });
 
     it('should validate single character domains', () => {
-      const singleCharDomains = [
-        'a.com',
-        'x.org',
-        'z.net',
-        '1.io'
-      ];
+      const singleCharDomains = ['a.com', 'x.org', 'z.net', '1.io'];
 
-      singleCharDomains.forEach(domain => {
+      singleCharDomains.forEach((domain) => {
         expect(validator.validate(domain)).toBe(true);
       });
     });
@@ -159,43 +124,32 @@ describe('DomainFormatValidator', () => {
         'exam/ple.com', // contains forward slash
       ];
 
-      invalidDomains.forEach(domain => {
+      invalidDomains.forEach((domain) => {
         expect(validator.validate(domain)).toBe(false);
       });
     });
 
     it('should reject domains that are too long', () => {
       // Domain names are limited to 253 characters
-      const longDomain = 'a'.repeat(250) + '.com';
+      const longDomain = `${'a'.repeat(250)}.com`;
       expect(validator.validate(longDomain)).toBe(false);
 
       // Label length limit is 63 characters
-      const longLabel = 'a'.repeat(64) + '.com';
+      const longLabel = `${'a'.repeat(64)}.com`;
       expect(validator.validate(longLabel)).toBe(false);
     });
 
     it('should reject non-string inputs', () => {
-      const nonStringInputs = [
-        null,
-        undefined,
-        123,
-        true,
-        false,
-        [],
-        {},
-        () => {},
-        Symbol('test'),
-        new Date()
-      ];
+      const nonStringInputs = [null, undefined, 123, true, false, [], {}, () => {}, Symbol('test'), new Date()];
 
-      nonStringInputs.forEach(input => {
+      nonStringInputs.forEach((input) => {
         expect(validator.validate(input)).toBe(false);
       });
     });
 
     it('should handle edge cases', () => {
       // Maximum valid label length (63 characters)
-      const maxLabel = 'a'.repeat(63) + '.com';
+      const maxLabel = `${'a'.repeat(63)}.com`;
       expect(validator.validate(maxLabel)).toBe(true);
 
       // Minimum valid domain
@@ -212,13 +166,9 @@ describe('DomainFormatValidator', () => {
     it('should validate domains with port numbers in context', () => {
       // Note: Port numbers are not part of domain validation
       // This tests that the validator doesn't accept them
-      const domainsWithPorts = [
-        'example.com:8080',
-        'localhost:3000',
-        'test.com:80'
-      ];
+      const domainsWithPorts = ['example.com:8080', 'localhost:3000', 'test.com:80'];
 
-      domainsWithPorts.forEach(domain => {
+      domainsWithPorts.forEach((domain) => {
         expect(validator.validate(domain)).toBe(false);
       });
     });
@@ -226,14 +176,9 @@ describe('DomainFormatValidator', () => {
     it('should validate domains with URL schemes in context', () => {
       // Note: URL schemes are not part of domain validation
       // This tests that the validator doesn't accept them
-      const domainsWithSchemes = [
-        'http://example.com',
-        'https://test.org',
-        'ftp://files.example.com',
-        '//example.com'
-      ];
+      const domainsWithSchemes = ['http://example.com', 'https://test.org', 'ftp://files.example.com', '//example.com'];
 
-      domainsWithSchemes.forEach(domain => {
+      domainsWithSchemes.forEach((domain) => {
         expect(validator.validate(domain)).toBe(false);
       });
     });
@@ -241,13 +186,9 @@ describe('DomainFormatValidator', () => {
     it('should validate domains with paths in context', () => {
       // Note: Paths are not part of domain validation
       // This tests that the validator doesn't accept them
-      const domainsWithPaths = [
-        'example.com/path',
-        'test.org/api/v1',
-        'site.net/index.html'
-      ];
+      const domainsWithPaths = ['example.com/path', 'test.org/api/v1', 'site.net/index.html'];
 
-      domainsWithPaths.forEach(domain => {
+      domainsWithPaths.forEach((domain) => {
         expect(validator.validate(domain)).toBe(false);
       });
     });
@@ -267,7 +208,7 @@ describe('DomainFormatValidator', () => {
     it('should handle different property names', () => {
       const properties = ['domain', 'hostname', 'site', 'url'];
 
-      properties.forEach(property => {
+      properties.forEach((property) => {
         const mockArgs = { property } as any;
         const message = validator.getDefaultMessage(mockArgs);
 
@@ -296,7 +237,7 @@ describe('DomainFormatValidator', () => {
         { input: 'EXAMPLE.COM', expected: 'example.com' },
         { input: 'Test.ORG', expected: 'test.org' },
         { input: 'MixedCase.Net', expected: 'mixedcase.net' },
-        { input: 'SUBDOMAIN.EXAMPLE.COM', expected: 'subdomain.example.com' }
+        { input: 'SUBDOMAIN.EXAMPLE.COM', expected: 'subdomain.example.com' },
       ];
 
       testCases.forEach(({ input, expected }) => {
@@ -309,7 +250,7 @@ describe('DomainFormatValidator', () => {
         { input: '  example.com  ', expected: 'example.com' },
         { input: '\texample.com\t', expected: 'example.com' },
         { input: '\nexample.com\n', expected: 'example.com' },
-        { input: '  TEST.ORG  ', expected: 'test.org' }
+        { input: '  TEST.ORG  ', expected: 'test.org' },
       ];
 
       testCases.forEach(({ input, expected }) => {
@@ -323,27 +264,18 @@ describe('DomainFormatValidator', () => {
     });
 
     it('should preserve valid domains', () => {
-      const validDomains = [
-        'example.com',
-        'subdomain.example.org',
-        'test-site.net',
-        'site123.io'
-      ];
+      const validDomains = ['example.com', 'subdomain.example.org', 'test-site.net', 'site123.io'];
 
-      validDomains.forEach(domain => {
+      validDomains.forEach((domain) => {
         expect(validator.transform(domain)).toBe(domain);
       });
     });
 
     it('should handle international domains', () => {
-      const internationalDomains = [
-        'EXAMPLE.РФ',
-        'TEST.中国',
-        'SITE.香港'
-      ];
+      const internationalDomains = ['EXAMPLE.РФ', 'TEST.中国', 'SITE.香港'];
 
       // Note: This depends on implementation - may or may not transform international characters
-      internationalDomains.forEach(domain => {
+      internationalDomains.forEach((domain) => {
         const result = validator.transform(domain);
         expect(typeof result).toBe('string');
         expect(result.length).toBeGreaterThan(0);
@@ -400,16 +332,9 @@ describe('DomainFormatValidator', () => {
     });
 
     it('should handle rapid successive validations', () => {
-      const domains = [
-        'example.com',
-        'test.org',
-        'site.net',
-        'invalid..domain',
-        'another.invalid.',
-        'valid-site.co.uk'
-      ];
+      const domains = ['example.com', 'test.org', 'site.net', 'invalid..domain', 'another.invalid.', 'valid-site.co.uk'];
 
-      const results = domains.map(domain => validator.validate(domain));
+      const results = domains.map((domain) => validator.validate(domain));
 
       expect(results[0]).toBe(true); // example.com
       expect(results[1]).toBe(true); // test.org

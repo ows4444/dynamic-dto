@@ -24,76 +24,33 @@ describe('UsernameFormatValidator', () => {
 
   describe('validate', () => {
     it('should validate basic alphanumeric usernames', () => {
-      const validUsernames = [
-        'user123',
-        'john',
-        'jane',
-        'testuser',
-        'admin',
-        'guest',
-        'user1',
-        'abc123',
-        'username',
-        'test',
-      ];
+      const validUsernames = ['user123', 'john', 'jane', 'testuser', 'admin', 'guest', 'user1', 'abc123', 'username', 'test'];
 
-      validUsernames.forEach(username => {
+      validUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
 
     it('should validate usernames with underscores', () => {
-      const usernamesWithUnderscores = [
-        'user_name',
-        'test_user',
-        'my_username',
-        'user_123',
-        '_test',
-        'test_',
-        '__test__',
-        'user_name_123',
-        'a_b_c',
-        'user____name',
-      ];
+      const usernamesWithUnderscores = ['user_name', 'test_user', 'my_username', 'user_123', '_test', 'test_', '__test__', 'user_name_123', 'a_b_c', 'user____name'];
 
-      usernamesWithUnderscores.forEach(username => {
+      usernamesWithUnderscores.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
 
     it('should validate usernames with hyphens', () => {
-      const usernamesWithHyphens = [
-        'user-name',
-        'test-user',
-        'my-username',
-        'user-123',
-        '-test',
-        'test-',
-        '--test--',
-        'user-name-123',
-        'a-b-c',
-        'user----name',
-      ];
+      const usernamesWithHyphens = ['user-name', 'test-user', 'my-username', 'user-123', '-test', 'test-', '--test--', 'user-name-123', 'a-b-c', 'user----name'];
 
-      usernamesWithHyphens.forEach(username => {
+      usernamesWithHyphens.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
 
     it('should validate usernames with mixed characters', () => {
-      const mixedUsernames = [
-        'user_name-123',
-        'test-user_name',
-        'my_user-name',
-        'user123_test',
-        'a-b_c',
-        'user-123_name',
-        'test_user-123',
-        'user_-_name',
-        'test-_-user',
-      ];
+      const mixedUsernames = ['user_name-123', 'test-user_name', 'my_user-name', 'user123_test', 'a-b_c', 'user-123_name', 'test_user-123', 'user_-_name', 'test-_-user'];
 
-      mixedUsernames.forEach(username => {
+      mixedUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
@@ -109,7 +66,7 @@ describe('UsernameFormatValidator', () => {
         'extremelylongusernamethatistechnicallyvalid', // very long
       ];
 
-      lengthTestUsernames.forEach(username => {
+      lengthTestUsernames.forEach((username) => {
         const result = validator.validate(username);
         expect(typeof result).toBe('boolean');
         // Length requirements depend on implementation
@@ -117,20 +74,9 @@ describe('UsernameFormatValidator', () => {
     });
 
     it('should validate case-sensitive usernames', () => {
-      const caseSensitiveUsernames = [
-        'User',
-        'TEST',
-        'MyUsername',
-        'CamelCase',
-        'UPPERCASE',
-        'lowercase',
-        'MixedCASE',
-        'User123',
-        'TEST_user',
-        'My-Username',
-      ];
+      const caseSensitiveUsernames = ['User', 'TEST', 'MyUsername', 'CamelCase', 'UPPERCASE', 'lowercase', 'MixedCASE', 'User123', 'TEST_user', 'My-Username'];
 
-      caseSensitiveUsernames.forEach(username => {
+      caseSensitiveUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
@@ -166,7 +112,7 @@ describe('UsernameFormatValidator', () => {
         'user.name', // period (may or may not be allowed)
       ];
 
-      invalidCharUsernames.forEach(username => {
+      invalidCharUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(false);
       });
     });
@@ -186,7 +132,7 @@ describe('UsernameFormatValidator', () => {
         '\r\nusername', // carriage return + newline
       ];
 
-      usernamesWithSpaces.forEach(username => {
+      usernamesWithSpaces.forEach((username) => {
         expect(validator.validate(username)).toBe(false);
       });
     });
@@ -203,29 +149,15 @@ describe('UsernameFormatValidator', () => {
         '   \t  \n  ', // mixed whitespace
       ];
 
-      emptyUsernames.forEach(username => {
+      emptyUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(false);
       });
     });
 
     it('should reject non-string inputs', () => {
-      const nonStringInputs = [
-        null,
-        undefined,
-        123,
-        true,
-        false,
-        [],
-        {},
-        () => {},
-        Symbol('test'),
-        new Date(),
-        0,
-        -1,
-        1.5,
-      ];
+      const nonStringInputs = [null, undefined, 123, true, false, [], {}, () => {}, Symbol('test'), new Date(), 0, -1, 1.5];
 
-      nonStringInputs.forEach(input => {
+      nonStringInputs.forEach((input) => {
         expect(validator.validate(input)).toBe(false);
       });
     });
@@ -243,26 +175,15 @@ describe('UsernameFormatValidator', () => {
         'user2024', // year suffix
       ];
 
-      numbersInUsernames.forEach(username => {
+      numbersInUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
 
     it('should validate common social media username patterns', () => {
-      const socialMediaUsernames = [
-        'user_123',
-        'john_doe',
-        'jane-smith',
-        'testuser2024',
-        'my_awesome_username',
-        'cool-user-name',
-        'user123456',
-        'username_',
-        '_username',
-        'user-name-123',
-      ];
+      const socialMediaUsernames = ['user_123', 'john_doe', 'jane-smith', 'testuser2024', 'my_awesome_username', 'cool-user-name', 'user123456', 'username_', '_username', 'user-name-123'];
 
-      socialMediaUsernames.forEach(username => {
+      socialMediaUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
@@ -277,7 +198,7 @@ describe('UsernameFormatValidator', () => {
         'user---name', // triple hyphen
       ];
 
-      consecutiveSeparators.forEach(username => {
+      consecutiveSeparators.forEach((username) => {
         const result = validator.validate(username);
         expect(typeof result).toBe('boolean');
         // Consecutive separators handling depends on implementation
@@ -298,7 +219,7 @@ describe('UsernameFormatValidator', () => {
         'عربي', // Arabic
       ];
 
-      internationalUsernames.forEach(username => {
+      internationalUsernames.forEach((username) => {
         const result = validator.validate(username);
         expect(typeof result).toBe('boolean');
         // International character support depends on implementation
@@ -320,7 +241,7 @@ describe('UsernameFormatValidator', () => {
     it('should handle different property names', () => {
       const properties = ['username', 'login', 'handle', 'screenName', 'userId'];
 
-      properties.forEach(property => {
+      properties.forEach((property) => {
         const mockArgs = { property } as any;
         const message = validator.getDefaultMessage(mockArgs);
 
@@ -336,11 +257,11 @@ describe('UsernameFormatValidator', () => {
       const lowerMessage = message.toLowerCase();
       expect(
         lowerMessage.includes('alphanumeric') ||
-        lowerMessage.includes('letters') ||
-        lowerMessage.includes('numbers') ||
-        lowerMessage.includes('underscore') ||
-        lowerMessage.includes('hyphen') ||
-        lowerMessage.includes('valid')
+          lowerMessage.includes('letters') ||
+          lowerMessage.includes('numbers') ||
+          lowerMessage.includes('underscore') ||
+          lowerMessage.includes('hyphen') ||
+          lowerMessage.includes('valid'),
       ).toBe(true);
     });
 
@@ -388,16 +309,9 @@ describe('UsernameFormatValidator', () => {
     });
 
     it('should preserve valid lowercase usernames', () => {
-      const lowercaseUsernames = [
-        'username',
-        'test_user',
-        'user-123',
-        'myusername',
-        'user_name_123',
-        'cool-username',
-      ];
+      const lowercaseUsernames = ['username', 'test_user', 'user-123', 'myusername', 'user_name_123', 'cool-username'];
 
-      lowercaseUsernames.forEach(username => {
+      lowercaseUsernames.forEach((username) => {
         expect(validator.transform(username)).toBe(username);
       });
     });
@@ -430,7 +344,7 @@ describe('UsernameFormatValidator', () => {
         'user$name',
       ];
 
-      invalidUsernames.forEach(username => {
+      invalidUsernames.forEach((username) => {
         const transformed = validator.transform(username);
         // Should not crash, but result varies based on implementation
         expect(typeof transformed).toBe('string');
@@ -438,15 +352,9 @@ describe('UsernameFormatValidator', () => {
     });
 
     it('should handle international characters appropriately', () => {
-      const internationalUsernames = [
-        'Üsername',
-        'José',
-        'François',
-        'Москва',
-        '用户名',
-      ];
+      const internationalUsernames = ['Üsername', 'José', 'François', 'Москва', '用户名'];
 
-      internationalUsernames.forEach(username => {
+      internationalUsernames.forEach((username) => {
         const transformed = validator.transform(username);
         expect(typeof transformed).toBe('string');
         // International character handling varies by implementation
@@ -477,7 +385,7 @@ describe('UsernameFormatValidator', () => {
         maxLength: 20,
         allowNumbers: true,
         allowUnderscores: true,
-        allowHyphens: true
+        allowHyphens: true,
       };
       const decorator = validator.createDecorator(options);
 
@@ -501,18 +409,9 @@ describe('UsernameFormatValidator', () => {
     });
 
     it('should handle rapid successive validations', () => {
-      const usernames = [
-        'validuser',
-        'user@name',
-        'test_user',
-        'user name',
-        'user-123',
-        'user#invalid',
-        'myusername',
-        'user$money'
-      ];
+      const usernames = ['validuser', 'user@name', 'test_user', 'user name', 'user-123', 'user#invalid', 'myusername', 'user$money'];
 
-      const results = usernames.map(username => validator.validate(username));
+      const results = usernames.map((username) => validator.validate(username));
 
       expect(results[0]).toBe(true); // validuser
       expect(results[1]).toBe(false); // user@name
@@ -537,56 +436,25 @@ describe('UsernameFormatValidator', () => {
     });
 
     it('should validate common gaming usernames', () => {
-      const gamingUsernames = [
-        'player123',
-        'gamer_pro',
-        'elite-sniper',
-        'master_chief',
-        'shadow-warrior',
-        'fire_dragon',
-        'ice-queen',
-        'dark_knight',
-        'speed_demon',
-        'cyber_ninja',
-      ];
+      const gamingUsernames = ['player123', 'gamer_pro', 'elite-sniper', 'master_chief', 'shadow-warrior', 'fire_dragon', 'ice-queen', 'dark_knight', 'speed_demon', 'cyber_ninja'];
 
-      gamingUsernames.forEach(username => {
+      gamingUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
 
     it('should validate professional usernames', () => {
-      const professionalUsernames = [
-        'john_smith',
-        'jane-doe',
-        'robert_wilson',
-        'sarah-johnson',
-        'michael_brown',
-        'lisa-davis',
-        'david_miller',
-        'amy-anderson',
-      ];
+      const professionalUsernames = ['john_smith', 'jane-doe', 'robert_wilson', 'sarah-johnson', 'michael_brown', 'lisa-davis', 'david_miller', 'amy-anderson'];
 
-      professionalUsernames.forEach(username => {
+      professionalUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });
 
     it('should handle reserved username patterns', () => {
-      const reservedUsernames = [
-        'admin',
-        'administrator',
-        'root',
-        'user',
-        'guest',
-        'anonymous',
-        'system',
-        'test',
-        'demo',
-        'api',
-      ];
+      const reservedUsernames = ['admin', 'administrator', 'root', 'user', 'guest', 'anonymous', 'system', 'test', 'demo', 'api'];
 
-      reservedUsernames.forEach(username => {
+      reservedUsernames.forEach((username) => {
         const result = validator.validate(username);
         expect(typeof result).toBe('boolean');
         // Whether reserved usernames are allowed depends on implementation
@@ -603,7 +471,7 @@ describe('UsernameFormatValidator', () => {
         'a'.repeat(100), // 100 chars (very long)
       ];
 
-      boundaryUsernames.forEach(username => {
+      boundaryUsernames.forEach((username) => {
         const result = validator.validate(username);
         expect(typeof result).toBe('boolean');
         // Length validation depends on implementation rules
@@ -611,18 +479,9 @@ describe('UsernameFormatValidator', () => {
     });
 
     it('should handle complex username patterns', () => {
-      const complexUsernames = [
-        'user_123-test',
-        'test-user_456',
-        'my_cool-username',
-        'super_user-pro',
-        'awesome-test_user',
-        'user123_test456',
-        'pro-gamer_elite',
-        'cool_username-2024',
-      ];
+      const complexUsernames = ['user_123-test', 'test-user_456', 'my_cool-username', 'super_user-pro', 'awesome-test_user', 'user123_test456', 'pro-gamer_elite', 'cool_username-2024'];
 
-      complexUsernames.forEach(username => {
+      complexUsernames.forEach((username) => {
         expect(validator.validate(username)).toBe(true);
       });
     });

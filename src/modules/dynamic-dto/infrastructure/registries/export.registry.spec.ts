@@ -46,23 +46,21 @@ describe('ExportRegistry', () => {
       const allExports = ExportRegistry.getAllExports();
 
       // Check total count
-      const expectedCount = ExportRegistry.coreServices.length + 
-                          ExportRegistry.pipelines.length + 
-                          ExportRegistry.infrastructure.length;
+      const expectedCount = ExportRegistry.coreServices.length + ExportRegistry.pipelines.length + ExportRegistry.infrastructure.length;
       expect(allExports).toHaveLength(expectedCount);
 
       // Check all core services are included
-      ExportRegistry.coreServices.forEach(service => {
+      ExportRegistry.coreServices.forEach((service) => {
         expect(allExports).toContain(service);
       });
 
       // Check all pipelines are included
-      ExportRegistry.pipelines.forEach(pipeline => {
+      ExportRegistry.pipelines.forEach((pipeline) => {
         expect(allExports).toContain(pipeline);
       });
 
       // Check all infrastructure services are included
-      ExportRegistry.infrastructure.forEach(service => {
+      ExportRegistry.infrastructure.forEach((service) => {
         expect(allExports).toContain(service);
       });
     });
@@ -88,8 +86,8 @@ describe('ExportRegistry', () => {
       const coreExports = ExportRegistry.getCoreExports();
 
       expect(coreExports).toHaveLength(ExportRegistry.coreServices.length);
-      
-      ExportRegistry.coreServices.forEach(service => {
+
+      ExportRegistry.coreServices.forEach((service) => {
         expect(coreExports).toContain(service);
       });
     });
@@ -97,11 +95,11 @@ describe('ExportRegistry', () => {
     it('should not include pipeline or infrastructure services', () => {
       const coreExports = ExportRegistry.getCoreExports();
 
-      ExportRegistry.pipelines.forEach(pipeline => {
+      ExportRegistry.pipelines.forEach((pipeline) => {
         expect(coreExports).not.toContain(pipeline);
       });
 
-      ExportRegistry.infrastructure.forEach(service => {
+      ExportRegistry.infrastructure.forEach((service) => {
         expect(coreExports).not.toContain(service);
       });
     });
@@ -128,17 +126,17 @@ describe('ExportRegistry', () => {
       const extendedExports = ExportRegistry.getExtendedExports();
 
       // Check core services
-      ExportRegistry.coreServices.forEach(service => {
+      ExportRegistry.coreServices.forEach((service) => {
         expect(extendedExports).toContain(service);
       });
 
       // Check pipelines
-      ExportRegistry.pipelines.forEach(pipeline => {
+      ExportRegistry.pipelines.forEach((pipeline) => {
         expect(extendedExports).toContain(pipeline);
       });
 
       // Check infrastructure
-      ExportRegistry.infrastructure.forEach(service => {
+      ExportRegistry.infrastructure.forEach((service) => {
         expect(extendedExports).toContain(service);
       });
     });
@@ -154,28 +152,19 @@ describe('ExportRegistry', () => {
 
   describe('service coverage', () => {
     it('should include all expected core services', () => {
-      const expectedCoreServices = [
-        'DtoOrchestratorService',
-        'DtoValidationService', 
-        'DtoCacheService',
-        'DtoBatchProcessor',
-        'SchemaOrchestratorService'
-      ];
+      const expectedCoreServices = ['DtoOrchestratorService', 'DtoValidationService', 'DtoCacheService', 'DtoBatchProcessor', 'SchemaOrchestratorService'];
 
-      expectedCoreServices.forEach(serviceName => {
-        const hasService = ExportRegistry.coreServices.some(service => service.name === serviceName);
+      expectedCoreServices.forEach((serviceName) => {
+        const hasService = ExportRegistry.coreServices.some((service) => service.name === serviceName);
         expect(hasService).toBe(true);
       });
     });
 
     it('should include all expected pipelines', () => {
-      const expectedPipelines = [
-        'DtoGenerationPipeline',
-        'ValidationPipeline'
-      ];
+      const expectedPipelines = ['DtoGenerationPipeline', 'ValidationPipeline'];
 
-      expectedPipelines.forEach(pipelineName => {
-        const hasPipeline = ExportRegistry.pipelines.some(pipeline => pipeline.name === pipelineName);
+      expectedPipelines.forEach((pipelineName) => {
+        const hasPipeline = ExportRegistry.pipelines.some((pipeline) => pipeline.name === pipelineName);
         expect(hasPipeline).toBe(true);
       });
     });
@@ -183,15 +172,15 @@ describe('ExportRegistry', () => {
     it('should include all expected infrastructure services', () => {
       const expectedInfraServices = [
         'FieldHandlerRegistry',
-        'FieldProcessorRegistry', 
+        'FieldProcessorRegistry',
         'FieldValidatorRegistry',
         'FieldProcessorDiscoveryService',
         'FieldHandlerDiscoveryService',
-        'CacheManagerService'
+        'CacheManagerService',
       ];
 
-      expectedInfraServices.forEach(serviceName => {
-        const hasService = ExportRegistry.infrastructure.some(service => service.name === serviceName);
+      expectedInfraServices.forEach((serviceName) => {
+        const hasService = ExportRegistry.infrastructure.some((service) => service.name === serviceName);
         expect(hasService).toBe(true);
       });
     });
@@ -222,7 +211,7 @@ describe('ExportRegistry', () => {
 
       // Try to modify returned array
       exports.push(DtoOrchestratorService);
-      
+
       // Original registry should be unaffected
       const freshExports = ExportRegistry.getAllExports();
       expect(freshExports).toHaveLength(originalLength);
@@ -232,41 +221,37 @@ describe('ExportRegistry', () => {
   describe('performance characteristics', () => {
     it('should return arrays efficiently', () => {
       const start = performance.now();
-      
+
       for (let i = 0; i < 1000; i++) {
         ExportRegistry.getAllExports();
-        ExportRegistry.getCoreExports(); 
+        ExportRegistry.getCoreExports();
         ExportRegistry.getExtendedExports();
       }
-      
+
       const end = performance.now();
       const duration = end - start;
-      
+
       // Should complete 3000 operations in reasonable time (less than 100ms)
       expect(duration).toBeLessThan(100);
     });
 
     it('should not create excessive object overhead', () => {
       const initialMemory = (performance as any).memory?.usedJSHeapSize || 0;
-      
+
       // Create many export arrays
       const arrays = [];
       for (let i = 0; i < 100; i++) {
-        arrays.push(
-          ExportRegistry.getAllExports(),
-          ExportRegistry.getCoreExports(),
-          ExportRegistry.getExtendedExports()
-        );
+        arrays.push(ExportRegistry.getAllExports(), ExportRegistry.getCoreExports(), ExportRegistry.getExtendedExports());
       }
-      
+
       const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
-      
+
       // Memory usage should not grow excessively (if memory tracking available)
       if (initialMemory > 0 && finalMemory > 0) {
         const memoryGrowth = finalMemory - initialMemory;
         expect(memoryGrowth).toBeLessThan(10 * 1024 * 1024); // Less than 10MB
       }
-      
+
       // Verify arrays still work
       expect(arrays[0]).toBeInstanceOf(Array);
       expect(arrays[arrays.length - 1]).toBeInstanceOf(Array);

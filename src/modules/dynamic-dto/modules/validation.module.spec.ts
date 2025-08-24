@@ -1,5 +1,5 @@
 import { ValidationModule } from './validation.module';
-import { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
+import type { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
 
 describe('ValidationModule', () => {
   describe('forRoot', () => {

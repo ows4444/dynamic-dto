@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { FieldValidationModule } from './field-validation.module';
 import { FieldValidatorRegistry } from '../infrastructure/registries/field-validator.registry';
 import { ValidationErrorService } from '../exceptions/validation/validation-error.service';
@@ -68,19 +69,14 @@ describe('FieldValidationModule', () => {
   describe('service integration', () => {
     it('should allow registry operations', () => {
       expect(fieldValidatorRegistry.getValidatorCount()).toBe(0);
-      
+
       // Test basic registry functionality
       expect(() => fieldValidatorRegistry.clear()).not.toThrow();
       expect(fieldValidatorRegistry.getAllValidators()).toEqual([]);
     });
 
     it('should allow error service operations', () => {
-      const error = validationErrorService.createFieldError(
-        'testField',
-        'testValue',
-        'Test error message',
-        'TEST_ERROR'
-      );
+      const error = validationErrorService.createFieldError('testField', 'testValue', 'Test error message', 'TEST_ERROR');
 
       expect(error).toBeDefined();
       expect(error.field).toBe('testField');
@@ -94,13 +90,10 @@ describe('FieldValidationModule', () => {
         isValid: true,
         data: { test: 'value' },
         errors: [],
-        warnings: []
+        warnings: [],
       };
 
-      const result = await validationErrorRecoveryService.attemptRecovery(
-        mockValidationResult,
-        null as any
-      );
+      const result = await validationErrorRecoveryService.attemptRecovery(mockValidationResult, null as any);
 
       expect(result).toBeDefined();
     });
@@ -137,7 +130,7 @@ describe('FieldValidationModule', () => {
 
       // Test that services maintain their own state
       expect(registry.getValidatorCount()).toBe(0);
-      
+
       const error = errorService.createFieldError('field', 'value', 'message', 'CODE');
       expect(error).toBeDefined();
 
@@ -152,9 +145,9 @@ describe('FieldValidationModule', () => {
         providers: [
           {
             provide: 'TEST_TOKEN',
-            useValue: 'test-value'
-          }
-        ]
+            useValue: 'test-value',
+          },
+        ],
       }).compile();
 
       expect(testModule.get('TEST_TOKEN')).toBe('test-value');
@@ -182,7 +175,7 @@ describe('FieldValidationModule', () => {
       }).compile();
 
       const registry = testModule.get<FieldValidatorRegistry>(FieldValidatorRegistry);
-      
+
       // Should be initialized and ready to use
       expect(registry).toBeDefined();
       expect(registry.getValidatorCount).toBeDefined();
@@ -213,13 +206,9 @@ describe('FieldValidationModule', () => {
 
       expect(testModule).toBeDefined();
 
-      const services = [
-        FieldValidatorRegistry,
-        ValidationErrorService,
-        ValidationErrorRecoveryService
-      ];
+      const services = [FieldValidatorRegistry, ValidationErrorService, ValidationErrorRecoveryService];
 
-      services.forEach(ServiceClass => {
+      services.forEach((ServiceClass) => {
         expect(() => testModule.get(ServiceClass)).not.toThrow();
       });
 
@@ -230,7 +219,7 @@ describe('FieldValidationModule', () => {
       // Test module compilation with minimal dependencies
       const testModule = await Test.createTestingModule({
         imports: [FieldValidationModule],
-        providers: [] // Minimal providers
+        providers: [], // Minimal providers
       }).compile();
 
       expect(testModule).toBeDefined();
@@ -268,7 +257,7 @@ describe('FieldValidationModule', () => {
         }).compile();
 
         expect(testModule.get<FieldValidatorRegistry>(FieldValidatorRegistry)).toBeDefined();
-        
+
         await testModule.close();
       }
     });
@@ -281,9 +270,9 @@ describe('FieldValidationModule', () => {
         providers: [
           {
             provide: 'CONFIG_SERVICE',
-            useValue: { get: (key: string) => `value-${key}` }
-          }
-        ]
+            useValue: { get: (key: string) => `value-${key}` },
+          },
+        ],
       }).compile();
 
       expect(testModule.get('CONFIG_SERVICE')).toBeDefined();
@@ -298,7 +287,7 @@ describe('FieldValidationModule', () => {
         getValidatorsForType: jest.fn(() => []),
         getValidatorCount: jest.fn(() => 0),
         clear: jest.fn(),
-        getAllValidators: jest.fn(() => [])
+        getAllValidators: jest.fn(() => []),
       };
 
       const testModule = await Test.createTestingModule({
@@ -306,10 +295,13 @@ describe('FieldValidationModule', () => {
         providers: [
           {
             provide: FieldValidatorRegistry,
-            useValue: customRegistry
-          }
-        ]
-      }).overrideProvider(FieldValidatorRegistry).useValue(customRegistry).compile();
+            useValue: customRegistry,
+          },
+        ],
+      })
+        .overrideProvider(FieldValidatorRegistry)
+        .useValue(customRegistry)
+        .compile();
 
       const registry = testModule.get<FieldValidatorRegistry>(FieldValidatorRegistry);
       expect(registry).toBe(customRegistry);

@@ -1,12 +1,6 @@
-import {
-  SchemaStructureValidationError,
-  SchemaCircularReferenceError,
-  SchemaFieldNamingError,
-  SchemaBusinessRuleError,
-  SchemaCrossFieldValidationError,
-} from './schema-validation.error';
+import { SchemaBusinessRuleError, SchemaCircularReferenceError, SchemaCrossFieldValidationError, SchemaFieldNamingError, SchemaStructureValidationError } from './schema-validation.error';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { ValidationErrorContext } from './base-validation.error';
+import type { ValidationErrorContext } from './base-validation.error';
 
 describe('Schema Validation Errors', () => {
   let mockContext: ValidationErrorContext;
@@ -54,8 +48,8 @@ describe('Schema Validation Errors', () => {
       it('should include fix and documentation suggestions', () => {
         const error = new SchemaStructureValidationError('TestSchema', 'INVALID_STRUCTURE');
 
-        const fixSuggestion = error.suggestions.find(s => s.type === 'fix');
-        const docSuggestion = error.suggestions.find(s => s.type === 'documentation');
+        const fixSuggestion = error.suggestions.find((s) => s.type === 'fix');
+        const docSuggestion = error.suggestions.find((s) => s.type === 'documentation');
 
         expect(fixSuggestion).toBeDefined();
         expect(fixSuggestion?.action).toBe('Review schema structure requirements');
@@ -107,10 +101,10 @@ describe('Schema Validation Errors', () => {
       const error = new SchemaCircularReferenceError('TestSchema', circularPath);
 
       expect(error.suggestions).toHaveLength(3);
-      
-      const fixSuggestion = error.suggestions.find(s => s.type === 'fix');
-      const altSuggestion = error.suggestions.find(s => s.type === 'alternative');
-      const docSuggestion = error.suggestions.find(s => s.type === 'documentation');
+
+      const fixSuggestion = error.suggestions.find((s) => s.type === 'fix');
+      const altSuggestion = error.suggestions.find((s) => s.type === 'alternative');
+      const docSuggestion = error.suggestions.find((s) => s.type === 'documentation');
 
       expect(fixSuggestion?.message).toContain('Break the circular reference');
       expect(altSuggestion?.message).toContain('Restructure schema');
@@ -157,9 +151,9 @@ describe('Schema Validation Errors', () => {
         expect(error.code).toBe('INVALID_FIELD_NAMES');
         expect(error.message).toBe("Schema 'TestSchema' has invalid field names: 123invalid, $pecial");
         expect(error.suggestions).toHaveLength(2);
-        
-        const fixSuggestion = error.suggestions.find(s => s.type === 'fix');
-        const docSuggestion = error.suggestions.find(s => s.type === 'documentation');
+
+        const fixSuggestion = error.suggestions.find((s) => s.type === 'fix');
+        const docSuggestion = error.suggestions.find((s) => s.type === 'documentation');
 
         expect(fixSuggestion?.message).toContain('alphanumeric, underscore');
         expect(docSuggestion?.url).toBe('/docs/field-naming');
@@ -200,9 +194,9 @@ describe('Schema Validation Errors', () => {
       const error = new SchemaBusinessRuleError('TestSchema', 'RULE_VIOLATION', 'Test description');
 
       expect(error.suggestions).toHaveLength(2);
-      
-      const fixSuggestion = error.suggestions.find(s => s.type === 'fix');
-      const docSuggestion = error.suggestions.find(s => s.type === 'documentation');
+
+      const fixSuggestion = error.suggestions.find((s) => s.type === 'fix');
+      const docSuggestion = error.suggestions.find((s) => s.type === 'documentation');
 
       expect(fixSuggestion?.message).toContain('comply with business rules');
       expect(docSuggestion?.url).toBe('/docs/business-rules');
@@ -221,13 +215,7 @@ describe('Schema Validation Errors', () => {
       it('should create error for field visibility conflict', () => {
         const fields = ['field1', 'field2'];
         const description = 'Fields have conflicting visibility settings';
-        const error = new SchemaCrossFieldValidationError(
-          'TestSchema',
-          'FIELD_VISIBILITY_CONFLICT',
-          fields,
-          description,
-          mockContext
-        );
+        const error = new SchemaCrossFieldValidationError('TestSchema', 'FIELD_VISIBILITY_CONFLICT', fields, description, mockContext);
 
         expect(error.code).toBe('FIELD_VISIBILITY_CONFLICT');
         expect(error.message).toBe("Schema 'TestSchema' has cross-field validation error: Fields have conflicting visibility settings");
@@ -241,16 +229,9 @@ describe('Schema Validation Errors', () => {
       });
 
       it('should include visibility-specific suggestions', () => {
-        const error = new SchemaCrossFieldValidationError(
-          'TestSchema',
-          'FIELD_VISIBILITY_CONFLICT',
-          ['field1'],
-          'Conflict description'
-        );
+        const error = new SchemaCrossFieldValidationError('TestSchema', 'FIELD_VISIBILITY_CONFLICT', ['field1'], 'Conflict description');
 
-        const visibilitySuggestion = error.suggestions.find(s => 
-          s.message?.includes('Choose either expose or exclude')
-        );
+        const visibilitySuggestion = error.suggestions.find((s) => s.message?.includes('Choose either expose or exclude'));
 
         expect(visibilitySuggestion).toBeDefined();
         expect(visibilitySuggestion?.action).toBe('Set only one visibility option per field');
@@ -261,18 +242,11 @@ describe('Schema Validation Errors', () => {
       it('should create error for missing dependent field', () => {
         const fields = ['dependentField'];
         const description = 'Required dependent field is missing';
-        const error = new SchemaCrossFieldValidationError(
-          'TestSchema',
-          'MISSING_DEPENDENT_FIELD',
-          fields,
-          description
-        );
+        const error = new SchemaCrossFieldValidationError('TestSchema', 'MISSING_DEPENDENT_FIELD', fields, description);
 
         expect(error.code).toBe('MISSING_DEPENDENT_FIELD');
-        
-        const dependentSuggestion = error.suggestions.find(s => 
-          s.message?.includes('Add missing dependent field')
-        );
+
+        const dependentSuggestion = error.suggestions.find((s) => s.message?.includes('Add missing dependent field'));
 
         expect(dependentSuggestion).toBeDefined();
         expect(dependentSuggestion?.action).toBe('Ensure all referenced fields exist');
@@ -283,18 +257,11 @@ describe('Schema Validation Errors', () => {
       it('should create error for incompatible fields', () => {
         const fields = ['field1', 'field2'];
         const description = 'Fields have incompatible configurations';
-        const error = new SchemaCrossFieldValidationError(
-          'TestSchema',
-          'INCOMPATIBLE_FIELDS',
-          fields,
-          description
-        );
+        const error = new SchemaCrossFieldValidationError('TestSchema', 'INCOMPATIBLE_FIELDS', fields, description);
 
         expect(error.code).toBe('INCOMPATIBLE_FIELDS');
-        
-        const incompatibleSuggestion = error.suggestions.find(s => 
-          s.message?.includes('Review field compatibility')
-        );
+
+        const incompatibleSuggestion = error.suggestions.find((s) => s.message?.includes('Review field compatibility'));
 
         expect(incompatibleSuggestion).toBeDefined();
         expect(incompatibleSuggestion?.action).toBe('Update field configurations to be compatible');
@@ -302,28 +269,16 @@ describe('Schema Validation Errors', () => {
     });
 
     it('should handle common suggestions for all types', () => {
-      const error = new SchemaCrossFieldValidationError(
-        'TestSchema',
-        'FIELD_VISIBILITY_CONFLICT',
-        ['field1', 'field2'],
-        'Description'
-      );
+      const error = new SchemaCrossFieldValidationError('TestSchema', 'FIELD_VISIBILITY_CONFLICT', ['field1', 'field2'], 'Description');
 
-      const commonSuggestion = error.suggestions.find(s => 
-        s.message === 'Resolve field conflicts'
-      );
+      const commonSuggestion = error.suggestions.find((s) => s.message === 'Resolve field conflicts');
 
       expect(commonSuggestion).toBeDefined();
       expect(commonSuggestion?.action).toBe('Review fields: field1, field2');
     });
 
     it('should work without context', () => {
-      const error = new SchemaCrossFieldValidationError(
-        'TestSchema',
-        'INCOMPATIBLE_FIELDS',
-        ['field1'],
-        'Description'
-      );
+      const error = new SchemaCrossFieldValidationError('TestSchema', 'INCOMPATIBLE_FIELDS', ['field1'], 'Description');
 
       expect(error.context?.schemaName).toBe('TestSchema');
       expect(error.code).toBe('INCOMPATIBLE_FIELDS');
