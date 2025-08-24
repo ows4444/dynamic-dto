@@ -76,8 +76,8 @@ describe('StringProcessorFactory', () => {
 
       // Processors should be ordered by priority
       for (let i = 0; i < processors.length - 1; i++) {
-        const currentPriority = processors[i].priority || 0;
-        const nextPriority = processors[i + 1].priority || 0;
+        const currentPriority = processors[i].priority ?? 0;
+        const nextPriority = processors[i + 1].priority ?? 0;
         expect(currentPriority).toBeGreaterThanOrEqual(nextPriority);
       }
     });

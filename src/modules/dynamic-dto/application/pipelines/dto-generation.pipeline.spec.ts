@@ -314,7 +314,7 @@ describe('DtoGenerationPipeline', () => {
   });
 
   describe('memory management', () => {
-    it('should clean up dead weak references', async () => {
+    it('should clean up dead weak references', () => {
       // Arrange
       const debugSpy = jest.spyOn(Logger.prototype, 'debug');
 

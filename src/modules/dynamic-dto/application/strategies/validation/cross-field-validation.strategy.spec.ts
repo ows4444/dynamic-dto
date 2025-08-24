@@ -215,7 +215,7 @@ describe('CrossFieldValidationStrategy', () => {
   });
 
   describe('error handling', () => {
-    it('should handle validation errors gracefully', async () => {
+    it('should handle validation errors gracefully', () => {
       const schema = new DynamicSchemaEntity(
         'test-schema',
         'TestDto',
