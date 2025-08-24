@@ -1,11 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { DtoGenerationPipeline } from './dto-generation.pipeline';
 import { FieldHandlerRegistry } from '../../infrastructure/registries/field-handler.registry';
 import { CacheMonitorService } from '../../infrastructure/monitoring/cache-monitor.service';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldType } from '../../core/types/field.types';
-import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 
 describe('DtoGenerationPipeline', () => {
   let pipeline: DtoGenerationPipeline;

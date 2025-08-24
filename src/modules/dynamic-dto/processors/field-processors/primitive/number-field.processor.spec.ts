@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { NumberFieldProcessor } from './number-field.processor';
 import { FieldType } from '../../../core/types/field.types';
 import type { NumberFieldSchema } from '../../../core/interfaces/schema/primitive/number-field.schema';

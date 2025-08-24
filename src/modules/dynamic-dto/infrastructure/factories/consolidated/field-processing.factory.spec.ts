@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { createFieldProcessingProviders } from './field-processing.factory';
 import { FieldProcessorRegistry } from '../../registries/field-processor.registry';
 import { FieldProcessorDiscoveryService } from '../../services/field-processor-discovery.service';

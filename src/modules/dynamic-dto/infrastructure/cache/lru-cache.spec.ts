@@ -1,4 +1,4 @@
-import { LRUCache, CacheStats } from './lru-cache';
+import { CacheStats, LRUCache } from './lru-cache';
 
 describe('LRUCache', () => {
   let cache: LRUCache<string, string>;

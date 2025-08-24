@@ -1,5 +1,5 @@
 import { ValidationChain } from './validation-chain';
-import type { ValidationResult, ValidationIssue } from '../interfaces/validation';
+import type { ValidationIssue, ValidationResult } from '../interfaces/validation';
 
 describe('ValidationChain', () => {
   let chain: ValidationChain;
@@ -20,7 +20,7 @@ describe('ValidationChain', () => {
       } as ValidationResult);
 
       chain.addStep('test-step', mockValidator);
-      
+
       // Should not throw
       expect(chain).toBeDefined();
     });
@@ -43,12 +43,12 @@ describe('ValidationChain', () => {
   describe('multiple validation steps', () => {
     it('should execute multiple steps in order', async () => {
       const calls: string[] = [];
-      
+
       const validator1 = jest.fn().mockImplementation(() => {
         calls.push('step1');
         return { isValid: true, issues: [] };
       });
-      
+
       const validator2 = jest.fn().mockImplementation(() => {
         calls.push('step2');
         return { isValid: true, issues: [] };
@@ -56,7 +56,7 @@ describe('ValidationChain', () => {
 
       chain.addStep('step1', validator1);
       chain.addStep('step2', validator2);
-      
+
       await chain.execute({});
 
       expect(calls).toEqual(['step1', 'step2']);
@@ -67,7 +67,7 @@ describe('ValidationChain', () => {
         isValid: true,
         issues: [{ code: 'ISSUE_1', message: 'Issue 1', severity: 'warning' }] as ValidationIssue[],
       });
-      
+
       const validator2 = jest.fn().mockReturnValue({
         isValid: true,
         issues: [{ code: 'ISSUE_2', message: 'Issue 2', severity: 'info' }] as ValidationIssue[],
@@ -75,7 +75,7 @@ describe('ValidationChain', () => {
 
       chain.addStep('step1', validator1);
       chain.addStep('step2', validator2);
-      
+
       const result = await chain.execute({});
 
       expect(result.isValid).toBe(true);
@@ -91,7 +91,7 @@ describe('ValidationChain', () => {
       });
 
       chain.addStep('failing-step', validator);
-      
+
       const result = await chain.execute({});
 
       expect(result.isValid).toBe(false);
@@ -104,7 +104,7 @@ describe('ValidationChain', () => {
         isValid: false,
         issues: [{ code: 'ERROR_1', message: 'Error 1', severity: 'error' }],
       });
-      
+
       const validator2 = jest.fn().mockReturnValue({
         isValid: true,
         issues: [{ code: 'WARNING_1', message: 'Warning 1', severity: 'warning' }],
@@ -112,7 +112,7 @@ describe('ValidationChain', () => {
 
       chain.addStep('failing-step', validator1);
       chain.addStep('warning-step', validator2);
-      
+
       const result = await chain.execute({});
 
       expect(result.isValid).toBe(false);
@@ -126,7 +126,7 @@ describe('ValidationChain', () => {
       });
 
       chain.addStep('throwing-step', validator);
-      
+
       const result = await chain.execute({});
 
       expect(result.isValid).toBe(false);
@@ -143,7 +143,7 @@ describe('ValidationChain', () => {
       });
 
       chain.addConditionalStep('conditional-step', validator, () => true);
-      
+
       const result = await chain.execute({});
 
       expect(validator).toHaveBeenCalled();
@@ -157,7 +157,7 @@ describe('ValidationChain', () => {
       });
 
       chain.addConditionalStep('conditional-step', validator, () => false);
-      
+
       const result = await chain.execute({});
 
       expect(validator).not.toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe('ValidationChain', () => {
 
       const context = { testValue: 'test' };
       chain.addConditionalStep('conditional-step', validator, conditionFn);
-      
+
       await chain.execute(context);
 
       expect(conditionFn).toHaveBeenCalledWith(context);
@@ -189,7 +189,7 @@ describe('ValidationChain', () => {
 
       const context = { field: 'test', value: 123 };
       chain.addStep('context-step', validator);
-      
+
       await chain.execute(context);
 
       expect(validator).toHaveBeenCalledWith(context);
@@ -200,7 +200,7 @@ describe('ValidationChain', () => {
         ctx.step1Executed = true;
         return { isValid: true, issues: [] };
       });
-      
+
       const validator2 = jest.fn().mockReturnValue({
         isValid: true,
         issues: [],
@@ -209,13 +209,15 @@ describe('ValidationChain', () => {
       const context: any = { initial: true };
       chain.addStep('step1', validator1);
       chain.addStep('step2', validator2);
-      
+
       await chain.execute(context);
 
-      expect(validator2).toHaveBeenCalledWith(expect.objectContaining({
-        initial: true,
-        step1Executed: true,
-      }));
+      expect(validator2).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initial: true,
+          step1Executed: true,
+        }),
+      );
     });
   });
 
@@ -225,7 +227,7 @@ describe('ValidationChain', () => {
         isValid: false,
         issues: [{ code: 'CRITICAL_ERROR', message: 'Critical error', severity: 'error', critical: true }],
       });
-      
+
       const validator2 = jest.fn().mockReturnValue({
         isValid: true,
         issues: [],
@@ -234,7 +236,7 @@ describe('ValidationChain', () => {
       chain.addStep('critical-step', validator1);
       chain.addStep('never-executed', validator2);
       chain.setEarlyTermination(true);
-      
+
       const result = await chain.execute({});
 
       expect(validator1).toHaveBeenCalled();
@@ -247,7 +249,7 @@ describe('ValidationChain', () => {
         isValid: false,
         issues: [{ code: 'ERROR', message: 'Error', severity: 'error', critical: true }],
       });
-      
+
       const validator2 = jest.fn().mockReturnValue({
         isValid: true,
         issues: [],
@@ -256,7 +258,7 @@ describe('ValidationChain', () => {
       chain.addStep('error-step', validator1);
       chain.addStep('continues', validator2);
       chain.setEarlyTermination(false);
-      
+
       const result = await chain.execute({});
 
       expect(validator1).toHaveBeenCalled();
@@ -280,7 +282,7 @@ describe('ValidationChain', () => {
       });
 
       chain.addStep('test-step', validator);
-      
+
       const result = await chain.execute(null as any);
 
       expect(validator).toHaveBeenCalled();
@@ -291,7 +293,7 @@ describe('ValidationChain', () => {
       const validator = jest.fn().mockReturnValue(null);
 
       chain.addStep('null-step', validator);
-      
+
       const result = await chain.execute({});
 
       expect(result.isValid).toBe(false);

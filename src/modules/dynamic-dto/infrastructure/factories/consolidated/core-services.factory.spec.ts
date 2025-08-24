@@ -1,5 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { Provider } from '@nestjs/common';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { Provider } from '@nestjs/common';
 import { createCoreServicesProviders } from './core-services.factory';
 
 // Core services

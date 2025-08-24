@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { DtoValidationService } from './dto-validation.service';
 import { ValidationPipeline } from '../pipelines/validation.pipeline';
@@ -6,7 +7,7 @@ import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity
 import { FieldType } from '../../core/types/field.types';
 import * as classValidator from 'class-validator';
 import * as classTransformer from 'class-transformer';
-import { ValidationResult } from '../../core';
+import type { ValidationResult } from '../../core';
 
 // Mock class-validator and class-transformer
 jest.mock('class-validator');
@@ -28,8 +29,8 @@ describe('DtoValidationService', () => {
   );
 
   class MockDto {
-    name: string = '';
-    age: number = 0;
+    name = '';
+    age = 0;
   }
 
   beforeEach(async () => {

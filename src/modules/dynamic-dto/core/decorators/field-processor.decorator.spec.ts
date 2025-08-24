@@ -1,4 +1,4 @@
-import { FieldProcessor, FIELD_PROCESSOR_METADATA_KEY } from './field-processor.decorator';
+import { FIELD_PROCESSOR_METADATA_KEY, FieldProcessor } from './field-processor.decorator';
 import { FieldType } from '../types/field.types';
 
 // Test class to apply decorator to
@@ -25,7 +25,7 @@ describe('FieldProcessor Decorator', () => {
   describe('basic decoration', () => {
     it('should apply metadata to decorated class', () => {
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, TestStringProcessor);
-      
+
       expect(metadata).toBeDefined();
       expect(metadata.type).toBe(FieldType.string);
       expect(metadata.priority).toBe(100);
@@ -34,7 +34,7 @@ describe('FieldProcessor Decorator', () => {
 
     it('should apply all metadata properties', () => {
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, TestNumberProcessor);
-      
+
       expect(metadata).toBeDefined();
       expect(metadata.type).toBe(FieldType.number);
       expect(metadata.priority).toBe(200);
@@ -46,7 +46,7 @@ describe('FieldProcessor Decorator', () => {
     it('should store metadata under correct key', () => {
       const stringMetadata = Reflect.getMetadata('field-processor', TestStringProcessor);
       const numberMetadata = Reflect.getMetadata('field-processor', TestNumberProcessor);
-      
+
       expect(stringMetadata).not.toBe(numberMetadata);
       expect(stringMetadata.type).toBe(FieldType.string);
       expect(numberMetadata.type).toBe(FieldType.number);
@@ -55,7 +55,7 @@ describe('FieldProcessor Decorator', () => {
     it('should not interfere with class functionality', () => {
       const stringInstance = new TestStringProcessor();
       const numberInstance = new TestNumberProcessor();
-      
+
       expect(stringInstance.name).toBe('TestStringProcessor');
       expect(numberInstance.name).toBe('TestNumberProcessor');
     });
@@ -68,7 +68,7 @@ describe('FieldProcessor Decorator', () => {
         priority: 50,
         category: 'primitive',
       });
-      
+
       expect(typeof decorator).toBe('function');
     });
 
@@ -79,7 +79,7 @@ describe('FieldProcessor Decorator', () => {
         category: 'primitive',
       })
       class MinimalProcessor {}
-      
+
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, MinimalProcessor);
       expect(metadata.type).toBe(FieldType.boolean);
       expect(metadata.priority).toBe(1);
@@ -93,7 +93,7 @@ describe('FieldProcessor Decorator', () => {
         category: 'complex',
       })
       class FullProcessor {}
-      
+
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, FullProcessor);
       expect(metadata.type).toBe(FieldType.array);
       expect(metadata.priority).toBe(300);
@@ -119,7 +119,7 @@ describe('FieldProcessor Decorator', () => {
         category: 'complex',
       })
       class ObjectProcessor {}
-      
+
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, ObjectProcessor);
       expect(metadata.type).toBe(FieldType.object);
       expect(metadata.category).toBe('complex');
@@ -139,7 +139,7 @@ describe('FieldProcessor Decorator', () => {
         category: 'specialized',
       })
       class DateProcessor {}
-      
+
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, DateProcessor);
       expect(metadata.category).toBe('specialized');
     });
@@ -151,7 +151,7 @@ describe('FieldProcessor Decorator', () => {
         category: 'complex',
       })
       class ArrayProcessor {}
-      
+
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, ArrayProcessor);
       expect(metadata.category).toBe('complex');
     });
@@ -161,7 +161,7 @@ describe('FieldProcessor Decorator', () => {
     it('should store different priority values', () => {
       const stringMetadata = Reflect.getMetadata('field-processor', TestStringProcessor);
       const numberMetadata = Reflect.getMetadata('field-processor', TestNumberProcessor);
-      
+
       expect(stringMetadata.priority).toBe(100);
       expect(numberMetadata.priority).toBe(200);
     });
@@ -173,7 +173,7 @@ describe('FieldProcessor Decorator', () => {
         category: 'primitive',
       })
       class LowPriorityProcessor {}
-      
+
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, LowPriorityProcessor);
       expect(metadata.priority).toBe(1);
     });
@@ -185,7 +185,7 @@ describe('FieldProcessor Decorator', () => {
         category: 'specialized',
       })
       class HighPriorityProcessor {}
-      
+
       const metadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, HighPriorityProcessor);
       expect(metadata.priority).toBe(1000);
     });

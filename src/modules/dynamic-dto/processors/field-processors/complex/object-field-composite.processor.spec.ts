@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ObjectFieldProcessorComposite } from './object-field-composite.processor';
 import { CircularReferenceDetectorService } from './services/circular-reference-detector.service';
 import { ObjectValidationService } from './services/object-validation.service';

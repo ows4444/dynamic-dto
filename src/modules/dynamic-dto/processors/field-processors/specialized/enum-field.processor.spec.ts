@@ -1,8 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { EnumFieldProcessor } from './enum-field.processor';
 import { FieldType } from '../../../core/types/field.types';
 import type { EnumFieldSchema } from '../../../core/interfaces/schema/specialized-primitives/enum-field.schema';
-import { EnumTransform, EnumSortOrder } from '../../../core/interfaces/schema/specialized-primitives/enum-field.schema';
+import { EnumSortOrder, EnumTransform } from '../../../core/interfaces/schema/specialized-primitives/enum-field.schema';
 
 describe('EnumFieldProcessor', () => {
   let processor: EnumFieldProcessor;

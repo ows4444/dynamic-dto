@@ -1,7 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { UnionFieldProcessor } from './union-field.processor';
 import { FieldType } from '../../../core/types/field.types';
-import { UnionFieldSchema } from '../../../core/interfaces/schema/specialized-primitives/union-field.schema';
+import type { UnionFieldSchema } from '../../../core/interfaces/schema/specialized-primitives/union-field.schema';
 
 describe('UnionFieldProcessor', () => {
   let processor: UnionFieldProcessor;

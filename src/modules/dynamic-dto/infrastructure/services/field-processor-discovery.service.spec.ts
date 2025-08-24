@@ -1,9 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Logger, Type } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
-import { FieldProcessorDiscoveryService, DiscoveredProcessor } from './field-processor-discovery.service';
+import type { DiscoveredProcessor } from './field-processor-discovery.service';
+import { FieldProcessorDiscoveryService } from './field-processor-discovery.service';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
-import { FIELD_PROCESSOR_METADATA_KEY, FieldProcessorMetadata } from '../../core/decorators/field-processor.decorator';
+import type { FieldProcessorMetadata } from '../../core/decorators/field-processor.decorator';
+import { FIELD_PROCESSOR_METADATA_KEY } from '../../core/decorators/field-processor.decorator';
 import type { FieldTypeValue } from '../../core/types/field.types';
 import type { FieldSchema } from '../../core/interfaces/schema';
 

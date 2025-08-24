@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { StructuralValidationStrategy } from './structural-validation.strategy';
 import { SchemaValidationPipeline } from '../../pipelines/schema-validation.pipeline';

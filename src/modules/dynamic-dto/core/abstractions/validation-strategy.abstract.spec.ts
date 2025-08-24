@@ -1,5 +1,5 @@
 import { ValidationStrategy } from './validation-strategy.abstract';
-import { ValidationResult, ValidationContext } from '../interfaces/validation';
+import type { ValidationContext, ValidationResult } from '../interfaces/validation';
 
 class TestValidationStrategy extends ValidationStrategy {
   async validate(context: ValidationContext): Promise<ValidationResult> {

@@ -1,6 +1,6 @@
 import { ValidationResultMerger } from './validation-result-merger';
 import { ValidationSeverity } from '../enums/validation.enums';
-import type { ValidationResult, ValidationIssue } from '../interfaces';
+import type { ValidationIssue, ValidationResult } from '../interfaces';
 
 describe('ValidationResultMerger', () => {
   const createValidationResult = (isValid: boolean, issues: ValidationIssue[], fieldPath = '', metadata?: Record<string, unknown>): ValidationResult => ({

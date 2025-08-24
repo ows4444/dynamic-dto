@@ -25,7 +25,7 @@ afterAll(() => {
 global.testUtils = {
   delay: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
 
-  generateRandomString: (length: number = 10) => {
+  generateRandomString: (length = 10) => {
     return Math.random()
       .toString(36)
       .substring(2, length + 2);

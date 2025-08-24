@@ -1,10 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SchemaValidationPipeline, SchemaValidationPipelineOptions } from './schema-validation.pipeline';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { SchemaValidationPipelineOptions } from './schema-validation.pipeline';
+import { SchemaValidationPipeline } from './schema-validation.pipeline';
 import { SchemaOrchestratorService } from '../services/schema-orchestrator.service';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldType } from '../../core/types/field.types';
-import type { ValidationResult, ValidationContext } from '../../core/interfaces/validation';
-import { FieldSchema } from '../../core/interfaces/schema';
+import type { ValidationResult } from '../../core/interfaces/validation';
+import type { FieldSchema } from '../../core/interfaces/schema';
 
 describe('SchemaValidationPipeline', () => {
   let pipeline: SchemaValidationPipeline;

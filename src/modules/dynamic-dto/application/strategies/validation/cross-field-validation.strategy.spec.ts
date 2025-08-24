@@ -1,6 +1,5 @@
 import { CrossFieldValidationStrategy } from './cross-field-validation.strategy';
-import { ValidationContext } from '../../../core/interfaces/validation';
-import { ValidationResult } from '../../../core/interfaces/validation/validation-result.interface';
+import type { ValidationContext } from '../../../core/interfaces/validation';
 import { FieldType } from '../../../core/types/field.types';
 import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.entity';
 

@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { BooleanFieldValidator } from './boolean-field.validator';
 import { FieldType } from '../../../core/types/field.types';
 import type { BooleanFieldSchema } from '../../../core/interfaces/schema/primitive/boolean-field.schema';

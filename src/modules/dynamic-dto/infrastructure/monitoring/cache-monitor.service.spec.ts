@@ -1,7 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
-import { CacheMonitorService, CacheMonitorConfig } from './cache-monitor.service';
-import { LRUCache, CacheStats } from '../cache/lru-cache';
+import type { CacheMonitorConfig } from './cache-monitor.service';
+import { CacheMonitorService } from './cache-monitor.service';
+import type { CacheStats, LRUCache } from '../cache/lru-cache';
 
 describe('CacheMonitorService', () => {
   let service: CacheMonitorService;

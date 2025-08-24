@@ -1,7 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { NestedClassGeneratorService } from './nested-class-generator.service';
 import { CacheMonitorService } from '../monitoring/cache-monitor.service';
-import { FieldProcessorRegistry } from '../registries/field-processor.registry';
+import type { FieldProcessorRegistry } from '../registries/field-processor.registry';
 import { FieldType } from '../../core/types/field.types';
 import type { StringFieldSchema } from '../../core/interfaces/schema/primitive/string-field.schema';
 import type { NumberFieldSchema } from '../../core/interfaces/schema/primitive/number-field.schema';

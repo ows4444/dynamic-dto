@@ -1,6 +1,6 @@
 import { BaseSchemaValidator } from './base-schema-validator.abstract';
-import { ValidationResult } from '../interfaces/validation';
-import { FieldSchema } from '../interfaces/schema';
+import type { ValidationResult } from '../interfaces/validation';
+import type { FieldSchema } from '../interfaces/schema';
 
 class TestSchemaValidator extends BaseSchemaValidator {
   canValidate(schema: FieldSchema): boolean {

@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { DynamicDtoModule } from './dynamic-dto.module';
 import { ExportRegistry } from './infrastructure/registries/export.registry';
 import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';

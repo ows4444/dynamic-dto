@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ArrayFieldValidator } from './array-field.validator';
 import { FieldType } from '../../../core/types/field.types';
 import type { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';

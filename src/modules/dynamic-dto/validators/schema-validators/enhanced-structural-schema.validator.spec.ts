@@ -1,10 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { EnhancedStructuralSchemaValidator } from './enhanced-structural-schema.validator';
 import { FieldHandlerRegistry } from '../../infrastructure/registries/field-handler.registry';
 import { FieldType } from '../../core/types/field.types';
-import { ObjectFieldSchema } from '../../core/interfaces/schema/complex/object-field.schema';
-import { FieldSchema } from '../../core/interfaces/schema';
-import { ValidationContext } from '../../core/interfaces/validation';
+import type { ObjectFieldSchema } from '../../core/interfaces/schema/complex/object-field.schema';
+import type { FieldSchema } from '../../core/interfaces/schema';
+import type { ValidationContext } from '../../core/interfaces/validation';
 
 describe('EnhancedStructuralSchemaValidator', () => {
   let validator: EnhancedStructuralSchemaValidator;

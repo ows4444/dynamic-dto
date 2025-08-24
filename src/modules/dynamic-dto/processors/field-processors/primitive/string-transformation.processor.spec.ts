@@ -1,6 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { StringTransformationProcessor } from './string-transformation.processor';
-import { StringFieldSchema, CaseTransform } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import type { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import { CaseTransform } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 
 describe('StringTransformationProcessor', () => {

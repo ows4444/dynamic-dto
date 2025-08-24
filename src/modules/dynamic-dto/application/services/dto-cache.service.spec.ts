@@ -1,7 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { DtoCacheService } from './dto-cache.service';
-import { ICacheManager } from '../../core/interfaces/cache/cache-manager.interface';
+import type { ICacheManager } from '../../core/interfaces/cache/cache-manager.interface';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldType } from '../../core/types/field.types';
 import { MODULE_OPTIONS_TOKEN } from '../../dynamic-dto.module-definition';
@@ -24,8 +25,8 @@ describe('DtoCacheService', () => {
   );
 
   class MockDto {
-    name: string = '';
-    age: number = 0;
+    name = '';
+    age = 0;
   }
 
   beforeEach(async () => {

@@ -1,11 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { StringFieldProcessorComposite } from './string-field-composite.processor';
 import { StringBasicProcessor } from './string-basic.processor';
 import { StringFormatProcessor } from './string-format.processor';
 import { StringTransformationProcessor } from './string-transformation.processor';
 import { StringAutoGenerationProcessor } from './string-auto-generation.processor';
 import { StringFormatProcessorFactory } from './string-formats/string-format-processor.factory';
-import { StringFieldSchema, CaseTransform, AutoGenerationType } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import type { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import { AutoGenerationType, CaseTransform } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import { StringFormat } from '../../../core/enums/string.enums';
 

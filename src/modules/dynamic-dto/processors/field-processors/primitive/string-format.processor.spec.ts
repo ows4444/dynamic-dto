@@ -1,7 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { StringFormatProcessor } from './string-format.processor';
 import { StringFormatProcessorFactory } from './string-formats/string-format-processor.factory';
-import { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import type { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 import { StringFormat } from '../../../core/enums/string.enums';
 

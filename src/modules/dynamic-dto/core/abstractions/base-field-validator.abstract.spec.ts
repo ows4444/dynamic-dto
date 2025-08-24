@@ -2,7 +2,7 @@ import { BaseFieldValidator } from './base-field-validator.abstract';
 import { ValidationSeverity } from '../enums/validation.enums';
 import { FieldType } from '../types/field.types';
 import type { BaseFieldSchema, ConditionalValidation, FieldPermissions } from '../interfaces/schema';
-import type { ValidationContext, ValidationResult, ValidationIssue } from '../interfaces/validation';
+import type { ValidationContext, ValidationIssue, ValidationResult } from '../interfaces/validation';
 
 describe('BaseFieldValidator', () => {
   // Create concrete implementation for testing

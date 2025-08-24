@@ -1,8 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { UnionFieldValidator } from './union-field.validator';
 import { FieldType } from '../../../core/types/field.types';
-import { UnionFieldSchema, UnionValidationStrategy } from '../../../core/interfaces/schema/specialized-primitives/union-field.schema';
-import { ValidationContext } from '../../../core/interfaces/validation';
+import type { UnionFieldSchema } from '../../../core/interfaces/schema/specialized-primitives/union-field.schema';
+import { UnionValidationStrategy } from '../../../core/interfaces/schema/specialized-primitives/union-field.schema';
+import type { ValidationContext } from '../../../core/interfaces/validation';
 
 describe('UnionFieldValidator', () => {
   let validator: UnionFieldValidator;

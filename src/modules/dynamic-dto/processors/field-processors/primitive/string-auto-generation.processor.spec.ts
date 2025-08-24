@@ -1,6 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { StringAutoGenerationProcessor } from './string-auto-generation.processor';
-import { StringFieldSchema, AutoGenerationType } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import type { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import { AutoGenerationType } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
 
 describe('StringAutoGenerationProcessor', () => {
@@ -173,7 +175,7 @@ describe('StringAutoGenerationProcessor', () => {
       const transform = transformations[0]?.transform;
       const result = transform?.({ value: undefined, obj: {}, key: 'testKey' }) as string;
 
-      expect((result as string).length).toBe(10);
+      expect(result.length).toBe(10);
     });
 
     it('should generate NanoID with custom charset', () => {
@@ -191,7 +193,7 @@ describe('StringAutoGenerationProcessor', () => {
       const transform = transformations[0]?.transform;
       const result = transform?.({ value: undefined, obj: {}, key: 'testKey' }) as string;
 
-      expect((result as string).length).toBe(5);
+      expect(result.length).toBe(5);
       expect(result).toMatch(/^[ABC]+$/);
     });
   });
@@ -321,7 +323,7 @@ describe('StringAutoGenerationProcessor', () => {
       const result = transform?.({ value: undefined, obj: {}, key: 'testKey' }) as string;
 
       expect(typeof result).toBe('string');
-      expect((result as string).length).toBe(16);
+      expect(result.length).toBe(16);
       expect(result).toMatch(/^[A-Za-z0-9]+$/);
     });
 
@@ -339,7 +341,7 @@ describe('StringAutoGenerationProcessor', () => {
       const transform = transformations[0]?.transform;
       const result = transform?.({ value: undefined, obj: {}, key: 'testKey' }) as string;
 
-      expect((result as string).length).toBe(8);
+      expect(result.length).toBe(8);
     });
   });
 
@@ -356,7 +358,7 @@ describe('StringAutoGenerationProcessor', () => {
       const result = transform?.({ value: undefined, obj: {}, key: 'testKey' }) as string;
 
       expect(typeof result).toBe('string');
-      expect((result as string).length).toBe(8);
+      expect(result.length).toBe(8);
       expect(result).toMatch(/^[A-Za-z0-9]+$/);
     });
 
@@ -375,7 +377,7 @@ describe('StringAutoGenerationProcessor', () => {
       const transform = transformations[0]?.transform;
       const result = transform?.({ value: undefined, obj: {}, key: 'testKey' }) as string;
 
-      expect((result as string).length).toBe(5);
+      expect(result.length).toBe(5);
       expect(result).toMatch(/^[ABCDE]+$/);
     });
   });

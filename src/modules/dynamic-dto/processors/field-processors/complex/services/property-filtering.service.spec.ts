@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { PropertyFilteringService } from './property-filtering.service';
 import { FieldType } from '../../../../core/types/field.types';
 import type { ObjectFieldSchema } from '../../../../core/interfaces/schema/complex/object-field.schema';

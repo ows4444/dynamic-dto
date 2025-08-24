@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { EnumFieldValidator } from './enum-field.validator';
 import { FieldType } from '../../../core/types/field.types';
 import type { EnumFieldSchema } from '../../../core/interfaces/schema/specialized-primitives/enum-field.schema';
@@ -372,8 +373,8 @@ describe('EnumFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
       expect(result.issues).toBeDefined();
-      expect(result.issues!.length).toBeGreaterThan(0);
-      expect(result.issues![0]?.code).toBe('ENUM_INVALID_VALUE');
+      expect(result.issues.length).toBeGreaterThan(0);
+      expect(result.issues[0]?.code).toBe('ENUM_INVALID_VALUE');
       expect(result.issues[0]?.message).toContain('yellow');
       expect(result.issues[0]?.severity).toBe('error');
     });
@@ -415,10 +416,10 @@ describe('EnumFieldValidator', () => {
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(1);
       expect(result.issues).toBeDefined();
-      expect(result.issues!.length).toBeGreaterThan(0);
-      expect(result.issues![0]?.code).toBe('ENUM_DEPRECATED_VALUE');
-      expect(result.issues![0]?.message).toContain('red');
-      expect(result.issues![0]?.severity).toBe('warning');
+      expect(result.issues.length).toBeGreaterThan(0);
+      expect(result.issues[0]?.code).toBe('ENUM_DEPRECATED_VALUE');
+      expect(result.issues[0]?.message).toContain('red');
+      expect(result.issues[0]?.severity).toBe('warning');
     });
 
     it('should validate single value for multiple enum', () => {
@@ -456,8 +457,8 @@ describe('EnumFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
       expect(result.issues).toBeDefined();
-      expect(result.issues!.length).toBeGreaterThan(0);
-      expect(result.issues![0]?.code).toBe('ENUM_INVALID_VALUE');
+      expect(result.issues.length).toBeGreaterThan(0);
+      expect(result.issues[0]?.code).toBe('ENUM_INVALID_VALUE');
       // Note: The validation issue structure may not include 'path' property
     });
 
@@ -472,9 +473,9 @@ describe('EnumFieldValidator', () => {
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(1);
       expect(result.issues).toBeDefined();
-      expect(result.issues!.length).toBeGreaterThan(0);
-      expect(result.issues![0]?.code).toBe('ENUM_DUPLICATE_SELECTED');
-      expect(result.issues![0]?.severity).toBe('warning');
+      expect(result.issues.length).toBeGreaterThan(0);
+      expect(result.issues[0]?.code).toBe('ENUM_DUPLICATE_SELECTED');
+      expect(result.issues[0]?.severity).toBe('warning');
     });
 
     it('should validate all values in array and report all errors', () => {
@@ -488,7 +489,7 @@ describe('EnumFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(2);
       expect(result.issues).toBeDefined();
-      expect(result.issues!.length).toBe(2);
+      expect(result.issues.length).toBe(2);
       // Note: The validation issue structure may not include 'path' property
     });
 
@@ -505,8 +506,8 @@ describe('EnumFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
       expect(result.issues).toBeDefined();
-      expect(result.issues!.length).toBeGreaterThan(0);
-      expect(result.issues![0]?.code).toBe('ENUM_INVALID_VALUE');
+      expect(result.issues.length).toBeGreaterThan(0);
+      expect(result.issues[0]?.code).toBe('ENUM_INVALID_VALUE');
     });
   });
 
@@ -590,8 +591,8 @@ describe('EnumFieldValidator', () => {
       expect(valueResult.isValid).toBe(true);
       expect(valueResult.issues).toHaveLength(1);
       expect(valueResult.issues).toBeDefined();
-      expect(valueResult.issues!.length).toBeGreaterThan(0);
-      expect(valueResult.issues![0]?.code).toBe('ENUM_DEPRECATED_VALUE');
+      expect(valueResult.issues.length).toBeGreaterThan(0);
+      expect(valueResult.issues[0]?.code).toBe('ENUM_DEPRECATED_VALUE');
     });
 
     it('should handle edge cases with empty and undefined values', () => {

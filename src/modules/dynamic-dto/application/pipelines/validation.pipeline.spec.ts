@@ -1,12 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { ValidationPipeline } from './validation.pipeline';
 import { ValidationStrategyFactory } from '../../infrastructure/factories/validation-strategy.factory';
-import { ValidationChain } from '../../core/patterns/validation-chain';
+import type { ValidationChain } from '../../core/patterns/validation-chain';
 import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import { FieldType } from '../../core/types/field.types';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import type { ValidationResult, ValidationContext } from '../../core/interfaces/validation';
+import type { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
 
 describe('ValidationPipeline', () => {
   let pipeline: ValidationPipeline;
@@ -186,7 +187,7 @@ describe('ValidationPipeline', () => {
       expect(result.errors).toHaveLength(1);
       expect(result.issues).toBeDefined();
       expect(result.errors).toBeDefined();
-      expect(result.issues![0]).toEqual(result.errors![0]);
+      expect(result.issues[0]).toEqual(result.errors![0]);
     });
   });
 

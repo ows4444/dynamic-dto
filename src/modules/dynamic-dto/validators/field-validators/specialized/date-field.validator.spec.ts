@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { DateFieldValidator } from './date-field.validator';
 import { FieldType } from '../../../core/types/field.types';
 import type { DateFieldSchema } from '../../../core/interfaces/schema/specialized-primitives/date-field.schema';

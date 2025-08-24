@@ -1,5 +1,5 @@
 import { SchemaValidationResultEntity } from './schema-validation-result.entity';
-import type { ValidationResult, ValidationIssue } from '../../core/interfaces/validation';
+import type { ValidationIssue, ValidationResult } from '../../core/interfaces/validation';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
 
 describe('SchemaValidationResultEntity', () => {
@@ -78,7 +78,7 @@ describe('SchemaValidationResultEntity', () => {
       const resultWithoutWarnings: ValidationResult = {
         isValid: true,
         issues: [],
-        warnings: undefined,
+        warnings: undefined as unknown as ValidationIssue[],
       };
 
       const entity = new SchemaValidationResultEntity('schema-123', resultWithoutWarnings, validatedAt, 'structural-validator');
@@ -116,7 +116,7 @@ describe('SchemaValidationResultEntity', () => {
       const resultWithoutErrors: ValidationResult = {
         isValid: true,
         issues: [],
-        errors: undefined,
+        errors: undefined as unknown as ValidationIssue[],
       };
 
       const entity = new SchemaValidationResultEntity('schema-123', resultWithoutErrors, validatedAt, 'structural-validator');
@@ -154,7 +154,7 @@ describe('SchemaValidationResultEntity', () => {
       const resultWithoutWarnings: ValidationResult = {
         isValid: true,
         issues: [],
-        warnings: undefined,
+        warnings: undefined as unknown as ValidationIssue[],
       };
 
       const entity = new SchemaValidationResultEntity('schema-123', resultWithoutWarnings, validatedAt, 'structural-validator');
@@ -188,7 +188,7 @@ describe('SchemaValidationResultEntity', () => {
         warnings: mockValidValidationResult.warnings,
         errorCount: 0,
         warningCount: 0,
-        validatedAt: validatedAt,
+        validatedAt,
         validatorType: 'structural-validator',
         userId: undefined,
       });
@@ -206,7 +206,7 @@ describe('SchemaValidationResultEntity', () => {
         warnings: mockInvalidValidationResult.warnings,
         errorCount: 1,
         warningCount: 1,
-        validatedAt: validatedAt,
+        validatedAt,
         validatorType: 'structural-validator',
         userId: 'user-456',
       });

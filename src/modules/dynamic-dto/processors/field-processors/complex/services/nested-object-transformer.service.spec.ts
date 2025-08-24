@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { NestedObjectTransformerService } from './nested-object-transformer.service';
 import { NestedClassGeneratorService } from '../../../../infrastructure/services/nested-class-generator.service';
 import { FieldType } from '../../../../core/types/field.types';

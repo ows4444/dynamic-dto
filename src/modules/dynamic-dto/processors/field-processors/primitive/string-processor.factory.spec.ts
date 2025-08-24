@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { StringProcessorFactory } from './string-processor.factory';
 import { StringBasicProcessor } from './string-basic.processor';
 import { StringFormatProcessor } from './string-format.processor';
@@ -11,13 +12,7 @@ describe('StringProcessorFactory', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      providers: [
-        StringProcessorFactory,
-        StringBasicProcessor,
-        StringFormatProcessor,
-        StringTransformationProcessor,
-        StringAutoGenerationProcessor,
-      ],
+      providers: [StringProcessorFactory, StringBasicProcessor, StringFormatProcessor, StringTransformationProcessor, StringAutoGenerationProcessor],
     }).compile();
 
     factory = module.get<StringProcessorFactory>(StringProcessorFactory);
@@ -39,26 +34,26 @@ describe('StringProcessorFactory', () => {
 
     it('should include StringBasicProcessor', () => {
       const processors = factory.createStringProcessors();
-      
-      expect(processors.some(p => p instanceof StringBasicProcessor)).toBe(true);
+
+      expect(processors.some((p) => p instanceof StringBasicProcessor)).toBe(true);
     });
 
     it('should include StringFormatProcessor', () => {
       const processors = factory.createStringProcessors();
-      
-      expect(processors.some(p => p instanceof StringFormatProcessor)).toBe(true);
+
+      expect(processors.some((p) => p instanceof StringFormatProcessor)).toBe(true);
     });
 
     it('should include StringTransformationProcessor', () => {
       const processors = factory.createStringProcessors();
-      
-      expect(processors.some(p => p instanceof StringTransformationProcessor)).toBe(true);
+
+      expect(processors.some((p) => p instanceof StringTransformationProcessor)).toBe(true);
     });
 
     it('should include StringAutoGenerationProcessor', () => {
       const processors = factory.createStringProcessors();
-      
-      expect(processors.some(p => p instanceof StringAutoGenerationProcessor)).toBe(true);
+
+      expect(processors.some((p) => p instanceof StringAutoGenerationProcessor)).toBe(true);
     });
   });
 
@@ -78,7 +73,7 @@ describe('StringProcessorFactory', () => {
   describe('processor ordering', () => {
     it('should return processors in priority order', () => {
       const processors = factory.createStringProcessors();
-      
+
       // Processors should be ordered by priority
       for (let i = 0; i < processors.length - 1; i++) {
         const currentPriority = processors[i].priority || 0;
@@ -91,8 +86,8 @@ describe('StringProcessorFactory', () => {
   describe('processor configuration', () => {
     it('should configure processors with correct types', () => {
       const processors = factory.createStringProcessors();
-      
-      processors.forEach(processor => {
+
+      processors.forEach((processor) => {
         expect(processor).toBeDefined();
         expect(typeof processor.name).toBe('string');
         expect(typeof processor.priority).toBe('number');
