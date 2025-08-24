@@ -426,15 +426,15 @@ describe('ArrayFieldProcessor', () => {
       let value = 'single-object';
 
       // 1. Array coercion
-      value = transformations[0]?.transform?.({ value, obj: {}, key: 'test' });
+      value = transformations[0]?.transform?.({ value, obj: {}, key: 'test' }) as string;
       expect(value).toEqual(['single-object']);
 
       // 2. Array processing (uniqueItems)
-      value = transformations[1]?.transform?.({ value, obj: {}, key: 'test' });
+      value = transformations[1]?.transform?.({ value, obj: {}, key: 'test' }) as string;
       expect(value).toEqual(['single-object']);
 
       // 3. Item validation (filter non-objects)
-      value = transformations[2]?.transform?.({ value, obj: {}, key: 'test' });
+      value = transformations[2]?.transform?.({ value, obj: {}, key: 'test' }) as string;
       expect(value).toEqual([]); // String filtered out
     });
 
@@ -446,11 +446,12 @@ describe('ArrayFieldProcessor', () => {
 
       const transformations = processor.getTypeSpecificTransformations(complexArraySchema);
 
+      const johnObject = { name: 'John' };
       const inputValue = [
-        { name: 'John' },
+        johnObject,
         'invalid-string',
         { name: 'Jane' },
-        { name: 'John' }, // Duplicate
+        johnObject, // Actual duplicate (same reference)
         42,
         null,
       ];
@@ -463,16 +464,16 @@ describe('ArrayFieldProcessor', () => {
       expect(Array.isArray(value)).toBe(true);
 
       // 2. Array processing (remove duplicates)
-      if (transformations[1]?.condition?.({} as any, { value })) {
+      if (transformations[1]?.condition?.({} as any, { value, obj: {}, key: 'test' })) {
         value = transformations[1]?.transform?.({ value, obj: {}, key: 'test' });
         expect(value).toHaveLength(5); // One duplicate removed
       }
 
       // 3. Item validation (filter non-objects)
-      if (transformations[2]?.condition?.({} as any, { value })) {
+      if (transformations[2]?.condition?.({} as any, { value, obj: {}, key: 'test' })) {
         value = transformations[2]?.transform?.({ value, obj: {}, key: 'test' });
         expect(value).toHaveLength(2); // Only objects remain
-        expect(value).toEqual([{ name: 'John' }, { name: 'Jane' }]);
+        expect(value).toEqual([johnObject, { name: 'Jane' }]);
       }
     });
 
@@ -547,14 +548,14 @@ describe('ArrayFieldProcessor', () => {
     it('should handle transformation conditions properly', () => {
       const transformations = processor.getTypeSpecificTransformations(objectArraySchema);
 
-      transformations.forEach((transformation, index) => {
+      transformations.forEach((transformation) => {
         if (transformation.condition) {
           // Test that conditions work correctly
           expect(typeof transformation.condition).toBe('function');
           
           if (transformation.name === 'array_processing' || transformation.name === 'item_validation') {
-            expect(transformation.condition({} as any, { value: [] })).toBe(true);
-            expect(transformation.condition({} as any, { value: 'not array' })).toBe(false);
+            expect(transformation.condition({} as any, { value: [], obj: {}, key: 'test' })).toBe(true);
+            expect(transformation.condition({} as any, { value: 'not array', obj: {}, key: 'test' })).toBe(false);
           }
         } else if (transformation.name === 'array_coercion') {
           // Array coercion has no condition (always applies)

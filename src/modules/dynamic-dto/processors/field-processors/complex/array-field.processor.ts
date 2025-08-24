@@ -106,8 +106,8 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
         transform: ({ value }) => {
           if (!Array.isArray(value)) return value;
 
-          // Basic validation that items are objects
-          return value.filter((item) => item && typeof item === 'object') as unknown[];
+          // Basic validation that items are objects (exclude arrays and null)
+          return value.filter((item) => item && typeof item === 'object' && !Array.isArray(item)) as unknown[];
         },
         condition: (_, { value }) => Array.isArray(value),
       });

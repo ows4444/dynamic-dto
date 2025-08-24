@@ -9,7 +9,7 @@ import type { DynamicDtoModuleOptions } from '../interfaces/module-options.inter
 
 @Module({})
 export class CacheModule {
-  static forRoot(options: DynamicDtoModuleOptions = {}) {
+  static forRoot(_options: DynamicDtoModuleOptions = {}) {
     return {
       module: CacheModule,
       providers: [
