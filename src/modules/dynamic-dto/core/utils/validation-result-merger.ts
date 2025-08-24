@@ -120,11 +120,21 @@ export class ValidationResultMerger {
   private static createMergedResult(uniqueIssues: ValidationIssue[], aggregatedData: ReturnType<typeof ValidationResultMerger.aggregateResults>): ValidationResult {
     const { mergedMetadata, isValid, fieldPath } = aggregatedData;
 
+    const errorCount = uniqueIssues.filter((issue) => issue.severity === 'error').length;
+    const warningCount = uniqueIssues.filter((issue) => issue.severity === 'warning').length;
+    const infoCount = uniqueIssues.filter((issue) => issue.severity === 'info').length;
+
     return {
       isValid,
       issues: uniqueIssues.map((issue) => this.cleanObject(issue)),
       ...(Object.keys(mergedMetadata).length > 0 && { metadata: mergedMetadata }),
       fieldPath: fieldPath ?? '',
+      summary: {
+        totalIssues: uniqueIssues.length,
+        errorCount,
+        warningCount,
+        infoCount,
+      },
 
       get errors() {
         return uniqueIssues.filter((issue) => issue.severity === 'error');
@@ -142,6 +152,12 @@ export class ValidationResultMerger {
     return {
       isValid: true,
       issues: [],
+      summary: {
+        totalIssues: 0,
+        errorCount: 0,
+        warningCount: 0,
+        infoCount: 0,
+      },
       get errors() {
         return [];
       },

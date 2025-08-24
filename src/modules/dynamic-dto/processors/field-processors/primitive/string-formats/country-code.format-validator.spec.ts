@@ -49,9 +49,18 @@ describe('CountryCodeFormatValidator', () => {
         'UNITED', // full country name
       ];
 
-      // Note: 'us', 'gb' will pass because transform() converts to uppercase
       invalidCodes.forEach((code) => {
         expect(validator.validate(code)).toBe(false);
+      });
+    });
+
+    it('should accept lowercase codes due to transform', () => {
+      // These should pass because transform() converts to uppercase
+      const lowercaseCodes = ['us', 'gb', 'de', 'fr'];
+      
+      lowercaseCodes.forEach((code) => {
+        const transformed = validator.transform(code);
+        expect(validator.validate(transformed)).toBe(true);
       });
     });
 

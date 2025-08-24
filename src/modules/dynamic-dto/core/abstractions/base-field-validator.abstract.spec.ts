@@ -152,8 +152,8 @@ describe('BaseFieldValidator', () => {
 
       expect(result.isValid).toBe(false); // Performance error makes it invalid
       expect(result.issues.length).toBeGreaterThan(0);
-      expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(result.errors?.length).toBeGreaterThan(0);
+      expect(result.warnings?.length).toBeGreaterThan(0);
     });
   });
 
@@ -241,7 +241,7 @@ describe('BaseFieldValidator', () => {
       expect(result.isValid).toBe(true); // Deprecation is a warning
       expect(result.issues).toHaveLength(1);
       expect(result.warnings).toHaveLength(1);
-      expect(result.warnings[0]!.code).toBe('FIELD_DEPRECATED');
+      expect(result.warnings![0]!.code).toBe('FIELD_DEPRECATED');
     });
 
     it('should validate permissions', () => {

@@ -94,7 +94,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_INVALID_TRUE_VALUES');
-      expect(result.errors?.[0]?.message).toBe('trueValues must be an array');
+      expect(result.errors?.[0]?.message).toBe("Field 'test.field' trueValues must be an array");
     });
 
     it('should fail validation when falseValues is not an array', () => {
@@ -108,7 +108,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_INVALID_FALSE_VALUES');
-      expect(result.errors?.[0]?.message).toBe('falseValues must be an array');
+      expect(result.errors?.[0]?.message).toBe("Field 'test.field' falseValues must be an array");
     });
 
     it('should fail validation when both trueValues and falseValues are not arrays', () => {
@@ -174,7 +174,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_CONFLICTING_VALUES');
-      expect(result.errors?.[0]?.message).toBe('Values appear in both trueValues and falseValues: maybe');
+      expect(result.errors?.[0]?.message).toBe("Field 'test.field' Values appear in both trueValues and falseValues: maybe (received: [1 items])");
       expect(result.errors?.[0]?.metadata).toEqual(['maybe']);
     });
 
@@ -190,7 +190,7 @@ describe('BooleanFieldValidator', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
       expect(result.errors?.[0]?.code).toBe('BOOLEAN_CONFLICTING_VALUES');
-      expect(result.errors?.[0]?.message).toBe('Values appear in both trueValues and falseValues: maybe, unknown');
+      expect(result.errors?.[0]?.message).toBe("Field 'test.field' Values appear in both trueValues and falseValues: maybe, unknown (received: [2 items])");
       expect(result.errors?.[0]?.metadata).toEqual(['maybe', 'unknown']);
     });
 

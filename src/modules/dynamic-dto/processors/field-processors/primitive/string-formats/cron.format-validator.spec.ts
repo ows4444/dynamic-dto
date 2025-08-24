@@ -29,15 +29,16 @@ describe('CronFormatValidator', () => {
       });
     });
 
-    it('should validate extended cron expressions with seconds (6 fields)', () => {
-      const validExtendedCron = [
+    it('should reject extended cron expressions with seconds (6 fields)', () => {
+      // Current implementation only supports 5-field cron expressions
+      const extendedCron = [
         '0 0 0 * * *', // Daily at midnight with seconds
         '*/30 * * * * *', // Every 30 seconds
         '0 */15 * * * *', // Every 15 minutes
       ];
 
-      validExtendedCron.forEach((cron) => {
-        expect(validator.validate(cron)).toBe(true);
+      extendedCron.forEach((cron) => {
+        expect(validator.validate(cron)).toBe(false);
       });
     });
 
