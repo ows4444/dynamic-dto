@@ -10,8 +10,8 @@ export class SemverFormatValidator extends BaseStringFormatValidator {
     if (typeof value !== 'string') return false;
 
     // Parse the semver string manually for better control
-    const semverMatch = value.match(/^(\d+)\.(\d+)\.(\d+)(?:-([^+]+))?(?:\+(.+))?$/);
-    
+    const semverMatch = /^(\d+)\.(\d+)\.(\d+)(?:-([^+]+))?(?:\+(.+))?$/.exec(value);
+
     if (!semverMatch) {
       return false;
     }
@@ -19,26 +19,23 @@ export class SemverFormatValidator extends BaseStringFormatValidator {
     const [, major, minor, patch, prerelease, buildMetadata] = semverMatch;
 
     // Validate major, minor, patch are valid numbers (no leading zeros unless '0')
-    if (!major || !minor || !patch ||
-        !this.isValidVersionNumber(major) || 
-        !this.isValidVersionNumber(minor) || 
-        !this.isValidVersionNumber(patch)) {
+    if (!major || !minor || !patch || !this.isValidVersionNumber(major) || !this.isValidVersionNumber(minor) || !this.isValidVersionNumber(patch)) {
       return false;
     }
 
     // Validate prerelease identifiers if present
     if (prerelease) {
       const prereleaseIdentifiers = prerelease.split('.');
-      if (prereleaseIdentifiers.length === 0 || prereleaseIdentifiers.some(id => !id)) {
+      if (prereleaseIdentifiers.length === 0 || prereleaseIdentifiers.some((id) => !id)) {
         return false; // Empty identifiers not allowed
       }
-      
+
       for (const identifier of prereleaseIdentifiers) {
         // Must be alphanumeric or hyphen, and numeric identifiers cannot have leading zeros
         if (!/^[0-9a-zA-Z-]+$/.test(identifier)) {
           return false;
         }
-        
+
         // If it's numeric, check for leading zeros
         if (/^\d+$/.test(identifier) && identifier !== '0' && identifier.startsWith('0')) {
           return false;
@@ -49,8 +46,7 @@ export class SemverFormatValidator extends BaseStringFormatValidator {
     // Build metadata can contain any alphanumeric characters, hyphens, dots, and plus signs
     // Being more permissive to handle complex edge cases
     if (buildMetadata) {
-      if (!buildMetadata || buildMetadata.trim() === '' || 
-          buildMetadata === '+' || buildMetadata === '-' || buildMetadata === '+-') {
+      if (!buildMetadata || buildMetadata.trim() === '' || buildMetadata === '+' || buildMetadata === '-' || buildMetadata === '+-') {
         return false;
       }
       // Allow alphanumeric characters, hyphens, dots, and plus signs

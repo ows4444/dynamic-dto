@@ -498,5 +498,4 @@ describe('ArrayFieldValidator', () => {
       expect(result.isValid).toBe(true);
     });
   });
-
 });
