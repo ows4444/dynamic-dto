@@ -19,6 +19,7 @@ export class CoordinateFormatValidator extends BaseStringFormatValidator {
   }
 
   getDefaultMessage(args: ValidationArguments): string {
-    return `${args.property} must be valid coordinates in "latitude,longitude" format`;
+    const property = args?.property || 'field';
+    return `${property} must be valid coordinates in "latitude,longitude" format`;
   }
 }

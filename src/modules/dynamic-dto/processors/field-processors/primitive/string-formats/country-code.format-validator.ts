@@ -12,7 +12,8 @@ export class CountryCodeFormatValidator extends BaseStringFormatValidator {
   }
 
   getDefaultMessage(args: ValidationArguments): string {
-    return `${args.property} must be a valid ISO 3166-1 alpha-2 country code`;
+    const property = args?.property || 'field';
+    return `${property} must be a valid ISO 3166-1 alpha-2 country code`;
   }
 
   override transform(value: string): string {

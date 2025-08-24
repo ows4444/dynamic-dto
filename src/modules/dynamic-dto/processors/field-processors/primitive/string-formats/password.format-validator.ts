@@ -12,6 +12,7 @@ export class PasswordFormatValidator extends BaseStringFormatValidator {
   }
 
   getDefaultMessage(args: ValidationArguments): string {
-    return `${args.property} must be a strong password (min 8 chars, 1 upper, 1 lower, 1 number, 1 special character)`;
+    const property = args?.property || 'field';
+    return `${property} must be a strong password (min 8 chars, 1 upper, 1 lower, 1 number, 1 special character)`;
   }
 }

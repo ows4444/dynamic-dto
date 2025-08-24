@@ -12,6 +12,7 @@ export class SemverFormatValidator extends BaseStringFormatValidator {
   }
 
   getDefaultMessage(args: ValidationArguments): string {
-    return `${args.property} must be a valid semantic version`;
+    const property = args?.property || 'field';
+    return `${property} must be a valid semantic version`;
   }
 }

@@ -14,7 +14,8 @@ export class PhoneFormatValidator extends BaseStringFormatValidator {
   }
 
   getDefaultMessage(args: ValidationArguments): string {
-    return `${args.property} must be a valid phone number`;
+    const property = args?.property || 'field';
+    return `${property} must be a valid phone number`;
   }
 
   override transform(value: string): string {

@@ -12,7 +12,8 @@ export class UsernameFormatValidator extends BaseStringFormatValidator {
   }
 
   getDefaultMessage(args: ValidationArguments): string {
-    return `${args.property} must be a valid username (3-30 characters, alphanumeric, underscore, hyphen)`;
+    const property = args?.property || 'field';
+    return `${property} must be a valid username (3-30 characters, alphanumeric, underscore, hyphen)`;
   }
 
   override transform(value: string): string {

@@ -14,7 +14,7 @@ export interface INestedClassGenerator {
 @Injectable()
 export class NestedClassGeneratorService implements INestedClassGenerator {
   private readonly logger = new Logger(NestedClassGeneratorService.name);
-  private readonly generatedClasses = new LRUCache<string, classConstructor<unknown>>(300); // Max 300 nested classes
+  private readonly generatedClasses = new LRUCache<string, classConstructor<any>>(300); // Max 300 nested classes
   private classCounter = 0;
 
   constructor(
@@ -39,7 +39,7 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
 
     const cachedClass = this.generatedClasses.get(cacheKey);
     if (cachedClass) {
-      return cachedClass;
+      return cachedClass as classConstructor<{ [K in keyof T]: unknown }>;
     }
 
     const className = this.generateUniqueClassName();
@@ -77,7 +77,7 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
       });
     }
 
-    return DynamicClass;
+    return DynamicClass as classConstructor<{ [K in keyof T]: unknown }>;
   }
 
   private createBaseClass<T extends Record<string, FieldSchema>>(className: string, properties: T): classConstructor<{ [K in keyof T]: unknown }> {
