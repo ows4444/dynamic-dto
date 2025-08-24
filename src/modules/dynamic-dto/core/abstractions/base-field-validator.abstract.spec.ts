@@ -92,8 +92,8 @@ describe('BaseFieldValidator', () => {
   let validator: TestFieldValidator;
   const mockContext: ValidationContext = {
     fieldPath: 'test.field',
+    depth: 0,
     data: 'test-value',
-    rootData: { test: { field: 'test-value' } },
   };
 
   const basicSchema: BaseFieldSchema = {
@@ -128,7 +128,7 @@ describe('BaseFieldValidator', () => {
     it('should call all required validation methods', () => {
       const structureSpy = jest.spyOn(validator, 'validateStructure');
       const constraintsSpy = jest.spyOn(validator, 'validateConstraints');
-      const commonSpy = jest.spyOn(validator, 'validateCommonProperties');
+      const commonSpy = jest.spyOn(validator as any, 'validateCommonProperties');
 
       validator.validate(basicSchema, mockContext);
 
@@ -235,7 +235,14 @@ describe('BaseFieldValidator', () => {
     });
 
     it('should validate deprecated fields', () => {
-      const deprecatedSchema = { ...basicSchema, deprecated: true };
+      const deprecatedSchema = { 
+        ...basicSchema, 
+        deprecated: { 
+          since: '1.0.0',
+          reason: 'Field is no longer needed',
+          replacedBy: 'newField'
+        } 
+      };
       const result = validator['validateCommonProperties'](deprecatedSchema, mockContext);
 
       expect(result.isValid).toBe(true); // Deprecation is a warning
@@ -263,8 +270,15 @@ describe('BaseFieldValidator', () => {
         ...basicSchema,
         conditionalValidation: [
           {
-            condition: { field: 'otherField', value: 'someValue' },
-            validationRules: [{ required: true }],
+            condition: { 
+              field: 'otherField', 
+              operator: 'eq',
+              value: 'someValue' 
+            },
+            validationRules: [{ 
+              type: 'required',
+              params: { required: true }
+            }],
           },
         ] as ConditionalValidation[],
       };
@@ -283,7 +297,13 @@ describe('BaseFieldValidator', () => {
     });
 
     it('should return warning for deprecated field', () => {
-      const deprecatedSchema = { ...basicSchema, deprecated: true };
+      const deprecatedSchema = { 
+        ...basicSchema, 
+        deprecated: { 
+          since: '1.0.0',
+          reason: 'Field is no longer needed'
+        }
+      };
       const issues = validator['validateDeprecation'](deprecatedSchema, mockContext);
 
       expect(issues).toHaveLength(1);

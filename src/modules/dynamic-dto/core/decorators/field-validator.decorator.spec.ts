@@ -1,4 +1,4 @@
-import { FieldValidator } from './field-validator.decorator';
+import { FieldValidator, FIELD_VALIDATOR_METADATA_KEY } from './field-validator.decorator';
 import { FieldType } from '../types/field.types';
 
 describe('FieldValidator Decorator', () => {
@@ -10,7 +10,7 @@ describe('FieldValidator Decorator', () => {
       })
       class TestStringValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', TestStringValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, TestStringValidator);
 
       expect(metadata).toBeDefined();
       expect(metadata.type).toBe(FieldType.string);
@@ -24,7 +24,7 @@ describe('FieldValidator Decorator', () => {
       })
       class TestNumberValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', TestNumberValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, TestNumberValidator);
 
       expect(metadata).toBeDefined();
       expect(metadata.type).toBe(FieldType.number);
@@ -46,8 +46,8 @@ describe('FieldValidator Decorator', () => {
       })
       class NumberValidator {}
 
-      const stringMetadata = Reflect.getMetadata('field-validator', StringValidator);
-      const numberMetadata = Reflect.getMetadata('field-validator', NumberValidator);
+      const stringMetadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, StringValidator);
+      const numberMetadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, NumberValidator);
 
       expect(stringMetadata).not.toBe(numberMetadata);
       expect(stringMetadata.type).toBe(FieldType.string);
@@ -85,7 +85,7 @@ describe('FieldValidator Decorator', () => {
       })
       class MinimalValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', MinimalValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, MinimalValidator);
       expect(metadata.type).toBe(FieldType.boolean);
       expect(metadata.priority).toBe(1);
     });
@@ -99,7 +99,7 @@ describe('FieldValidator Decorator', () => {
       })
       class StringValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', StringValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, StringValidator);
       expect(metadata.type).toBe(FieldType.string);
     });
 
@@ -110,7 +110,7 @@ describe('FieldValidator Decorator', () => {
       })
       class ObjectValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', ObjectValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, ObjectValidator);
       expect(metadata.type).toBe(FieldType.object);
     });
 
@@ -121,7 +121,7 @@ describe('FieldValidator Decorator', () => {
       })
       class ArrayValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', ArrayValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, ArrayValidator);
       expect(metadata.type).toBe(FieldType.array);
     });
   });
@@ -140,8 +140,8 @@ describe('FieldValidator Decorator', () => {
       })
       class NumberValidator {}
 
-      const stringMetadata = Reflect.getMetadata('field-validator', StringValidator);
-      const numberMetadata = Reflect.getMetadata('field-validator', NumberValidator);
+      const stringMetadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, StringValidator);
+      const numberMetadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, NumberValidator);
 
       expect(stringMetadata.priority).toBe(100);
       expect(numberMetadata.priority).toBe(200);
@@ -154,7 +154,7 @@ describe('FieldValidator Decorator', () => {
       })
       class LowPriorityValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', LowPriorityValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, LowPriorityValidator);
       expect(metadata.priority).toBe(1);
     });
 
@@ -165,7 +165,7 @@ describe('FieldValidator Decorator', () => {
       })
       class HighPriorityValidator {}
 
-      const metadata = Reflect.getMetadata('field-validator', HighPriorityValidator);
+      const metadata = Reflect.getMetadata(FIELD_VALIDATOR_METADATA_KEY, HighPriorityValidator);
       expect(metadata.priority).toBe(1000);
     });
   });

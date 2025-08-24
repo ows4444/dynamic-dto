@@ -44,8 +44,8 @@ describe('FieldProcessor Decorator', () => {
 
   describe('metadata storage', () => {
     it('should store metadata under correct key', () => {
-      const stringMetadata = Reflect.getMetadata('field-processor', TestStringProcessor);
-      const numberMetadata = Reflect.getMetadata('field-processor', TestNumberProcessor);
+      const stringMetadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, TestStringProcessor);
+      const numberMetadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, TestNumberProcessor);
 
       expect(stringMetadata).not.toBe(numberMetadata);
       expect(stringMetadata.type).toBe(FieldType.string);
@@ -128,7 +128,7 @@ describe('FieldProcessor Decorator', () => {
 
   describe('categories', () => {
     it('should handle primitive category', () => {
-      const stringMetadata = Reflect.getMetadata('field-processor', TestStringProcessor);
+      const stringMetadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, TestStringProcessor);
       expect(stringMetadata.category).toBe('primitive');
     });
 
@@ -159,8 +159,8 @@ describe('FieldProcessor Decorator', () => {
 
   describe('priority values', () => {
     it('should store different priority values', () => {
-      const stringMetadata = Reflect.getMetadata('field-processor', TestStringProcessor);
-      const numberMetadata = Reflect.getMetadata('field-processor', TestNumberProcessor);
+      const stringMetadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, TestStringProcessor);
+      const numberMetadata = Reflect.getMetadata(FIELD_PROCESSOR_METADATA_KEY, TestNumberProcessor);
 
       expect(stringMetadata.priority).toBe(100);
       expect(numberMetadata.priority).toBe(200);

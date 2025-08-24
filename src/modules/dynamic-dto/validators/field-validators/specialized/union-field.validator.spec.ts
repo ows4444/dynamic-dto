@@ -56,9 +56,9 @@ describe('UnionFieldValidator', () => {
     });
   });
 
-  describe('validateFieldSchema', () => {
+  describe('validateStructure', () => {
     it('should pass validation for basic union schema', () => {
-      const result = validator.validateFieldSchema(basicUnionSchema);
+      const result = validator.validateStructure(basicUnionSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -71,7 +71,7 @@ describe('UnionFieldValidator', () => {
         unionTypes: [],
       };
 
-      const result = validator.validateFieldSchema(noTypesSchema);
+      const result = validator.validateStructure(noTypesSchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
@@ -86,7 +86,7 @@ describe('UnionFieldValidator', () => {
         unionTypes: undefined as any,
       };
 
-      const result = validator.validateFieldSchema(undefinedTypesSchema);
+      const result = validator.validateStructure(undefinedTypesSchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
@@ -100,7 +100,7 @@ describe('UnionFieldValidator', () => {
         unionTypes: [{ type: FieldType.string, expose: true }],
       };
 
-      const result = validator.validateFieldSchema(singleTypeSchema);
+      const result = validator.validateStructure(singleTypeSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(1);
@@ -120,7 +120,7 @@ describe('UnionFieldValidator', () => {
         ],
       };
 
-      const result = validator.validateFieldSchema(invalidTypeSchema);
+      const result = validator.validateStructure(invalidTypeSchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues.length).toBeGreaterThanOrEqual(2);
@@ -144,7 +144,7 @@ describe('UnionFieldValidator', () => {
         },
       };
 
-      const result = validator.validateFieldSchema(discriminatedSchema);
+      const result = validator.validateStructure(discriminatedSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -161,7 +161,7 @@ describe('UnionFieldValidator', () => {
         strategy: UnionValidationStrategy.oneOf,
       };
 
-      const result = validator.validateFieldSchema(validStrategySchema);
+      const result = validator.validateStructure(validStrategySchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -178,7 +178,7 @@ describe('UnionFieldValidator', () => {
         strategy: 'invalid-strategy' as any,
       };
 
-      const result = validator.validateFieldSchema(invalidStrategySchema);
+      const result = validator.validateStructure(invalidStrategySchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
@@ -197,7 +197,7 @@ describe('UnionFieldValidator', () => {
         strategy: UnionValidationStrategy.discriminated,
       };
 
-      const result = validator.validateFieldSchema(noDiscriminatorSchema);
+      const result = validator.validateStructure(noDiscriminatorSchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
@@ -214,12 +214,24 @@ describe('UnionFieldValidator', () => {
           { type: FieldType.number, expose: true },
         ],
         typeHints: [
-          { condition: 'typeof value === "string"', typeIndex: 0 },
-          { condition: 'typeof value === "number"', typeIndex: 1 },
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'string' 
+            }, 
+            typeIndex: 0 
+          },
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'number' 
+            }, 
+            typeIndex: 1 
+          },
         ],
       };
 
-      const result = validator.validateFieldSchema(typeHintsSchema);
+      const result = validator.validateStructure(typeHintsSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -234,12 +246,24 @@ describe('UnionFieldValidator', () => {
           { type: FieldType.number, expose: true },
         ],
         typeHints: [
-          { condition: 'typeof value === "string"', typeIndex: 5 }, // invalid index
-          { condition: 'typeof value === "number"', typeIndex: -1 }, // negative index
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'string' 
+            }, 
+            typeIndex: 5 
+          }, // invalid index
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'number' 
+            }, 
+            typeIndex: -1 
+          }, // negative index
         ],
       };
 
-      const result = validator.validateFieldSchema(invalidHintSchema);
+      const result = validator.validateStructure(invalidHintSchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues.length).toBeGreaterThanOrEqual(2);
@@ -257,7 +281,7 @@ describe('UnionFieldValidator', () => {
         preferredType: '0',
       };
 
-      const result = validator.validateFieldSchema(preferredTypeSchema);
+      const result = validator.validateStructure(preferredTypeSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -270,13 +294,13 @@ describe('UnionFieldValidator', () => {
         type: FieldType.union,
         expose: true,
         unionTypes: [
-          { type: FieldType.string, expose: true, minLength: 1 },
-          { type: FieldType.number, expose: true, min: 0 },
+          { type: FieldType.string, expose: true, minLength: 1 } as any,
+          { type: FieldType.number, expose: true, min: 0 } as any,
           { type: FieldType.boolean, expose: true },
         ],
         strategy: UnionValidationStrategy.discriminated,
         discriminator: {
-          propertyName: 'type',
+          property: 'type',
           mapping: {
             text: 0,
             count: 1,
@@ -284,14 +308,32 @@ describe('UnionFieldValidator', () => {
           },
         },
         typeHints: [
-          { condition: 'typeof value === "string"', typeIndex: 0 },
-          { condition: 'typeof value === "number"', typeIndex: 1 },
-          { condition: 'typeof value === "boolean"', typeIndex: 2 },
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'string' 
+            }, 
+            typeIndex: 0 
+          },
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'number' 
+            }, 
+            typeIndex: 1 
+          },
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'boolean' 
+            }, 
+            typeIndex: 2 
+          },
         ],
         preferredType: '0',
       };
 
-      const result = validator.validateFieldSchema(complexUnionSchema);
+      const result = validator.validateStructure(complexUnionSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -307,11 +349,17 @@ describe('UnionFieldValidator', () => {
         ],
         strategy: 'invalid-strategy' as any,
         typeHints: [
-          { condition: 'test', typeIndex: 10 }, // invalid index
+          { 
+            condition: { 
+              type: 'value', 
+              value: 'test' 
+            }, 
+            typeIndex: 10 
+          }, // invalid index
         ],
       };
 
-      const result = validator.validateFieldSchema(multiErrorSchema);
+      const result = validator.validateStructure(multiErrorSchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues.length).toBeGreaterThanOrEqual(3);
@@ -332,11 +380,11 @@ describe('UnionFieldValidator', () => {
             properties: {
               nested: { type: FieldType.number, expose: true },
             },
-          },
+          } as any,
         ],
       };
 
-      const result = validator.validateFieldSchema(nestedUnionSchema);
+      const result = validator.validateStructure(nestedUnionSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -352,11 +400,11 @@ describe('UnionFieldValidator', () => {
             type: FieldType.array,
             expose: true,
             items: { type: FieldType.number, expose: true },
-          },
+          } as any,
         ],
       };
 
-      const result = validator.validateFieldSchema(arrayUnionSchema);
+      const result = validator.validateStructure(arrayUnionSchema, validationContext);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -376,13 +424,13 @@ describe('UnionFieldValidator', () => {
           strategy,
           ...(strategy === UnionValidationStrategy.discriminated && {
             discriminator: {
-              propertyName: 'type',
+              property: 'type',
               mapping: { str: 0, num: 1 },
             },
           }),
         };
 
-        const result = validator.validateFieldSchema(schema);
+        const result = validator.validateStructure(schema, validationContext);
         expect(result.isValid).toBe(true);
       });
     });
@@ -403,12 +451,21 @@ describe('UnionFieldValidator', () => {
           { type: FieldType.number, expose: true },
         ],
         typeHints: [
-          { condition: '', typeIndex: 0 },
-          { condition: undefined as any, typeIndex: 1 },
+          { 
+            condition: { 
+              type: 'value', 
+              value: '' 
+            }, 
+            typeIndex: 0 
+          },
+          { 
+            condition: undefined as any, 
+            typeIndex: 1 
+          },
         ],
       };
 
-      const result = validator.validateFieldSchema(missingConditionSchema);
+      const result = validator.validateStructure(missingConditionSchema, validationContext);
       expect(result.isValid).toBe(true); // Should not fail on missing conditions
     });
 
@@ -419,7 +476,7 @@ describe('UnionFieldValidator', () => {
         unionTypes: [{ type: FieldType.string, expose: true }, null as any, undefined as any, { type: FieldType.number, expose: true }],
       };
 
-      const result = validator.validateFieldSchema(nullTypesSchema);
+      const result = validator.validateStructure(nullTypesSchema, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.issues.some((i) => i.code === 'UNION_INVALID_TYPE_SCHEMA')).toBe(true);

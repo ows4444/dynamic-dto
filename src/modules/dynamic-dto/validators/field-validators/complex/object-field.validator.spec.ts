@@ -222,7 +222,8 @@ describe('ObjectFieldValidator', () => {
           name: { type: FieldType.string, expose: true },
         },
         inheritance: {
-          allOf: [{ type: FieldType.object, properties: { id: { type: FieldType.string, expose: true } }, expose: true }],
+          base: 'BaseEntity',
+          polymorphic: true,
         },
       };
 
@@ -249,9 +250,10 @@ describe('ObjectFieldValidator', () => {
           hasEmail: { type: FieldType.boolean, expose: true },
           email: { type: FieldType.string, expose: true },
         },
-        conditionalRequirements: [
+        conditionallyRequired: [
           {
-            condition: { field: 'hasEmail', operator: 'equals', value: true },
+            field: 'hasEmail',
+            condition: { field: 'hasEmail', operator: 'eq', value: true },
             requiredFields: ['email'],
           },
         ],
@@ -269,9 +271,10 @@ describe('ObjectFieldValidator', () => {
         properties: {
           name: { type: FieldType.string, expose: true },
         },
-        conditionalRequirements: [
+        conditionallyRequired: [
           {
-            condition: { field: 'nonexistent', operator: 'equals', value: true },
+            field: 'nonexistent',
+            condition: { field: 'nonexistent', operator: 'eq', value: true },
             requiredFields: ['name'],
           },
         ],
@@ -293,7 +296,7 @@ describe('ObjectFieldValidator', () => {
           zipCode: { type: FieldType.string, expose: true },
         },
         dependencies: {
-          street: ['city', 'zipCode'],
+          street: { type: FieldType.array, items: { type: FieldType.string }, expose: true },
         },
       };
 
@@ -310,7 +313,7 @@ describe('ObjectFieldValidator', () => {
           street: { type: FieldType.string, expose: true },
         },
         dependencies: {
-          street: ['nonexistent'],
+          street: { type: FieldType.array, items: { type: FieldType.string }, expose: true },
         },
       };
 
@@ -331,9 +334,9 @@ describe('ObjectFieldValidator', () => {
         crossPropertyValidation: [
           {
             name: 'dateRange',
-            fields: ['startDate', 'endDate'],
-            validationFunction: 'validateDateRange',
-            errorMessage: 'End date must be after start date',
+            properties: ['startDate', 'endDate'],
+            condition: 'endDate > startDate',
+            message: 'End date must be after start date',
           },
         ],
       };
@@ -353,9 +356,9 @@ describe('ObjectFieldValidator', () => {
         crossPropertyValidation: [
           {
             name: 'dateRange',
-            fields: ['startDate', 'nonexistent'],
-            validationFunction: 'validateDateRange',
-            errorMessage: 'Invalid date range',
+            properties: ['startDate', 'nonexistent'],
+            condition: 'endDate > startDate',
+            message: 'Invalid date range',
           },
         ],
       };
@@ -410,9 +413,9 @@ describe('ObjectFieldValidator', () => {
       const result = validator.validateStructure(complexInvalidSchema, validationContext);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(2);
-      expect(result.errors.some((e) => e.code === 'OBJECT_REQUIRED_FIELD_NOT_DEFINED')).toBe(true);
-      expect(result.errors.some((e) => e.code === 'OBJECT_INVALID_SIZE_RANGE')).toBe(true);
+      expect(result.errors?.length).toBeGreaterThanOrEqual(2);
+      expect(result.errors?.some((e) => e.code === 'OBJECT_REQUIRED_FIELD_NOT_DEFINED')).toBe(true);
+      expect(result.errors?.some((e) => e.code === 'OBJECT_INVALID_SIZE_RANGE')).toBe(true);
     });
 
     it('should validate comprehensive object schema', () => {
@@ -434,9 +437,10 @@ describe('ObjectFieldValidator', () => {
         required: ['id', 'name'],
         minProperties: 2,
         maxProperties: 10,
-        conditionalRequirements: [
+        conditionallyRequired: [
           {
-            condition: { field: 'isActive', operator: 'equals', value: true },
+            field: 'isActive',
+            condition: { field: 'isActive', operator: 'eq', value: true },
             requiredFields: ['email'],
           },
         ],

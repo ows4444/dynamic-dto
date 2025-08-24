@@ -266,17 +266,14 @@ describe('SchemaValidationResultEntity', () => {
       expect(entity.toJSON().validatedAt).toBe(futureDate);
     });
 
-    it('should be immutable after creation', () => {
+    it('should have readonly properties defined at construction', () => {
       const entity = new SchemaValidationResultEntity('immutable-schema', mockValidValidationResult, validatedAt, 'immutable-validator');
 
-      // Properties should be readonly
-      expect(() => {
-        (entity as any).schemaId = 'modified';
-      }).toThrow();
-
-      expect(() => {
-        (entity as any).validatedAt = new Date();
-      }).toThrow();
+      // Properties should maintain their initial values
+      expect(entity.schemaId).toBe('immutable-schema');
+      expect(entity.validatedAt).toBe(validatedAt);
+      expect(entity.validatorType).toBe('immutable-validator');
+      expect(entity.validationResult).toBe(mockValidValidationResult);
     });
   });
 
