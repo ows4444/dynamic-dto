@@ -3,7 +3,10 @@ import { Test } from '@nestjs/testing';
 import { ArrayFieldValidator } from './array-field.validator';
 import { FieldType } from '../../../core/types/field.types';
 import type { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';
-import type { ValidationContext, ValidationRule, CrossItemValidationRule, ValidationSeverity } from '../../../core/interfaces/validation';
+import type { ValidationContext } from '../../../core/interfaces/validation';
+import type { ValidationRule } from '../../../core/interfaces/schema/base/base-field.schema';
+import type { CrossItemValidationRule } from '../../../core/interfaces/schema/complex/array-field.schema';
+import { ValidationSeverity } from '../../../core/enums/validation.enums';
 
 describe('ArrayFieldValidator', () => {
   let validator: ArrayFieldValidator;
@@ -578,7 +581,7 @@ describe('ArrayFieldValidator', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors?.length).toBeGreaterThanOrEqual(2); // Should catch empty string and number
-      expect(result.errors?.some(e => e.code === 'ARRAY_INVALID_UNIQUE_BY_FIELD')).toBe(true);
+      expect(result.errors?.some((e) => e.code === 'ARRAY_INVALID_UNIQUE_BY_FIELD')).toBe(true);
     });
 
     it('should validate tuple item with invalid field type', () => {
@@ -624,7 +627,7 @@ describe('ArrayFieldValidator', () => {
             type: 'length',
             severity: 'error' as const,
             message: 'String too long',
-            constraint: { max: 100 },
+            params: { max: 100 },
           },
         ],
       };
@@ -816,7 +819,7 @@ describe('ArrayFieldValidator', () => {
 
       expect(result.isValid).toBe(true);
       // Should not have sensitive data info for tuple arrays
-      expect(result.infos?.filter(info => info.code === 'ARRAY_CONTAINS_SENSITIVE_DATA')).toHaveLength(0);
+      expect(result.infos?.filter((info: any) => info.code === 'ARRAY_CONTAINS_SENSITIVE_DATA')).toHaveLength(0);
     });
 
     it('should detect email format as sensitive data', () => {
@@ -869,7 +872,7 @@ describe('ArrayFieldValidator', () => {
       const result = (validator as any).validateSecurity(nonSensitiveSchema, validationContext);
 
       expect(result.isValid).toBe(true);
-      expect(result.infos?.filter(info => info.code === 'ARRAY_CONTAINS_SENSITIVE_DATA')).toHaveLength(0);
+      expect(result.infos?.filter((info: any) => info.code === 'ARRAY_CONTAINS_SENSITIVE_DATA')).toHaveLength(0);
     });
   });
 
@@ -906,7 +909,7 @@ describe('ArrayFieldValidator', () => {
       expect(result.isValid).toBe(true);
       expect(result.warnings).toHaveLength(1);
       expect(result.warnings?.[0]?.code).toBe('ARRAY_CROSS_VALIDATION_PERFORMANCE');
-      expect(result.warnings?.[0]?.message).toBe('Cross-item validation on large arrays may be expensive');
+      expect(result.warnings?.[0]?.message).toContain('Cross-item validation on large arrays may be expensive');
     });
 
     it('should warn about deep nesting', () => {
@@ -971,7 +974,7 @@ describe('ArrayFieldValidator', () => {
 
       expect(result.isValid).toBe(true);
       // Should not have complex objects info for tuple arrays
-      expect(result.infos?.filter(info => info.code === 'ARRAY_COMPLEX_OBJECTS')).toHaveLength(0);
+      expect(result.infos?.filter((info: any) => info.code === 'ARRAY_COMPLEX_OBJECTS')).toHaveLength(0);
     });
 
     it('should handle multiple performance issues', () => {

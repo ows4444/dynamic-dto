@@ -545,7 +545,7 @@ describe('DateFieldProcessor', () => {
     it('should handle default date format in formatting transformation', () => {
       const schemaWithDefaultFormat: DateFieldSchema = {
         ...basicDateSchema,
-        format: undefined, // Explicitly undefined
+        // format property omitted to test default behavior
       };
 
       const transformations = processor.getTypeSpecificTransformations(schemaWithDefaultFormat);
@@ -669,7 +669,7 @@ describe('DateFieldProcessor', () => {
       const formatTransformation = transformations[1]?.transform;
       const date = new Date('2023-06-15T10:30:00.000Z');
       const result = formatTransformation?.({ value: date, obj: {}, key: 'test' });
-      
+
       // Should return the original Date object for non-ISO formats (default case)
       expect(result).toBe(date);
     });
@@ -711,7 +711,7 @@ describe('DateFieldProcessor', () => {
 
       const decorators = processor.generateValidationDecorators(complexArraySchema, true, true);
       expect(decorators.length).toBeGreaterThanOrEqual(7);
-      
+
       // Test that options include { each: true } for array processing
       // This is verified through the validator registration process
     });
