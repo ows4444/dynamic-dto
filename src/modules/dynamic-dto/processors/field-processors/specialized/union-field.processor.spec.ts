@@ -89,11 +89,35 @@ describe('UnionFieldProcessor', () => {
   });
 
   describe('getTypeSpecificTransformations', () => {
-    it('should generate transformation functions for union with default value', () => {
+    it('should generate transformation functions for union with preferred type default', () => {
       const schema: UnionFieldSchema = {
         type: FieldType.union,
         unionTypes: [
           { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        default: {
+          type: 'preferred',
+          typeIndex: 0,
+          value: 'simple-default'
+        },
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      expect(transformations).toHaveLength(3); // default + type_resolution + type_transformation
+      
+      const defaultTransform = transformations.find(t => t.name === 'union_default');
+      expect(defaultTransform).toBeDefined();
+      expect(defaultTransform?.transform({ value: undefined, obj: {}, key: 'test' })).toBe('simple-default');
+      expect(defaultTransform?.transform({ value: 'existing', obj: {}, key: 'test' })).toBe('existing');
+    });
+
+    it('should generate transformation functions for union with first type default', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true, default: 'string-default' },
           { type: FieldType.number, expose: true },
         ],
         default: {
@@ -529,6 +553,363 @@ describe('UnionFieldProcessor', () => {
       const expressionWithComments = 'typeCount /* comment */ > 1 // line comment';
       const result = (processor as any).sanitizeExpression(expressionWithComments);
       expect(result).toBe('typeCount  > 1');
+    });
+  });
+
+  describe('discriminated unions', () => {
+    it('should handle discriminated union resolution', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        discriminator: {
+          property: 'type',
+          mapping: { 'str': 0, 'num': 1 },
+          required: true,
+        },
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      expect(transformations).toHaveLength(2); // type resolution + type transformation
+      
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+      
+      // Test discriminated union resolution
+      const valueWithType = { type: 'str', value: 'test' };
+      const result = typeResolution?.transform({ value: valueWithType, obj: {}, key: 'test' });
+      expect(result).toEqual(valueWithType);
+    });
+
+    it('should handle missing discriminator property', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        discriminator: {
+          property: 'type',
+          mapping: { 'str': 0, 'num': 1 },
+          required: true,
+        },
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      
+      // Test with object missing discriminator property
+      const valueWithoutType = { value: 'test' };
+      const result = typeResolution?.transform({ value: valueWithoutType, obj: {}, key: 'test' });
+      expect(result).toEqual(valueWithoutType);
+    });
+
+    it('should handle invalid discriminator value', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        discriminator: {
+          property: 'type',
+          mapping: { 'str': 0, 'num': 1 },
+          required: true,
+        },
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      
+      // Test with invalid discriminator value
+      const valueWithInvalidType = { type: 'invalid', value: 'test' };
+      const result = typeResolution?.transform({ value: valueWithInvalidType, obj: {}, key: 'test' });
+      expect(result).toEqual(valueWithInvalidType);
+    });
+  });
+
+  describe('type resolution strategies', () => {
+    it('should handle firstMatch strategy', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        strategy: 'firstMatch',
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+    });
+
+    it('should handle bestMatch strategy', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        strategy: 'bestMatch',
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+    });
+
+    it('should handle oneOf strategy', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        strategy: 'oneOf',
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+    });
+
+    it('should handle allValid strategy', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        strategy: 'allValid',
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+    });
+  });
+
+  describe('type hints and conditions', () => {
+    it('should handle type hints in resolution', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        typeHints: [
+          {
+            typeIndex: 0,
+            condition: { type: 'value', value: 'string' }
+          },
+          {
+            typeIndex: 1,
+            condition: { type: 'value', value: 'number' }
+          }
+        ],
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+      
+      // Test string value
+      const stringResult = typeResolution?.transform({ value: 'test', obj: {}, key: 'test' });
+      expect(stringResult).toBe('test');
+      
+      // Test number value  
+      const numberResult = typeResolution?.transform({ value: 123, obj: {}, key: 'test' });
+      expect(numberResult).toBe(123);
+    });
+
+    it('should handle custom validator conditions', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.string, expose: true },
+        ],
+        typeHints: [
+          {
+            typeIndex: 0,
+            condition: { type: 'custom', validator: 'isEmail' }
+          },
+          {
+            typeIndex: 1,
+            condition: { type: 'custom', validator: 'isUrl' }
+          }
+        ],
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+      
+      // Test email value
+      const emailResult = typeResolution?.transform({ value: 'test@example.com', obj: {}, key: 'test' });
+      expect(emailResult).toBe('test@example.com');
+      
+      // Test URL value  
+      const urlResult = typeResolution?.transform({ value: 'https://example.com', obj: {}, key: 'test' });
+      expect(urlResult).toBe('https://example.com');
+    });
+
+    it('should handle pattern conditions', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.string, expose: true },
+        ],
+        typeHints: [
+          {
+            typeIndex: 0,
+            condition: { type: 'pattern', pattern: '^test-' }
+          },
+          {
+            typeIndex: 1,
+            condition: { type: 'pattern', pattern: '^prod-' }
+          }
+        ],
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      expect(typeResolution).toBeDefined();
+      
+      // Test matching first pattern
+      const testResult = typeResolution?.transform({ value: 'test-value', obj: {}, key: 'test' });
+      expect(testResult).toBe('test-value');
+      
+      // Test matching second pattern  
+      const prodResult = typeResolution?.transform({ value: 'prod-value', obj: {}, key: 'test' });
+      expect(prodResult).toBe('prod-value');
+    });
+  });
+
+  describe('computed default evaluation', () => {
+    it('should handle computed default with expression', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true, default: 'string-default' },
+          { type: FieldType.number, expose: true, default: 42 },
+        ],
+        default: {
+          type: 'computed',
+          expression: 'typeCount > 1 ? getTypeDefault(0) : getTypeDefault(1)',
+        },
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const defaultTransform = transformations.find(t => t.name === 'union_default');
+      expect(defaultTransform).toBeDefined();
+      
+      // Test computed default evaluation
+      const result = defaultTransform?.transform({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBe('string-default'); // Should pick first type default since typeCount > 1
+    });
+
+    it('should handle computed default with complex expression', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        default: {
+          type: 'computed',
+          expression: 'Math.random() > 0.5 ? "random-string" : 123',
+        },
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const defaultTransform = transformations.find(t => t.name === 'union_default');
+      expect(defaultTransform).toBeDefined();
+      
+      // Test computed default evaluation
+      const result = defaultTransform?.transform({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('edge cases and error handling', () => {
+    it('should handle null and undefined values in type resolution', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      
+      // Test null value
+      expect(typeResolution?.transform({ value: null, obj: {}, key: 'test' })).toBeNull();
+      
+      // Test undefined value
+      expect(typeResolution?.transform({ value: undefined, obj: {}, key: 'test' })).toBeUndefined();
+    });
+
+    it('should handle complex discriminated union with object values', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.object, expose: true },
+          { type: FieldType.string, expose: true },
+        ],
+        discriminator: {
+          property: 'type',
+          mapping: { 'obj': 0, 'str': 1 },
+          required: true,
+        },
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeResolution = transformations.find(t => t.name === 'union_type_resolution');
+      
+      // Test object discriminated union
+      const objectValue = { type: 'obj', data: { nested: 'value' } };
+      const result = typeResolution?.transform({ value: objectValue, obj: {}, key: 'test' });
+      expect(result).toEqual(objectValue);
+    });
+
+    it('should handle type transformation with custom transformers', () => {
+      const schema: UnionFieldSchema = {
+        type: FieldType.union,
+        unionTypes: [
+          { type: FieldType.string, expose: true },
+          { type: FieldType.number, expose: true },
+        ],
+        expose: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(schema);
+      const typeTransform = transformations.find(t => t.name === 'union_type_transformation');
+      expect(typeTransform).toBeDefined();
+      
+      // Test type transformation
+      const result = typeTransform?.transform({ value: 'test', obj: {}, key: 'test' });
+      expect(result).toBe('test');
     });
   });
 });

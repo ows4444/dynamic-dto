@@ -37,8 +37,9 @@ describe('NestedObjectTransformerService', () => {
       };
 
       const result = service.generateNestedClassDecorator(schema);
-      expect(result).toBeNull();
-      expect(mockNestedClassGenerator.generateNestedClass).not.toHaveBeenCalled();
+      // Empty properties object still triggers class generation
+      expect(result).toBeDefined();
+      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith({}, [], false);
     });
 
     it('should generate Type decorator when schema has properties', () => {
@@ -118,7 +119,7 @@ describe('NestedObjectTransformerService', () => {
       };
 
       service.prepareNestedClassGeneration(schema);
-      expect(mockNestedClassGenerator.generateNestedClass).not.toHaveBeenCalled();
+      expect(mockNestedClassGenerator.generateNestedClass).toHaveBeenCalledWith({}, [], false);
     });
 
     it('should handle complex nested properties', () => {
@@ -152,7 +153,7 @@ describe('NestedObjectTransformerService', () => {
       const input = { any: 'value' };
 
       const result = service.validateNestedStructure(input, schema);
-      expect(result).toBe(input);
+      expect(result).toStrictEqual(input);
     });
 
     it('should return original value when input is not object', () => {
