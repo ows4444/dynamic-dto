@@ -29,7 +29,9 @@ describe('NestedClassGeneratorService', () => {
     const mockDecorators: PropertyDecorator[] = [];
 
     mockCacheMonitor = {
-      registerCache: jest.fn(),
+      registerCache: jest.fn().mockImplementation((name, cache) => {
+        console.log(`Mock registerCache called with: ${name}, ${cache}`);
+      }),
       unregisterCache: jest.fn(),
       getCacheStats: jest.fn(),
       getGlobalStats: jest.fn(),
@@ -67,26 +69,8 @@ describe('NestedClassGeneratorService', () => {
     });
 
     it('should register cache with monitor service', async () => {
-      // Create a fresh module to ensure constructor is called
-      const freshMockCacheMonitor = {
-        registerCache: jest.fn(),
-        unregisterCache: jest.fn(),
-        getCacheStats: jest.fn(),
-        getGlobalStats: jest.fn(),
-        startMonitoring: jest.fn(),
-        stopMonitoring: jest.fn(),
-        clearCacheStats: jest.fn(),
-        getDetailedCacheReport: jest.fn(),
-      } as any;
-
-      const module: TestingModule = await Test.createTestingModule({
-        providers: [NestedClassGeneratorService, { provide: CacheMonitorService, useValue: freshMockCacheMonitor }, { provide: 'FieldProcessorRegistry', useValue: mockFieldProcessorRegistry }],
-      }).compile();
-
-      const freshService = module.get<NestedClassGeneratorService>(NestedClassGeneratorService);
-
-      // The service registers the cache in the constructor
-      expect(freshMockCacheMonitor.registerCache).toHaveBeenCalledWith('nested-class-generator', expect.any(Object));
+      // Verify that the cache was registered during the beforeEach setup
+      expect(mockCacheMonitor.registerCache).toHaveBeenCalledWith('nested-class-generator', expect.any(Object));
     });
 
     it('should work without cache monitor service', async () => {

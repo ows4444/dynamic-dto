@@ -1,6 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ValidationSeverity } from '../../core/enums/validation.enums';
-import { ValidationIssue, ValidationResult } from '../../core/interfaces/validation';
+import {
+  ValidationErrorContext as IValidationErrorContext,
+  ValidationError,
+  ValidationErrorAggregated,
+  ValidationErrorSeverity,
+  ValidationIssue,
+  ValidationResult,
+} from '../../core/interfaces/validation';
+import { FieldType, FieldTypeValue } from '../../core/types/field.types';
 import { BaseValidationError, ValidationErrorContext } from './base-validation.error';
 import { ValidationErrorAggregator } from './validation-error-aggregator';
 import {
@@ -40,9 +48,22 @@ export class ValidationErrorService {
   };
 
   /**
+   * Create simple field validation error (for test compatibility)
+   */
+  createFieldError(field: string, value: unknown, message: string, code: string, context?: IValidationErrorContext): ValidationError {
+    return {
+      field,
+      value,
+      message,
+      code,
+      context,
+    };
+  }
+
+  /**
    * Create optimized field validation errors
    */
-  createFieldError(
+  createLegacyFieldError(
     errorType: 'TYPE_MISMATCH' | 'REQUIRED' | 'CONSTRAINT' | 'PERMISSION' | 'DEPRECATED' | 'SECURITY',
     fieldName: string,
     details: Record<string, any>,
@@ -64,6 +85,135 @@ export class ValidationErrorService {
       default:
         throw new Error(`Unknown field error type: ${String(errorType)}`);
     }
+  }
+
+  /**
+   * Create constraint validation error
+   */
+  createConstraintError(field: string, value: unknown, constraint: string, expectedValue: unknown, message: string, context?: IValidationErrorContext): ValidationError {
+    const enhancedContext: IValidationErrorContext = {
+      fieldPath: context?.fieldPath || field,
+      ...context,
+      constraint,
+      expectedValue,
+      actualValue: value,
+    };
+
+    return {
+      field,
+      value,
+      message,
+      code: 'CONSTRAINT_VIOLATION',
+      context: enhancedContext,
+    };
+  }
+
+  /**
+   * Create type mismatch validation error
+   */
+  createTypeError(field: string, value: unknown, expectedType: FieldTypeValue, actualType: string, context?: IValidationErrorContext): ValidationError {
+    const enhancedContext: IValidationErrorContext = {
+      fieldPath: context?.fieldPath || field,
+      ...context,
+      expectedType: expectedType,
+      actualType,
+    };
+
+    const message = `Expected field '${field}' to be of type '${expectedType}', but received '${actualType}'`;
+
+    return {
+      field,
+      value,
+      message,
+      code: 'TYPE_MISMATCH',
+      context: enhancedContext,
+    };
+  }
+
+  /**
+   * Format error message for validation errors
+   */
+  formatErrorMessage(field: string, constraint: string, expectedValue: unknown, actualValue: unknown): string {
+    if (!constraint || constraint.trim() === '') {
+      return `Field '${field}' validation failed. Expected: ${String(expectedValue)}, Actual: ${String(actualValue)}`;
+    }
+
+    switch (constraint.toLowerCase()) {
+      case 'required':
+        return `Field '${field}' is required`;
+      case 'min':
+        return `Field '${field}' must be at least ${expectedValue} (received: ${actualValue})`;
+      case 'max':
+        return `Field '${field}' must not exceed ${expectedValue} (received: ${actualValue})`;
+      case 'minlength':
+        return `Field '${field}' must be at least ${expectedValue} characters long (received: ${String(actualValue).length} characters)`;
+      case 'maxlength':
+        return `Field '${field}' must not exceed ${expectedValue} characters (received: ${String(actualValue).length} characters)`;
+      default:
+        return `Field '${field}' failed ${constraint} validation. Expected: ${String(expectedValue)}, Actual: ${String(actualValue)}`;
+    }
+  }
+
+  /**
+   * Aggregate multiple validation errors
+   */
+  aggregateErrors(errors: ValidationError[]): ValidationErrorAggregated {
+    const errorsByField: Record<string, ValidationError[]> = {};
+    const errorsByCode: Record<string, ValidationError[]> = {};
+
+    for (const error of errors) {
+      // Group by field
+      if (!errorsByField[error.field]) {
+        errorsByField[error.field] = [];
+      }
+      errorsByField[error.field]!.push(error);
+
+      // Group by code
+      if (!errorsByCode[error.code]) {
+        errorsByCode[error.code] = [];
+      }
+      errorsByCode[error.code]!.push(error);
+    }
+
+    return {
+      totalErrors: errors.length,
+      errorsByField,
+      errorsByCode,
+    };
+  }
+
+  /**
+   * Get error severity based on error code
+   */
+  getErrorSeverity(error: ValidationError): ValidationErrorSeverity {
+    switch (error.code.toUpperCase()) {
+      case 'REQUIRED_FIELD':
+      case 'TYPE_MISMATCH':
+      case 'FIELD_PERMISSION_DENIED':
+        return 'critical';
+      case 'CONSTRAINT_VIOLATION':
+      case 'INVALID_VALUE':
+        return 'error';
+      case 'INVALID_FORMAT':
+      case 'MIN_LENGTH':
+      case 'MAX_LENGTH':
+        return 'warning';
+      default:
+        return 'info';
+    }
+  }
+
+  /**
+   * Create structural validation error
+   */
+  createStructuralError(message: string, code: string, context?: IValidationErrorContext): ValidationError {
+    return {
+      field: '',
+      value: undefined,
+      message,
+      code,
+      context,
+    };
   }
 
   /**

@@ -23,7 +23,9 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
     private readonly fieldProcessorRegistry: FieldProcessorRegistry,
   ) {
     // Register cache for monitoring if service is available
-    this.cacheMonitor?.registerCache('nested-class-generator', this.generatedClasses);
+    if (this.cacheMonitor) {
+      this.cacheMonitor.registerCache('nested-class-generator', this.generatedClasses);
+    }
   }
 
   generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required: string[] = [], exclude = false): classConstructor<{ [K in keyof T]: unknown }> {

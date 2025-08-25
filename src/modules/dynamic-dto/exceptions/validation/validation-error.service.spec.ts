@@ -1,14 +1,13 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { ValidationErrorService } from './validation-error.service';
-import type { ValidationError } from '../../core/interfaces/validation/validation-error.interface';
-import type { ValidationContext } from '../../core/interfaces/validation/validation-context.interface';
-import { FieldType } from '../../core/enums/field-type.enums';
+import type { ValidationError, ValidationErrorContext } from '../../core/interfaces/validation/validation-error.interface';
+import { FieldType } from '../../core/types/field.types';
 
 describe('ValidationErrorService', () => {
   let service: ValidationErrorService;
 
-  const mockValidationContext: ValidationContext = {
+  const mockValidationContext: ValidationErrorContext = {
     schemaId: 'test-schema',
     dtoName: 'TestDto',
     fieldPath: 'testField',

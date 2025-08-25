@@ -34,6 +34,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     this.validatePropertiesStructure(schema, builder, context);
     this.validateRequiredFieldsStructure(schema, builder);
     this.validateSizeConstraints(schema, builder);
+    this.validatePropertyCount(schema, builder);
     this.validateDiscriminatorStructure(schema, builder);
     this.validateInheritanceStructure(schema, builder);
 
@@ -86,6 +87,11 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private validatePropertiesStructure(schema: ObjectFieldSchema, builder: ValidationResultBuilder, context: ValidationContext): void {
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      builder.addError('OBJECT_MISSING_PROPERTIES', 'Object schema must have a properties definition', schema.properties);
+      return;
+    }
+    
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
       this.validatePropertyName(propName, builder, context);
       this.validatePropertySchema(propName, propSchema, builder, context);
@@ -275,7 +281,14 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
       return;
     }
 
-    const propertyNames = new Set(Object.keys(schema.properties));
+    const propertyNames = new Set(Object.keys(schema.properties || {}));
+
+    // Validate that the trigger field exists in properties
+    if (conditionalReq.field && !propertyNames.has(conditionalReq.field)) {
+      builder.addError('OBJECT_CONDITIONAL_REQUIRED_FIELD_NOT_FOUND', `Conditional requirement trigger field '${conditionalReq.field}' is not defined in properties`, conditionalReq.field);
+    }
+
+    // Validate that all required fields exist in properties  
     for (const fieldName of conditionalReq.requiredFields) {
       if (!propertyNames.has(fieldName)) {
         builder.addError('OBJECT_CONDITIONAL_REQUIRED_FIELD_NOT_FOUND', `Conditional required field '${fieldName}' is not defined in properties`, fieldName);
@@ -292,7 +305,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private validateDependency(depField: string, depValue: DeepReadonly<FieldSchema>, builder: ValidationResultBuilder, schema: ObjectFieldSchema): void {
-    if (!schema.properties[depField]) {
+    if (!schema.properties || !schema.properties[depField]) {
       builder.addError('OBJECT_DEPENDENCY_FIELD_NOT_FOUND', `Dependency field '${depField}' is not defined in properties`, depField);
     }
 
