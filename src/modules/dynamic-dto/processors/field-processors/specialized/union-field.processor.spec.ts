@@ -466,7 +466,7 @@ describe('UnionFieldProcessor', () => {
     });
 
     it('should generate correct default for object type', () => {
-      const typeSchema = { type: FieldType.object, expose: true };
+      const typeSchema = { type: FieldType.object, expose: true, properties: {} };
       const defaultValue = (processor as any).getDefaultValueForType(typeSchema);
       expect(defaultValue).toEqual({});
     });
@@ -874,7 +874,7 @@ describe('UnionFieldProcessor', () => {
       const schema: UnionFieldSchema = {
         type: FieldType.union,
         unionTypes: [
-          { type: FieldType.object, expose: true },
+          { type: FieldType.object, expose: true, properties: {} },
           { type: FieldType.string, expose: true },
         ],
         discriminator: {
@@ -1158,7 +1158,7 @@ describe('UnionFieldProcessor', () => {
 
     it('should handle array and object type confidence calculation', () => {
       const arraySchema = { type: FieldType.array, expose: true };
-      const objectSchema = { type: FieldType.object, expose: true };
+      const objectSchema = { type: FieldType.object, expose: true, properties: {} };
 
       // Test array
       expect((processor as any).calculateTypeConfidence([], arraySchema, [])).toBe(0.7);

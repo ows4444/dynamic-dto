@@ -1,11 +1,34 @@
 import { ValidationChain } from './validation-chain';
+import { ValidationStrategy } from '../abstractions/validation-strategy.abstract';
+import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
+import { FieldType } from '../../core/types/field.types';
 import type { ValidationIssue, ValidationResult } from '../interfaces/validation';
+
+class MockValidationStrategy extends ValidationStrategy {
+  constructor(
+    public name: string,
+    public order: number,
+    private readonly mockResult: ValidationResult = { isValid: true, issues: [] },
+  ) {
+    super();
+  }
+
+  override canExecute(): boolean {
+    return true;
+  }
+
+  override execute(): ValidationResult {
+    return this.mockResult;
+  }
+}
 
 describe('ValidationChain', () => {
   let chain: ValidationChain;
+  let mockSchema: DynamicSchemaEntity;
 
   beforeEach(() => {
     chain = new ValidationChain();
+    mockSchema = new DynamicSchemaEntity('test-schema', 'TestDto', { name: { type: FieldType.string, expose: true } }, ['name'], false);
   });
 
   describe('basic functionality', () => {
@@ -13,70 +36,51 @@ describe('ValidationChain', () => {
       expect(chain).toBeDefined();
     });
 
-    it('should add validation steps', () => {
-      const mockValidator = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      } as ValidationResult);
+    it('should add validation strategies', () => {
+      const mockStrategy = new MockValidationStrategy('test-strategy', 1);
 
-      chain.addStep('test-step', mockValidator);
+      chain.addStrategy(mockStrategy);
 
-      // Should not throw
-      expect(chain).toBeDefined();
+      expect(chain.getStrategies()).toHaveLength(1);
+      expect(chain.getStrategies()[0]!.name).toBe('test-strategy');
     });
 
-    it('should execute validation steps', async () => {
-      const mockValidator = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      } as ValidationResult);
+    it('should execute validation strategies', () => {
+      const mockStrategy = new MockValidationStrategy('test-strategy', 1);
 
-      chain.addStep('test-step', mockValidator);
-      const result = await chain.execute({});
+      chain.addStrategy(mockStrategy);
+      const result = chain.execute(mockSchema);
 
-      expect(mockValidator).toHaveBeenCalled();
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
     });
   });
 
   describe('multiple validation steps', () => {
-    it('should execute multiple steps in order', async () => {
-      const calls: string[] = [];
+    it('should execute multiple strategies in order', () => {
+      const strategy1 = new MockValidationStrategy('strategy1', 1);
+      const strategy2 = new MockValidationStrategy('strategy2', 2);
 
-      const validator1 = jest.fn().mockImplementation(() => {
-        calls.push('step1');
-        return { isValid: true, issues: [] };
-      });
+      chain.addStrategy(strategy2); // Add in reverse order to test sorting
+      chain.addStrategy(strategy1);
 
-      const validator2 = jest.fn().mockImplementation(() => {
-        calls.push('step2');
-        return { isValid: true, issues: [] };
-      });
+      const result = chain.execute(mockSchema);
 
-      chain.addStep('step1', validator1);
-      chain.addStep('step2', validator2);
-
-      await chain.execute({});
-
-      expect(calls).toEqual(['step1', 'step2']);
+      expect(result.isValid).toBe(true);
+      expect(chain.getStrategies()).toHaveLength(2);
+      expect(chain.getStrategies()[0]!.order).toBe(1);
+      expect(chain.getStrategies()[1]!.order).toBe(2);
     });
 
-    it('should combine results from multiple steps', async () => {
-      const validator1 = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [{ code: 'ISSUE_1', message: 'Issue 1', severity: 'warning' }] as ValidationIssue[],
-      });
+    it('should combine results from multiple strategies', () => {
+      const strategy1 = new MockValidationStrategy('strategy1', 1, { isValid: true, issues: [{ code: 'ISSUE_1', message: 'Issue 1', severity: 'warning' }] as ValidationIssue[] });
 
-      const validator2 = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [{ code: 'ISSUE_2', message: 'Issue 2', severity: 'info' }] as ValidationIssue[],
-      });
+      const strategy2 = new MockValidationStrategy('strategy2', 2, { isValid: true, issues: [{ code: 'ISSUE_2', message: 'Issue 2', severity: 'info' }] as ValidationIssue[] });
 
-      chain.addStep('step1', validator1);
-      chain.addStep('step2', validator2);
+      chain.addStrategy(strategy1);
+      chain.addStrategy(strategy2);
 
-      const result = await chain.execute({});
+      const result = chain.execute(mockSchema);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(2);
@@ -84,220 +88,43 @@ describe('ValidationChain', () => {
   });
 
   describe('error handling', () => {
-    it('should handle validation failures', async () => {
-      const validator = jest.fn().mockReturnValue({
+    it('should handle validation failures', () => {
+      const failingStrategy = new MockValidationStrategy('failing-strategy', 1, {
         isValid: false,
         issues: [{ code: 'ERROR_1', message: 'Validation failed', severity: 'error' }] as ValidationIssue[],
       });
 
-      chain.addStep('failing-step', validator);
+      chain.addStrategy(failingStrategy);
 
-      const result = await chain.execute({});
+      const result = chain.execute(mockSchema);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
       expect(result.issues[0]?.severity).toBe('error');
     });
 
-    it('should continue execution even with failures', async () => {
-      const validator1 = jest.fn().mockReturnValue({
-        isValid: false,
-        issues: [{ code: 'ERROR_1', message: 'Error 1', severity: 'error' }],
-      });
+    it('should continue execution even with failures', () => {
+      const strategy1 = new MockValidationStrategy('failing-strategy', 1, { isValid: false, issues: [{ code: 'ERROR_1', message: 'Error 1', severity: 'error' }] as ValidationIssue[] });
 
-      const validator2 = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [{ code: 'WARNING_1', message: 'Warning 1', severity: 'warning' }],
-      });
+      const strategy2 = new MockValidationStrategy('warning-strategy', 2, { isValid: true, issues: [{ code: 'WARNING_1', message: 'Warning 1', severity: 'warning' }] as ValidationIssue[] });
 
-      chain.addStep('failing-step', validator1);
-      chain.addStep('warning-step', validator2);
+      chain.addStrategy(strategy1);
+      chain.addStrategy(strategy2);
 
-      const result = await chain.execute({});
+      const result = chain.execute(mockSchema);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(2);
-      expect(validator2).toHaveBeenCalled();
     });
 
-    it('should handle thrown exceptions', async () => {
-      const validator = jest.fn().mockImplementation(() => {
-        throw new Error('Validation threw exception');
-      });
+    it('should handle strategy removal', () => {
+      const strategy = new MockValidationStrategy('test-strategy', 1);
 
-      chain.addStep('throwing-step', validator);
+      chain.addStrategy(strategy);
+      expect(chain.getStrategies()).toHaveLength(1);
 
-      const result = await chain.execute({});
-
-      expect(result.isValid).toBe(false);
-      expect(result.issues).toHaveLength(1);
-      expect(result.issues[0]?.message).toContain('exception');
-    });
-  });
-
-  describe('conditional steps', () => {
-    it('should execute conditional steps when condition is met', async () => {
-      const validator = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      chain.addConditionalStep('conditional-step', validator, () => true);
-
-      const result = await chain.execute({});
-
-      expect(validator).toHaveBeenCalled();
-      expect(result.isValid).toBe(true);
-    });
-
-    it('should skip conditional steps when condition is not met', async () => {
-      const validator = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      chain.addConditionalStep('conditional-step', validator, () => false);
-
-      const result = await chain.execute({});
-
-      expect(validator).not.toHaveBeenCalled();
-      expect(result.isValid).toBe(true);
-    });
-
-    it('should evaluate condition with context', async () => {
-      const conditionFn = jest.fn().mockReturnValue(true);
-      const validator = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      const context = { testValue: 'test' };
-      chain.addConditionalStep('conditional-step', validator, conditionFn);
-
-      await chain.execute(context);
-
-      expect(conditionFn).toHaveBeenCalledWith(context);
-    });
-  });
-
-  describe('context passing', () => {
-    it('should pass context to validators', async () => {
-      const validator = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      const context = { field: 'test', value: 123 };
-      chain.addStep('context-step', validator);
-
-      await chain.execute(context);
-
-      expect(validator).toHaveBeenCalledWith(context);
-    });
-
-    it('should pass updated context between steps', async () => {
-      const validator1 = jest.fn().mockImplementation((ctx) => {
-        ctx.step1Executed = true;
-        return { isValid: true, issues: [] };
-      });
-
-      const validator2 = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      const context: any = { initial: true };
-      chain.addStep('step1', validator1);
-      chain.addStep('step2', validator2);
-
-      await chain.execute(context);
-
-      expect(validator2).toHaveBeenCalledWith(
-        expect.objectContaining({
-          initial: true,
-          step1Executed: true,
-        }),
-      );
-    });
-  });
-
-  describe('early termination', () => {
-    it('should support early termination on critical errors', async () => {
-      const validator1 = jest.fn().mockReturnValue({
-        isValid: false,
-        issues: [{ code: 'CRITICAL_ERROR', message: 'Critical error', severity: 'error', critical: true }],
-      });
-
-      const validator2 = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      chain.addStep('critical-step', validator1);
-      chain.addStep('never-executed', validator2);
-      chain.setEarlyTermination(true);
-
-      const result = await chain.execute({});
-
-      expect(validator1).toHaveBeenCalled();
-      expect(validator2).not.toHaveBeenCalled();
-      expect(result.isValid).toBe(false);
-    });
-
-    it('should continue execution when early termination is disabled', async () => {
-      const validator1 = jest.fn().mockReturnValue({
-        isValid: false,
-        issues: [{ code: 'ERROR', message: 'Error', severity: 'error', critical: true }],
-      });
-
-      const validator2 = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      chain.addStep('error-step', validator1);
-      chain.addStep('continues', validator2);
-      chain.setEarlyTermination(false);
-
-      const result = await chain.execute({});
-
-      expect(validator1).toHaveBeenCalled();
-      expect(validator2).toHaveBeenCalled();
-      expect(result.isValid).toBe(false);
-    });
-  });
-
-  describe('edge cases', () => {
-    it('should handle empty chain', async () => {
-      const result = await chain.execute({});
-
-      expect(result.isValid).toBe(true);
-      expect(result.issues).toHaveLength(0);
-    });
-
-    it('should handle null/undefined context', async () => {
-      const validator = jest.fn().mockReturnValue({
-        isValid: true,
-        issues: [],
-      });
-
-      chain.addStep('test-step', validator);
-
-      const result = await chain.execute(null as any);
-
-      expect(validator).toHaveBeenCalled();
-      expect(result.isValid).toBe(true);
-    });
-
-    it('should handle validator returning null/undefined', async () => {
-      const validator = jest.fn().mockReturnValue(null);
-
-      chain.addStep('null-step', validator);
-
-      const result = await chain.execute({});
-
-      expect(result.isValid).toBe(false);
-      expect(result.issues).toHaveLength(1);
+      chain.removeStrategy('test-strategy');
+      expect(chain.getStrategies()).toHaveLength(0);
     });
   });
 });

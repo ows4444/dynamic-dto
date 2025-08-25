@@ -2,7 +2,7 @@ import { BaseFieldValidator } from './base-field-validator.abstract';
 import { ValidationSeverity } from '../enums/validation.enums';
 import { FieldType } from '../types/field.types';
 import type { BaseFieldSchema, ConditionalValidation, FieldPermissions } from '../interfaces/schema';
-import type { ValidationContext, ValidationIssue, ValidationResult } from '../interfaces/validation';
+import type { ValidationContext, ValidationResult } from '../interfaces/validation';
 
 describe('BaseFieldValidator', () => {
   // Create concrete implementation for testing
@@ -257,7 +257,7 @@ describe('BaseFieldValidator', () => {
         permissions: {
           read: ['admin'],
           write: ['admin'],
-        } as FieldPermissions,
+        },
       };
 
       const result = validator['validateCommonProperties'](permissionsSchema, mockContext);
@@ -356,8 +356,8 @@ describe('BaseFieldValidator', () => {
     it('should pass with valid conditional rules', () => {
       const rules: ConditionalValidation[] = [
         {
-          condition: { field: 'status', value: 'active' },
-          validationRules: [{ required: true }],
+          condition: { field: 'status', operator: 'eq', value: 'active' },
+          validationRules: [{ type: 'required', params: {} }],
         },
       ];
 
@@ -369,8 +369,8 @@ describe('BaseFieldValidator', () => {
     it('should error when condition field is missing', () => {
       const rules: ConditionalValidation[] = [
         {
-          condition: { field: '', value: 'active' },
-          validationRules: [{ required: true }],
+          condition: { field: '', operator: 'eq', value: 'active' },
+          validationRules: [{ type: 'required', params: {} }],
         },
       ];
 
@@ -384,7 +384,7 @@ describe('BaseFieldValidator', () => {
     it('should warn when validation rules are empty', () => {
       const rules: ConditionalValidation[] = [
         {
-          condition: { field: 'status', value: 'active' },
+          condition: { field: 'status', operator: 'eq', value: 'active' },
           validationRules: [],
         },
       ];
@@ -473,8 +473,8 @@ describe('BaseFieldValidator', () => {
     it('should handle validation context with minimal data', () => {
       const minimalContext: ValidationContext = {
         fieldPath: 'field',
-        data: null,
-        rootData: {},
+        depth: 0,
+        data: {},
       };
 
       const result = validator.validate(basicSchema, minimalContext);
@@ -487,15 +487,15 @@ describe('BaseFieldValidator', () => {
       const complexSchema: BaseFieldSchema = {
         type: FieldType.string,
         expose: true,
-        deprecated: true,
+        deprecated: { since: '1.0.0', reason: 'Test deprecation' },
         permissions: {
           read: ['admin'],
           write: ['admin'],
         },
         conditionalValidation: [
           {
-            condition: { field: 'status', value: 'active' },
-            validationRules: [{ required: true }],
+            condition: { field: 'status', operator: 'eq', value: 'active' },
+            validationRules: [{ type: 'required', params: {} }],
           },
         ],
       };

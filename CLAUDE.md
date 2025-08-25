@@ -25,7 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm test` - Run unit tests (default test command)
 - `npm run test:all` - Run all test suites with Jest
 - `npm run test:unit` - Run unit tests only (99% coverage requirement)
-- `npm run test:integration` - Run integration tests (90% coverage requirement)
+- `npm run test:integration` - Run integration tests (98% coverage requirement)
 - `npm run test:e2e` - Run end-to-end tests
 - `npm run test:watch` - Run unit tests in watch mode
 - `npm run test:watch:all` - Run all tests in watch mode

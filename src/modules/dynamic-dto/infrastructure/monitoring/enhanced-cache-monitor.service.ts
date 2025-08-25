@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import type { CacheMemoryInfo, ICacheManager } from '../../core/interfaces/cache/cache-manager.interface';
 
@@ -27,16 +27,25 @@ export interface CacheRecommendation {
 }
 
 @Injectable()
-export class EnhancedCacheMonitorService {
+export class EnhancedCacheMonitorService implements OnModuleDestroy {
   private readonly logger = new Logger(EnhancedCacheMonitorService.name);
   private readonly config: Required<EnhancedCacheMonitorConfig>;
   private lastAlertTime = 0;
   private lastCleanupTime = 0;
 
+  // Memory management to prevent circular references
+  private cacheManagerRef: ICacheManager | null;
+  private isDestroyed = false;
+
+  // Store cleanup actions to prevent memory leaks
+  private readonly cleanupActions = new Set<() => Promise<void>>();
+
   constructor(
-    @Inject('ICacheManager') private readonly cacheManager: ICacheManager,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
     @Inject('CACHE_MONITOR_CONFIG') private readonly userConfig?: Partial<EnhancedCacheMonitorConfig>,
   ) {
+    // Store reference for controlled cleanup
+    this.cacheManagerRef = cacheManager;
     // Merge user configuration with defaults
     this.config = {
       memoryThresholdBytes: userConfig?.memoryThresholdBytes ?? (parseInt(process.env.CACHE_MEMORY_THRESHOLD_BYTES ?? '0') || 50 * 1024 * 1024), // 50MB default or env
@@ -56,11 +65,42 @@ export class EnhancedCacheMonitorService {
   }
 
   /**
+   * Cleanup method to prevent memory leaks
+   */
+  async onModuleDestroy(): Promise<void> {
+    this.isDestroyed = true;
+
+    // Clear all cleanup actions
+    this.cleanupActions.clear();
+
+    // Clear the cache manager reference to prevent memory leaks
+    this.cacheManagerRef = null;
+
+    this.logger.log('Enhanced cache monitoring service destroyed - cleanup completed');
+  }
+
+  /**
+   * Get cache manager with safety check for destroyed service
+   */
+  private getCacheManager(): ICacheManager | null {
+    if (this.isDestroyed || !this.cacheManagerRef) {
+      return null;
+    }
+
+    return this.cacheManagerRef;
+  }
+
+  /**
    * Get current cache health metrics and recommendations
    */
-  async getCacheHealthMetrics(): Promise<CacheHealthMetrics> {
-    const memoryUsage = await this.cacheManager.getMemoryUsage();
-    const thresholdExceeded = await this.cacheManager.isMemoryThresholdExceeded();
+  async getCacheHealthMetrics(): Promise<CacheHealthMetrics | null> {
+    const cacheManager = this.getCacheManager();
+    if (!cacheManager) {
+      return null;
+    }
+
+    const memoryUsage = await cacheManager.getMemoryUsage();
+    const thresholdExceeded = await cacheManager.isMemoryThresholdExceeded();
     const recommendations = this.generateRecommendations(memoryUsage, thresholdExceeded);
 
     return {
@@ -75,8 +115,14 @@ export class EnhancedCacheMonitorService {
    * Force cache cleanup with optional aggressive mode
    */
   async forceCleanup(aggressive = false): Promise<void> {
+    const cacheManager = this.getCacheManager();
+    if (!cacheManager) {
+      this.logger.warn('Cannot perform cleanup - cache manager unavailable');
+      return;
+    }
+
     try {
-      const result = await this.cacheManager.cleanup(aggressive);
+      const result = await cacheManager.cleanup(aggressive);
       this.lastCleanupTime = Date.now();
 
       this.logger.log(`Manual cache cleanup completed: ${result.entriesRemoved} entries removed, ` + `${this.formatBytes(result.memoryFreed)} freed in ${result.duration}ms`);
@@ -93,8 +139,15 @@ export class EnhancedCacheMonitorService {
    */
   @Cron(CronExpression.EVERY_5_MINUTES)
   async performHealthCheck(): Promise<void> {
+    if (this.isDestroyed) {
+      return; // Skip execution if service is destroyed
+    }
+
     try {
       const metrics = await this.getCacheHealthMetrics();
+      if (!metrics) {
+        return; // Skip if cache manager unavailable
+      }
 
       // Handle automatic cleanup if enabled
       if (this.config.enableAutoCleanup && this.shouldPerformCleanup(metrics)) {
@@ -125,22 +178,38 @@ export class EnhancedCacheMonitorService {
     // Memory threshold recommendations
     if (thresholdExceeded) {
       if (memoryUsage.utilizationRate > this.config.aggressiveCleanupThreshold) {
+        // Create cleanup action to prevent memory leaks
+        const cleanupAction = async (): Promise<void> => {
+          const cacheManager = this.getCacheManager();
+          if (cacheManager) {
+            await cacheManager.cleanup(true);
+          }
+        };
+
+        this.cleanupActions.add(cleanupAction);
+
         recommendations.push({
           type: 'AGGRESSIVE_CLEANUP',
           severity: 'CRITICAL',
           message: `Critical memory usage (${this.formatBytes(memoryUsage.estimatedBytes)}). Aggressive cleanup recommended.`,
-          action: async () => {
-            await this.cacheManager.cleanup(true);
-          },
+          action: cleanupAction,
         });
       } else {
+        // Create cleanup action to prevent memory leaks
+        const cleanupAction = async (): Promise<void> => {
+          const cacheManager = this.getCacheManager();
+          if (cacheManager) {
+            await cacheManager.cleanup(false);
+          }
+        };
+
+        this.cleanupActions.add(cleanupAction);
+
         recommendations.push({
           type: 'CLEANUP_EXPIRED',
           severity: 'WARNING',
           message: `Memory threshold exceeded (${this.formatBytes(memoryUsage.estimatedBytes)}). Basic cleanup recommended.`,
-          action: async () => {
-            await this.cacheManager.cleanup(false);
-          },
+          action: cleanupAction,
         });
       }
     }
@@ -179,12 +248,17 @@ export class EnhancedCacheMonitorService {
   }
 
   private async performAutomaticCleanup(metrics: CacheHealthMetrics): Promise<void> {
+    const cacheManager = this.getCacheManager();
+    if (!cacheManager) {
+      return;
+    }
+
     try {
       const aggressiveMode = metrics.memoryUsage.utilizationRate > this.config.aggressiveCleanupThreshold;
 
       this.logger.log(`Performing automatic cache cleanup ${aggressiveMode ? '(aggressive)' : '(normal)'}`);
 
-      await this.cacheManager.cleanup(aggressiveMode);
+      await cacheManager.cleanup(aggressiveMode);
       this.lastCleanupTime = Date.now();
     } catch (error) {
       this.logger.error('Automatic cache cleanup failed', {

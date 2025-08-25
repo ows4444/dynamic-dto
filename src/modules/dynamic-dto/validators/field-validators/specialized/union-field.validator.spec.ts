@@ -114,8 +114,8 @@ describe('UnionFieldValidator', () => {
         type: FieldType.union,
         expose: true,
         unionTypes: [
-          { type: FieldType.object, expose: true },
-          { type: FieldType.object, expose: true },
+          { type: FieldType.object, expose: true, properties: {} },
+          { type: FieldType.object, expose: true, properties: {} },
         ],
         discriminator: {
           property: 'type',
@@ -219,8 +219,8 @@ describe('UnionFieldValidator', () => {
         type: FieldType.union,
         expose: true,
         unionTypes: [
-          { type: FieldType.object, expose: true },
-          { type: FieldType.object, expose: true },
+          { type: FieldType.object, expose: true, properties: {} },
+          { type: FieldType.object, expose: true, properties: {} },
         ],
         strategy: UnionValidationStrategy.discriminated,
         discriminator: {
@@ -243,8 +243,8 @@ describe('UnionFieldValidator', () => {
         type: FieldType.union,
         expose: true,
         unionTypes: [
-          { type: FieldType.object, expose: true },
-          { type: FieldType.object, expose: true },
+          { type: FieldType.object, expose: true, properties: {} },
+          { type: FieldType.object, expose: true, properties: {} },
         ],
         strategy: UnionValidationStrategy.discriminated,
         discriminator: {
@@ -266,7 +266,7 @@ describe('UnionFieldValidator', () => {
       const discriminatedSchema: UnionFieldSchema = {
         type: FieldType.union,
         expose: true,
-        unionTypes: [{ type: FieldType.object, expose: true }],
+        unionTypes: [{ type: FieldType.object, expose: true, properties: {} }],
         strategy: UnionValidationStrategy.discriminated,
         discriminator: {
           property: 'type',
@@ -306,8 +306,8 @@ describe('UnionFieldValidator', () => {
           { type: FieldType.number, expose: true },
           { type: FieldType.boolean, expose: true },
           { type: FieldType.date, expose: true },
-          { type: FieldType.array, expose: true },
-          { type: FieldType.object, expose: true },
+          { type: FieldType.array, expose: true, items: { type: FieldType.string, expose: true } },
+          { type: FieldType.object, expose: true, properties: {} },
         ],
       };
 
@@ -353,8 +353,8 @@ describe('UnionFieldValidator', () => {
         type: FieldType.union,
         expose: true,
         unionTypes: [
-          { type: FieldType.object, expose: true },
-          { type: FieldType.object, expose: true },
+          { type: FieldType.object, expose: true, properties: {} },
+          { type: FieldType.object, expose: true, properties: {} },
         ],
         discriminator: {
           property: '',
@@ -373,8 +373,8 @@ describe('UnionFieldValidator', () => {
         type: FieldType.union,
         expose: true,
         unionTypes: [
-          { type: FieldType.object, expose: true },
-          { type: FieldType.object, expose: true },
+          { type: FieldType.object, expose: true, properties: {} },
+          { type: FieldType.object, expose: true, properties: {} },
         ],
         discriminator: {
           property: 'type',
@@ -393,8 +393,8 @@ describe('UnionFieldValidator', () => {
         type: FieldType.union,
         expose: true,
         unionTypes: [
-          { type: FieldType.object, expose: true },
-          { type: FieldType.object, expose: true },
+          { type: FieldType.object, expose: true, properties: {} },
+          { type: FieldType.object, expose: true, properties: {} },
         ],
         discriminator: {
           property: 'type',
@@ -641,7 +641,7 @@ describe('UnionFieldValidator', () => {
       const discriminatedNoConfigSchema: UnionFieldSchema = {
         type: FieldType.union,
         expose: true,
-        unionTypes: [{ type: FieldType.object, expose: true }],
+        unionTypes: [{ type: FieldType.object, expose: true, properties: {} }],
         strategy: UnionValidationStrategy.discriminated,
         // No discriminator config
       };
@@ -656,7 +656,7 @@ describe('UnionFieldValidator', () => {
       const optionalDiscriminatorSchema: UnionFieldSchema = {
         type: FieldType.union,
         expose: true,
-        unionTypes: [{ type: FieldType.object, expose: true }],
+        unionTypes: [{ type: FieldType.object, expose: true, properties: {} }],
         strategy: UnionValidationStrategy.discriminated,
         discriminator: {
           property: 'type',
@@ -675,7 +675,7 @@ describe('UnionFieldValidator', () => {
       const discriminatedSchema: UnionFieldSchema = {
         type: FieldType.union,
         expose: true,
-        unionTypes: [{ type: FieldType.object, expose: true }],
+        unionTypes: [{ type: FieldType.object, expose: true, properties: {} }],
         strategy: UnionValidationStrategy.discriminated,
         discriminator: {
           property: 'type',
@@ -694,7 +694,7 @@ describe('UnionFieldValidator', () => {
       const discriminatedSchema: UnionFieldSchema = {
         type: FieldType.union,
         expose: true,
-        unionTypes: [{ type: FieldType.object, expose: true }],
+        unionTypes: [{ type: FieldType.object, expose: true, properties: {} }],
         strategy: UnionValidationStrategy.discriminated,
         discriminator: {
           property: 'type',
@@ -771,7 +771,7 @@ describe('UnionFieldValidator', () => {
       const emptyMappingSchema: UnionFieldSchema = {
         type: FieldType.union,
         expose: true,
-        unionTypes: [{ type: FieldType.object, expose: true }],
+        unionTypes: [{ type: FieldType.object, expose: true, properties: {} }],
         discriminator: {
           property: 'type',
           mapping: null as any,
