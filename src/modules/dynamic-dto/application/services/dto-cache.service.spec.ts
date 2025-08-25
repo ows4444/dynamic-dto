@@ -90,7 +90,7 @@ describe('DtoCacheService', () => {
 
       // Assert
       expect(result).toBe(expectedValue);
-      expect(cacheManager.get).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/));
+      expect(cacheManager.get).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:[a-f0-9]{16}$/));
     });
 
     it('should return null when no cached value exists', async () => {
@@ -114,7 +114,7 @@ describe('DtoCacheService', () => {
       await service.set(mockSchema, value);
 
       // Assert
-      expect(cacheManager.set).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/), value, 3600);
+      expect(cacheManager.set).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:[a-f0-9]{16}$/), value, 3600);
     });
 
     it('should cache value with adaptive TTL when provided', async () => {
@@ -126,7 +126,7 @@ describe('DtoCacheService', () => {
       await service.set(mockSchema, value, adaptiveTtl);
 
       // Assert
-      expect(cacheManager.set).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/), value, 1800);
+      expect(cacheManager.set).toHaveBeenCalledWith(expect.stringMatching(/^dto:TestSchema:[a-f0-9]{16}$/), value, 1800);
     });
 
     it('should use fallback TTL when options.cache.ttl is not configured', async () => {
@@ -164,7 +164,10 @@ describe('DtoCacheService', () => {
     it('should return full TTL when memory utilization is low', async () => {
       // Arrange
       cacheManager.getMemoryUsage.mockResolvedValue({
+        estimatedBytes: 1024,
+        entryCount: 10,
         utilizationRate: 0.5,
+        hitRate: 0.8,
       });
 
       // Act
@@ -177,7 +180,10 @@ describe('DtoCacheService', () => {
     it('should return reduced TTL when memory utilization is high', async () => {
       // Arrange
       cacheManager.getMemoryUsage.mockResolvedValue({
+        estimatedBytes: 2048,
+        entryCount: 20,
         utilizationRate: 0.9,
+        hitRate: 0.7,
       });
 
       // Act
@@ -205,7 +211,10 @@ describe('DtoCacheService', () => {
 
       const serviceWithoutOptions = moduleWithoutOptions.get<DtoCacheService>(DtoCacheService);
       cacheManager.getMemoryUsage.mockResolvedValue({
+        estimatedBytes: 1024,
+        entryCount: 10,
         utilizationRate: 0.5,
+        hitRate: 0.8,
       });
 
       // Act
@@ -248,7 +257,7 @@ describe('DtoCacheService', () => {
 
       // Assert
       expect(key1).toBe(key2);
-      expect(key1).toMatch(/^dto:TestSchema:1\.0\.0:[a-f0-9]{16}$/);
+      expect(key1).toMatch(/^dto:TestSchema:[a-f0-9]{16}$/);
     });
 
     it('should generate different cache keys for different schemas', () => {
@@ -266,11 +275,12 @@ describe('DtoCacheService', () => {
     it('should generate different cache keys for different schema versions', () => {
       // Arrange
       const schema2 = new DynamicSchemaEntity(
-        'test-schema',
+        'test-schema-v2',
         'TestSchema',
         {
           name: { type: FieldType.string, expose: true },
           age: { type: FieldType.number, expose: true },
+          version: { type: FieldType.string, expose: true },
         },
         ['name'],
         false,

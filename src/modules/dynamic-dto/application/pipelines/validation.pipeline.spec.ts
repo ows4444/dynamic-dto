@@ -158,7 +158,7 @@ describe('ValidationPipeline', () => {
     it('should handle unknown errors gracefully', () => {
       // Arrange
       mockValidationChain.execute.mockImplementation(() => {
-        throw 'Unknown error';
+        throw new Error('Unknown error');
       });
 
       // Act

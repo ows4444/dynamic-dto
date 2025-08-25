@@ -138,13 +138,23 @@ describe('FieldValidationStrategy', () => {
       expect(mockFieldHandlerRegistry.validateField).toHaveBeenCalled();
     });
 
-    it('should throw error when validation fails', () => {
+    it('should throw error when validation fails', async () => {
       const error = new Error('Validation failed');
-      jest.spyOn(ValidationResultMerger, 'mergeResults').mockImplementation(() => {
+
+      // Mock the field handler to throw an error
+      mockFieldHandlerRegistry.validateField.mockImplementation(() => {
         throw error;
       });
 
+      // Mock the logger to prevent error logging during expected error scenario
+      const loggerSpy = jest.spyOn(strategy['logger'], 'error').mockImplementation(() => {});
+
       expect(() => strategy.execute(mockSchema, mockContext)).toThrow('Validation failed');
+
+      // Verify error was logged
+      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('FieldValidation failed for schema: TestSchema'), error);
+
+      loggerSpy.mockRestore();
     });
   });
 
@@ -152,6 +162,9 @@ describe('FieldValidationStrategy', () => {
     let mockSchema: DynamicSchemaEntity;
 
     beforeEach(() => {
+      // Reset the mock to return valid results for field validation
+      mockFieldHandlerRegistry.validateField = jest.fn().mockReturnValue(mockValidationResult);
+
       mockSchema = {
         name: 'TestSchema',
         properties: {

@@ -86,7 +86,20 @@ describe('DtoValidationService', () => {
       const mockValidationResult: ValidationResult = {
         isValid: false,
         issues: [],
-        errors: ['Invalid field configuration', { message: 'Field type mismatch' }],
+        errors: [
+          {
+            message: 'Invalid field configuration',
+            severity: 'error',
+            code: 'INVALID_CONFIG',
+            fieldPath: 'field1',
+          },
+          {
+            message: 'Field type mismatch',
+            severity: 'error',
+            code: 'TYPE_MISMATCH',
+            fieldPath: 'field2',
+          },
+        ],
       };
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
@@ -104,13 +117,20 @@ describe('DtoValidationService', () => {
       expect(result.summary?.errorCount).toBe(2);
     });
 
-    it('should handle undefined errors in validation result', () => {
-      // Arrange
-      const mockValidationResult: ValidationResult = {
+    it('should handle error objects with empty messages', () => {
+      // Arrange - Create a validation result that simulates errors with empty messages
+      const mockValidationResult = {
         isValid: false,
         issues: [],
-        errors: [{ message: undefined }],
-      };
+        errors: [
+          {
+            message: '',
+            severity: 'error',
+            code: 'EMPTY_MESSAGE',
+            fieldPath: 'field',
+          },
+        ],
+      } as ValidationResult;
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
       // Act
@@ -119,6 +139,23 @@ describe('DtoValidationService', () => {
       // Assert
       expect(result.isValid).toBe(false);
       expect(result.issues[0]?.message).toBe('Unknown validation error');
+    });
+
+    it('should handle validation result with undefined errors', () => {
+      // Arrange - Create a validation result with undefined errors
+      const mockValidationResult = {
+        isValid: false,
+        issues: [],
+        errors: undefined as any,
+      } as ValidationResult;
+      validationPipeline.validate.mockReturnValue(mockValidationResult);
+
+      // Act
+      const result = service.validateSchema(mockSchema);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.issues).toEqual([]);
     });
   });
 
@@ -129,7 +166,18 @@ describe('DtoValidationService', () => {
       const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
       const schemas = [schema1, schema2];
 
-      validationPipeline.validate.mockReturnValueOnce({ isValid: true, issues: [], errors: [] }).mockReturnValueOnce({ isValid: false, errors: ['Invalid schema'] });
+      validationPipeline.validate.mockReturnValueOnce({ isValid: true, issues: [], errors: [] }).mockReturnValueOnce({
+        isValid: false,
+        issues: [],
+        errors: [
+          {
+            message: 'Invalid schema',
+            severity: 'error',
+            code: 'INVALID_SCHEMA',
+            fieldPath: 'schema',
+          },
+        ],
+      });
 
       // Act
       const result = service.validateSchemas(schemas);

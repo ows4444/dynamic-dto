@@ -43,7 +43,7 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
     // Validate each union type schema
     for (let i = 0; i < schema.unionTypes.length; i++) {
       const unionType = schema.unionTypes[i];
-      if (!unionType || !unionType.type) {
+      if (!unionType?.type) {
         issues.push({
           code: 'UNION_INVALID_TYPE_SCHEMA',
           message: `Union type at index ${i} must have a type property`,
@@ -142,6 +142,9 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       case UnionValidationStrategy.firstMatch:
         return this.validateFirstMatch(value, schema, typeMatchResults, issues);
 
+      case UnionValidationStrategy.anyOf:
+        return this.validateAnyOf(value, schema, typeMatchResults, issues);
+
       case UnionValidationStrategy.bestMatch:
         return this.validateBestMatch(value, schema, typeMatchResults, issues);
 
@@ -225,8 +228,6 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
   }
 
   private calculateTypeConfidence(value: unknown, typeSchema: FieldSchema): number {
-    if (!this.checkTypeMatch(value, typeSchema)) return 0;
-
     // Basic confidence scoring
     switch (typeSchema.type) {
       case FieldType.string:
@@ -240,6 +241,7 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       case FieldType.object:
         return typeof value === 'object' && value !== null && !Array.isArray(value) ? 0.7 : 0;
       default:
+        // For unknown or unsupported types, return default confidence
         return 0.5;
     }
   }
@@ -278,6 +280,22 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       });
     }
 
+    return { isValid: issues.length === 0, issues };
+  }
+
+  private validateAnyOf(value: unknown, schema: UnionFieldSchema, matches: TypeMatchAnalysis[], issues: ValidationIssue[]): ValidationResult {
+    const validMatches = matches.filter((m) => m.matches);
+
+    if (validMatches.length === 0) {
+      issues.push({
+        code: 'UNION_NO_MATCH',
+        message: 'Value does not match any union type',
+        severity: 'error',
+        fieldPath: 'value',
+      });
+    }
+
+    // anyOf strategy: accept if matches any type (similar to firstMatch but explicit)
     return { isValid: issues.length === 0, issues };
   }
 

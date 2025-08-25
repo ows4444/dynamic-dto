@@ -102,7 +102,7 @@ expect.extend({
 
     if (pass) {
       return {
-        message: () => `expected ${received} not to be a valid date`,
+        message: () => `expected ${String(received)} not to be a valid date`,
         pass: true,
       };
     } else {

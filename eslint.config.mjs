@@ -18,20 +18,18 @@ export default tseslint.config(
       'eslint.config.mjs',
       'scripts/**',
       'dist/**',
+      'build/**',
       'node_modules/**',
       'jest.*.js',
-      'src/**/*.spec.ts',
-      'src/**/*.test.ts',
-      '*.test.ts',
-      'test/**',
-      'tests/**',
-      'coverage/**',
-      '**/*.d.ts',
-      'build/**',
-      '*.config.js',
-      '*.config.ts',
-      'migrations/**',
-      'seeds/**',
+      // 'src/**/*.spec.ts',
+      // 'src/**/*.test.ts',
+      // '*.test.ts',
+      // 'test/**',
+      // 'tests/**',
+      // 'coverage/**',
+      // '*.config.js',
+      // '**/*.d.ts',
+      // '*.config.ts',
     ],
   },
 
@@ -415,6 +413,23 @@ export default tseslint.config(
       'max-lines-per-function': ['warn', 150], // Validation methods can be complex
       complexity: ['warn', 35], // Validation logic can be complex
       '@typescript-eslint/no-explicit-any': 'warn', // May need for dynamic validation
+    },
+  },
+  // Validators - Allow complex validation methods
+  {
+    files: ['**/*spec.ts', '**/*test.ts', '**/test/setup.ts', '**/test/**/*fixtures.ts'],
+    rules: {
+      'no-await-in-loop': 'off',
+      'max-lines': 'off', // Complex validators legitimately large
+      'max-lines-per-function': 'off', // Validation methods can be complex
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/unbound-method': 'off', // Allow unbound methods in tests
+      '@typescript-eslint/dot-notation': 'off',
+      complexity: 'off', // Validation logic can be complex
+      // '@typescript-eslint/await-thenable': 'off',
+      // '@typescript-eslint/no-unused-vars': 'off',
+      // '@typescript-eslint/no-explicit-any': 'warn', // May need for dynamic validation
     },
   },
 );

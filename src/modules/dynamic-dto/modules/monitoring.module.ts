@@ -15,7 +15,7 @@ export class MonitoringModule {
         // Cache monitor configuration provider
         {
           provide: 'CACHE_MONITOR_CONFIG',
-          useValue: options.monitoring || {},
+          useValue: options.monitoring ?? {},
         },
 
         // Enhanced cache monitor service

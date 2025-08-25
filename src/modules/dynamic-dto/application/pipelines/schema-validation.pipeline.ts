@@ -15,7 +15,7 @@ export interface SchemaValidationPipelineOptions {
 export class SchemaValidationPipeline {
   constructor(private readonly schemaOrchestrator: SchemaOrchestratorService) {}
 
-  execute(schema: DynamicSchemaEntity, options: SchemaValidationPipelineOptions = {}): ValidationResult {
+  execute(schema: DynamicSchemaEntity | Record<string, FieldSchema>, options: SchemaValidationPipelineOptions = {}): ValidationResult {
     const { userRoles } = options;
 
     const schemaProperties: Record<string, FieldSchema> = schema instanceof DynamicSchemaEntity ? schema.properties : schema;
@@ -28,7 +28,7 @@ export class SchemaValidationPipeline {
     const result = this.schemaOrchestrator.validateSchema(schemaProperties, context);
 
     // Add additional business logic validation if needed
-    if (result.isValid && schema instanceof DynamicSchemaEntity) {
+    if (schema instanceof DynamicSchemaEntity) {
       const businessValidationResult = this.validateBusinessRules(schema);
       if (!businessValidationResult.isValid) {
         result.isValid = false;

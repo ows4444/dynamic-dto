@@ -236,7 +236,7 @@ describe('ExportRegistry', () => {
     });
 
     it('should not create excessive object overhead', () => {
-      const initialMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const initialMemory = (performance as any).memory?.usedJSHeapSize ?? 0;
 
       // Create many export arrays
       const arrays = [];
@@ -244,7 +244,7 @@ describe('ExportRegistry', () => {
         arrays.push(ExportRegistry.getAllExports(), ExportRegistry.getCoreExports(), ExportRegistry.getExtendedExports());
       }
 
-      const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const finalMemory = (performance as any).memory?.usedJSHeapSize ?? 0;
 
       // Memory usage should not grow excessively (if memory tracking available)
       if (initialMemory > 0 && finalMemory > 0) {

@@ -1,24 +1,6 @@
-import type { TestingModule } from '@nestjs/testing';
-import { Test } from '@nestjs/testing';
 import { createValidationProviders } from './validation.factory';
 
 describe('Validation Factory', () => {
-  let module: TestingModule;
-
-  beforeEach(async () => {
-    const providers = createValidationProviders();
-
-    module = await Test.createTestingModule({
-      providers,
-    }).compile();
-  });
-
-  afterEach(async () => {
-    if (module) {
-      await module.close();
-    }
-  });
-
   describe('createValidationProviders', () => {
     it('should create providers array', () => {
       const providers = createValidationProviders();
@@ -28,14 +10,14 @@ describe('Validation Factory', () => {
 
     it('should include validation strategy providers', () => {
       const providers = createValidationProviders();
-      const strategyProvider = providers.find((p) => typeof p === 'object' && 'provide' in p && String(p.provide).toLowerCase().includes('strategy'));
+      const strategyProvider = providers.find((p) => typeof p === 'function' && p.name && p.name.toLowerCase().includes('strategy'));
       expect(strategyProvider).toBeDefined();
     });
 
     it('should include validation pipeline providers', () => {
       const providers = createValidationProviders();
-      const pipelineProvider = providers.find((p) => typeof p === 'object' && 'provide' in p && String(p.provide).toLowerCase().includes('pipeline'));
-      expect(pipelineProvider).toBeDefined();
+      const validatorProvider = providers.find((p) => typeof p === 'function' && p.name && p.name.toLowerCase().includes('validator'));
+      expect(validatorProvider).toBeDefined();
     });
   });
 

@@ -6,7 +6,6 @@ import type { DiscoveredValidator } from './field-validator-discovery.service';
 import { FieldValidatorDiscoveryService } from './field-validator-discovery.service';
 import { BaseFieldValidator } from '../../core/abstractions/base-field-validator.abstract';
 import type { FieldValidatorMetadata } from '../../core/decorators/field-validator.decorator';
-import { FIELD_VALIDATOR_METADATA_KEY } from '../../core/decorators/field-validator.decorator';
 import { FieldType } from '../../core/types/field.types';
 import type { BaseFieldSchema } from '../../core/interfaces/schema';
 import type { ValidationContext, ValidationResult } from '../../core/interfaces/validation';
@@ -423,7 +422,7 @@ describe('FieldValidatorDiscoveryService', () => {
 
       const result = service.getValidatorsByCategory();
 
-      expect(result['primitive']).toHaveLength(1);
+      expect(result.primitive).toHaveLength(1);
     });
   });
 

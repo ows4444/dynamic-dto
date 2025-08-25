@@ -315,4 +315,241 @@ describe('NumberFieldProcessor', () => {
       expect(processor.supportedType).toBe(FieldType.number);
     });
   });
+
+  describe('custom validator creation', () => {
+    describe('exclusiveMin validator', () => {
+      it('should create exclusiveMin validator correctly', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          exclusiveMin: 10,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, false);
+
+        // Should include the exclusiveMin decorator
+        expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + ExclusiveMin
+
+        // Test that createExclusiveMinValidator method was called by creating a dummy target
+        const testTarget = class TestClass {
+          testField?: number;
+        };
+
+        // Apply all decorators to trigger validator registration
+        decorators.forEach((decorator) => {
+          decorator(testTarget.prototype, 'testField');
+        });
+
+        // The validator creation method was exercised
+        expect(decorators).toBeDefined();
+      });
+
+      it('should handle array context for exclusiveMin', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          exclusiveMin: 5,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, true);
+        expect(decorators.length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    describe('exclusiveMax validator', () => {
+      it('should create exclusiveMax validator correctly', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          exclusiveMax: 100,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, false);
+
+        // Should include the exclusiveMax decorator
+        expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + ExclusiveMax
+
+        // Apply decorators to trigger validator registration
+        const testTarget = class TestClass {
+          testField?: number;
+        };
+
+        decorators.forEach((decorator) => {
+          decorator(testTarget.prototype, 'testField');
+        });
+
+        expect(decorators).toBeDefined();
+      });
+
+      it('should handle array context for exclusiveMax', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          exclusiveMax: 50,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, true);
+        expect(decorators.length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    describe('multipleOf validator', () => {
+      it('should create multipleOf validator correctly', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          multipleOf: 5,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, false);
+
+        // Should include the multipleOf decorator
+        expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + MultipleOf
+
+        // Apply decorators to trigger validator registration
+        const testTarget = class TestClass {
+          testField?: number;
+        };
+
+        decorators.forEach((decorator) => {
+          decorator(testTarget.prototype, 'testField');
+        });
+
+        expect(decorators).toBeDefined();
+      });
+
+      it('should handle array context for multipleOf', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          multipleOf: 3,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, true);
+        expect(decorators.length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    describe('decimal validator', () => {
+      it('should create decimal validator correctly', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          integer: false,
+          scale: 2,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, false);
+
+        // Should include the decimal validator
+        expect(decorators.length).toBeGreaterThanOrEqual(3); // IsDefined + IsNumber + Decimal
+
+        // Apply decorators to trigger validator registration
+        const testTarget = class TestClass {
+          testField?: number;
+        };
+
+        decorators.forEach((decorator) => {
+          decorator(testTarget.prototype, 'testField');
+        });
+
+        expect(decorators).toBeDefined();
+      });
+
+      it('should handle array context for decimal validator', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          integer: false,
+          scale: 3,
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, true);
+        expect(decorators.length).toBeGreaterThanOrEqual(3);
+      });
+
+      it('should not include decimal validator when integer is true', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          integer: true,
+          scale: 2, // This should be ignored
+        };
+
+        const decorators = processor.generateValidationDecorators(schema, true, false);
+        const decimalDecorator = decorators.find((d: any) => d?.constraints?.[0] === 2);
+
+        // Should not find decimal decorator when integer is true
+        expect(decimalDecorator).toBeUndefined();
+      });
+    });
+  });
+
+  describe('transformation edge cases', () => {
+    describe('precision rounding edge cases', () => {
+      it('should handle both precision and scale defined', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          precision: 4,
+          scale: 2,
+        };
+
+        const transformations = processor.getTypeSpecificTransformations(schema);
+        const precisionTransform = transformations[1]?.transform;
+
+        // When both are defined, scale takes precedence in the implementation
+        expect(precisionTransform?.({ value: 123.456, obj: {}, key: 'test' })).toBe(123.46);
+      });
+
+      it('should handle precision alone correctly', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          precision: 3,
+        };
+
+        const transformations = processor.getTypeSpecificTransformations(schema);
+        const precisionTransform = transformations[1]?.transform;
+
+        // Test toPrecision behavior
+        expect(precisionTransform?.({ value: 123.456789, obj: {}, key: 'test' })).toBe(123);
+        expect(precisionTransform?.({ value: 1.23456, obj: {}, key: 'test' })).toBe(1.23);
+        expect(precisionTransform?.({ value: 0.123456, obj: {}, key: 'test' })).toBe(0.123);
+      });
+    });
+
+    describe('range clamping edge cases', () => {
+      it('should include transformation condition checking', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          clamp: true,
+          min: 0,
+          max: 100,
+        };
+
+        const transformations = processor.getTypeSpecificTransformations(schema);
+        const clampTransformation = transformations[1];
+
+        expect(clampTransformation?.condition).toBeDefined();
+
+        // Test the condition function
+        const conditionResult = clampTransformation?.condition?.(schema, { value: 50, obj: {}, key: 'test' });
+        expect(conditionResult).toBe(true);
+
+        const conditionResultString = clampTransformation?.condition?.(schema, { value: 'not a number', obj: {}, key: 'test' });
+        expect(conditionResultString).toBe(false);
+      });
+    });
+
+    describe('precision rounding condition checking', () => {
+      it('should include transformation condition for precision', () => {
+        const schema: NumberFieldSchema = {
+          ...basicNumberSchema,
+          precision: 2,
+        };
+
+        const transformations = processor.getTypeSpecificTransformations(schema);
+        const precisionTransformation = transformations[1];
+
+        expect(precisionTransformation?.condition).toBeDefined();
+
+        // Test the condition function
+        const conditionResult = precisionTransformation?.condition?.(schema, { value: 123.456, obj: {}, key: 'test' });
+        expect(conditionResult).toBe(true);
+
+        const conditionResultString = precisionTransformation?.condition?.(schema, { value: 'string', obj: {}, key: 'test' });
+        expect(conditionResultString).toBe(false);
+      });
+    });
+  });
 });

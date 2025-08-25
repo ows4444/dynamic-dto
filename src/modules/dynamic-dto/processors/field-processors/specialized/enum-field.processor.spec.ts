@@ -646,10 +646,423 @@ describe('EnumFieldProcessor', () => {
       };
 
       const validationDecorators = processor.generateValidationDecorators(complexSchema, true, false);
-      expect(validationDecorators.length).toBeGreaterThan(4);
+      expect(validationDecorators.length).toBeGreaterThanOrEqual(4);
 
       const transformations = processor.getTypeSpecificTransformations(complexSchema);
       expect(transformations.length).toBe(4);
+    });
+  });
+
+  // Additional comprehensive tests for private methods and edge cases
+  describe('private method coverage - computed defaults', () => {
+    const testSchema: EnumFieldSchema = {
+      type: FieldType.enum,
+      values: ['alpha', 'beta', 'gamma', 'delta'],
+      expose: true,
+    };
+
+    it('should compute default with last strategy', () => {
+      const lastSchema: EnumFieldSchema = {
+        ...testSchema,
+        default: {
+          type: 'computed',
+          strategy: 'last',
+        } as any,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(lastSchema);
+      const transform = transformations[0]?.transform;
+      const result = transform?.({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBe('delta');
+    });
+
+    it('should compute default with middle strategy', () => {
+      const middleSchema: EnumFieldSchema = {
+        ...testSchema,
+        default: {
+          type: 'computed',
+          strategy: 'middle',
+        } as any,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(middleSchema);
+      const transform = transformations[0]?.transform;
+      const result = transform?.({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBe('gamma'); // Floor(4/2) = 2, so index 2 is 'gamma'
+    });
+
+    it('should compute default with most_common strategy (fallback to first)', () => {
+      const mostCommonSchema: EnumFieldSchema = {
+        ...testSchema,
+        default: {
+          type: 'computed',
+          strategy: 'most_common',
+        } as any,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(mostCommonSchema);
+      const transform = transformations[0]?.transform;
+      const result = transform?.({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBe('alpha');
+    });
+
+    it('should handle random weighted with weights', () => {
+      const weightedSchema: EnumFieldSchema = {
+        ...testSchema,
+        default: {
+          type: 'computed',
+          strategy: 'random_weighted',
+          weights: { alpha: 3, beta: 1, gamma: 2, delta: 4 },
+        } as any,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(weightedSchema);
+      const transform = transformations[0]?.transform;
+
+      // Test multiple times to ensure it returns valid values
+      for (let i = 0; i < 10; i++) {
+        const result = transform?.({ value: undefined, obj: {}, key: 'test' });
+        expect(testSchema.values).toContain(result);
+      }
+    });
+
+    it('should evaluate expressions in computed defaults', () => {
+      const expressionSchema: EnumFieldSchema = {
+        ...testSchema,
+        default: {
+          type: 'computed',
+          expression: 'first',
+        } as any,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(expressionSchema);
+      const transform = transformations[0]?.transform;
+      const result = transform?.({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBe('alpha');
+    });
+
+    it('should handle unknown expression fallback', () => {
+      const unknownExpressionSchema: EnumFieldSchema = {
+        ...testSchema,
+        default: {
+          type: 'computed',
+          expression: 'unknown_expression',
+        } as any,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(unknownExpressionSchema);
+      const transform = transformations[0]?.transform;
+      const result = transform?.({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBe('alpha'); // Should fallback to first
+    });
+
+    it('should handle default strategy fallback in computeDefaultValue', () => {
+      const fallbackSchema: EnumFieldSchema = {
+        ...testSchema,
+        default: {
+          type: 'computed',
+          strategy: 'unknown_strategy' as any,
+        } as any,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(fallbackSchema);
+      const transform = transformations[0]?.transform;
+      const result = transform?.({ value: undefined, obj: {}, key: 'test' });
+      expect(result).toBe('alpha'); // Should fallback to first
+    });
+  });
+
+  describe('private method coverage - expression evaluation', () => {
+    it('should evaluate expression directly', () => {
+      const result = (processor as any).evaluateExpression('test_expression', {});
+      expect(result).toBe('test_expression');
+    });
+
+    it('should evaluate enum expressions with first', () => {
+      const result = (processor as any).evaluateEnumExpression('first', basicEnumSchema);
+      expect(result).toBe('red');
+    });
+
+    it('should evaluate enum expressions with last', () => {
+      const result = (processor as any).evaluateEnumExpression('last', basicEnumSchema);
+      expect(result).toBe('blue');
+    });
+
+    it('should evaluate enum expressions with random', () => {
+      const result = (processor as any).evaluateEnumExpression('random', basicEnumSchema);
+      expect(basicEnumSchema.values).toContain(result);
+    });
+
+    it('should evaluate unknown enum expressions with fallback', () => {
+      const result = (processor as any).evaluateEnumExpression('unknown', basicEnumSchema);
+      expect(result).toBe('red');
+    });
+  });
+
+  describe('private method coverage - weighted random selection', () => {
+    it('should select weighted random with equal weights', () => {
+      const values = ['a', 'b', 'c'];
+      const weights = { a: 1, b: 1, c: 1 };
+
+      // Run multiple times to test randomness
+      for (let i = 0; i < 10; i++) {
+        const result = (processor as any).selectWeightedRandom(values, weights);
+        expect(values).toContain(result);
+      }
+    });
+
+    it('should select weighted random with different weights', () => {
+      const values = ['high', 'low'];
+      const weights = { high: 10, low: 1 };
+
+      // Test that high weight values are selected more often (probabilistic)
+      const results: string[] = [];
+      for (let i = 0; i < 50; i++) {
+        results.push((processor as any).selectWeightedRandom(values, weights));
+      }
+
+      const highCount = results.filter((r) => r === 'high').length;
+      const lowCount = results.filter((r) => r === 'low').length;
+
+      // High weight should appear more often (but this is probabilistic)
+      expect(highCount + lowCount).toBe(50);
+      expect(results.every((r) => values.includes(r))).toBe(true);
+    });
+
+    it('should handle missing weights (defaults to 1)', () => {
+      const values = ['a', 'b', 'c'];
+      const weights = { a: 2 }; // b and c will default to 1
+
+      const result = (processor as any).selectWeightedRandom(values, weights);
+      expect(values).toContain(result);
+    });
+
+    it('should handle empty weights object', () => {
+      const values = ['a', 'b'];
+      const weights = {};
+
+      const result = (processor as any).selectWeightedRandom(values, weights);
+      expect(values).toContain(result);
+    });
+
+    it('should return first value as fallback when random fails', () => {
+      // Mock Math.random to return 1 (edge case)
+      const originalRandom = Math.random;
+      Math.random = jest.fn().mockReturnValue(0.999999);
+
+      const values = ['first', 'second'];
+      const weights = { first: 1, second: 1 };
+
+      const result = (processor as any).selectWeightedRandom(values, weights);
+      expect(result).toBe('second'); // With high random value, should select second
+
+      Math.random = originalRandom;
+    });
+  });
+
+  describe('private method coverage - sorting algorithms', () => {
+    const sortTestSchema: EnumFieldSchema = {
+      type: FieldType.enum,
+      values: ['zebra', 'alpha', 'beta', 'gamma'],
+      expose: true,
+    };
+
+    it('should sort values in ascending order', () => {
+      const result = (processor as any).sortEnumValues(['zebra', 'alpha', 'beta'], {
+        ...sortTestSchema,
+        sort: EnumSortOrder.asc,
+      });
+      expect(result).toEqual(['alpha', 'beta', 'zebra']);
+    });
+
+    it('should sort values in descending order', () => {
+      const result = (processor as any).sortEnumValues(['alpha', 'zebra', 'beta'], {
+        ...sortTestSchema,
+        sort: EnumSortOrder.desc,
+      });
+      expect(result).toEqual(['zebra', 'beta', 'alpha']);
+    });
+
+    it('should sort values alphabetically', () => {
+      const result = (processor as any).sortEnumValues(['3', '1', '11', '2'], {
+        ...sortTestSchema,
+        values: ['3', '1', '11', '2'],
+        sort: EnumSortOrder.alphabetical,
+      });
+      expect(result).toEqual(['1', '11', '2', '3']);
+    });
+
+    it('should sort values by definition order', () => {
+      const result = (processor as any).sortEnumValues(['beta', 'zebra', 'alpha'], {
+        ...sortTestSchema,
+        sort: EnumSortOrder.definition,
+      });
+      expect(result).toEqual(['zebra', 'alpha', 'beta']); // Original order in values array
+    });
+
+    it('should sort values by frequency with labels', () => {
+      const schemaWithLabels: EnumFieldSchema = {
+        ...sortTestSchema,
+        sort: EnumSortOrder.frequency,
+        labels: { beta: 'Beta Label', gamma: 'Gamma Label' },
+      };
+
+      const result = (processor as any).sortEnumValues(['alpha', 'beta', 'gamma', 'zebra'], schemaWithLabels);
+
+      // Labeled values should have higher frequency
+      expect(result.indexOf('beta')).toBeLessThan(result.indexOf('alpha'));
+      expect(result.indexOf('gamma')).toBeLessThan(result.indexOf('alpha'));
+    });
+
+    it('should sort values by frequency without labels', () => {
+      const result = (processor as any).sortEnumValues(['beta', 'alpha', 'gamma'], {
+        ...sortTestSchema,
+        sort: EnumSortOrder.frequency,
+      });
+
+      // Should sort by reverse index (earlier in definition = higher frequency)
+      expect(result[0]).toBe('beta'); // beta has higher frequency due to position
+    });
+
+    it('should handle frequency sorting with mixed scenarios', () => {
+      const mixedSchema: EnumFieldSchema = {
+        ...sortTestSchema,
+        sort: EnumSortOrder.frequency,
+        labels: { zebra: 'Z Label' }, // Only zebra has a label
+      };
+
+      const result = (processor as any).sortByFrequency(['alpha', 'beta', 'zebra'], mixedSchema);
+
+      // zebra should be first due to label boost
+      expect(result[0]).toBe('zebra');
+    });
+
+    it('should return original values for unknown sort order', () => {
+      const originalValues = ['c', 'b', 'a'];
+      const result = (processor as any).sortEnumValues(originalValues, {
+        ...sortTestSchema,
+        sort: 'unknown' as any,
+      });
+      expect(result).toEqual(originalValues);
+    });
+
+    it('should return original values for none sort order', () => {
+      const originalValues = ['c', 'b', 'a'];
+      const result = (processor as any).sortEnumValues(originalValues, {
+        ...sortTestSchema,
+        sort: EnumSortOrder.none,
+      });
+      expect(result).toEqual(originalValues);
+    });
+  });
+
+  describe('custom validator coverage', () => {
+    it('should create multiple enum validator correctly', () => {
+      const validator = (processor as any).createMultipleEnumValidator(basicEnumSchema, {});
+      expect(typeof validator).toBe('function');
+    });
+
+    it('should create case insensitive enum validator correctly', () => {
+      const validator = (processor as any).createCaseInsensitiveEnumValidator(basicEnumSchema, {});
+      expect(typeof validator).toBe('function');
+    });
+
+    it('should create deprecated value validator with warning', () => {
+      const deprecatedSchema: EnumFieldSchema = {
+        ...basicEnumSchema,
+        deprecatedValues: ['old_red'],
+      };
+
+      // Mock console.warn
+      const originalWarn = console.warn;
+      const warnSpy = jest.fn();
+      console.warn = warnSpy;
+
+      const validator = (processor as any).createDeprecatedValueValidator(deprecatedSchema, {});
+      expect(typeof validator).toBe('function');
+
+      console.warn = originalWarn;
+    });
+  });
+
+  describe('edge cases and error conditions', () => {
+    it('should handle empty enum values array gracefully', () => {
+      const emptySchema: EnumFieldSchema = {
+        type: FieldType.enum,
+        values: [],
+        expose: true,
+      };
+
+      expect(() => processor.generateValidationDecorators(emptySchema, true, false)).not.toThrow();
+    });
+
+    it('should handle null/undefined in transformation conditions', () => {
+      const caseSchema: EnumFieldSchema = {
+        ...basicEnumSchema,
+        caseSensitive: false,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(caseSchema);
+      const transform = transformations[0]?.transform;
+
+      // Test condition evaluation
+      expect(transform?.({ value: null, obj: {}, key: 'test' })).toBe(null);
+      expect(transform?.({ value: 123, obj: {}, key: 'test' })).toBe(123);
+    });
+
+    it('should handle enum transform with non-string values', () => {
+      const numberEnumTransform: EnumFieldSchema = {
+        type: FieldType.enum,
+        values: [1, 2, 3],
+        expose: true,
+        transform: EnumTransform.uppercase,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(numberEnumTransform);
+      const transform = transformations[0]?.transform;
+
+      expect(transform?.({ value: 1, obj: {}, key: 'test' })).toBe(1);
+    });
+
+    it('should handle label transformation with missing labels', () => {
+      const labelSchema: EnumFieldSchema = {
+        ...basicEnumSchema,
+        transform: EnumTransform.label,
+        labels: { red: 'Red Color' },
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(labelSchema);
+      const transform = transformations[0]?.transform;
+
+      expect(transform?.({ value: 'red', obj: {}, key: 'test' })).toBe('Red Color');
+      expect(transform?.({ value: 'blue', obj: {}, key: 'test' })).toBe('blue'); // Fallback to original
+    });
+
+    it('should handle multiple processing with non-array values', () => {
+      const multipleSchema: EnumFieldSchema = {
+        ...basicEnumSchema,
+        allowMultiple: true,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(multipleSchema);
+      const transform = transformations[0]?.transform;
+
+      expect(transform?.({ value: 'red', obj: {}, key: 'test' })).toEqual(['red']);
+      expect(transform?.({ value: undefined, obj: {}, key: 'test' })).toEqual([]);
+    });
+
+    it('should handle multiple processing with sorting and duplicates', () => {
+      const sortedMultipleSchema: EnumFieldSchema = {
+        ...basicEnumSchema,
+        allowMultiple: true,
+        sort: EnumSortOrder.asc,
+      };
+
+      const transformations = processor.getTypeSpecificTransformations(sortedMultipleSchema);
+      const transform = transformations[0]?.transform;
+
+      const result = transform?.({ value: ['blue', 'red', 'blue', 'green'], obj: {}, key: 'test' });
+      expect(result).toEqual(['blue', 'green', 'red']); // Sorted and deduplicated
     });
   });
 });

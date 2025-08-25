@@ -2,9 +2,8 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { StringBasicProcessor } from './string-basic.processor';
 import type { StringFieldSchema } from '../../../core/interfaces/schema/primitive/string-field.schema';
-import { AutoGenerationType, CaseTransform } from '../../../core/interfaces/schema/primitive/string-field.schema';
+import { CaseTransform } from '../../../core/interfaces/schema/primitive/string-field.schema';
 import { FieldType } from '../../../core/types/field.types';
-import { StringFormat } from '../../../core/enums/string.enums';
 import { StringValidationUtils } from './utils/string-validation.utils';
 
 describe('StringBasicProcessor', () => {

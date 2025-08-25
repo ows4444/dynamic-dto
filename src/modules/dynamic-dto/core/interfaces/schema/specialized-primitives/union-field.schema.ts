@@ -1,14 +1,17 @@
 import type { FieldType } from '../../../types/field.types';
 import type { BaseFieldSchema } from '../base/base-field.schema';
+import type { ArrayFieldSchema, ObjectFieldSchema } from '../complex';
+import type { BooleanFieldSchema, NumberFieldSchema, StringFieldSchema } from '../primitive';
+import type { DateFieldSchema } from './date-field.schema';
 
-// Forward declaration to avoid circular dependency
-type FieldSchemaUnion = BaseFieldSchema & {
-  readonly type: string;
-};
+// // Forward declaration to avoid circular dependency
+// type FieldSchemaUnion = BaseFieldSchema & {
+//   readonly type: string;
+// };
 
 export interface UnionFieldSchema extends BaseFieldSchema {
   readonly type: typeof FieldType.union;
-  readonly unionTypes: readonly FieldSchemaUnion[];
+  readonly unionTypes: readonly (StringFieldSchema | NumberFieldSchema | ObjectFieldSchema | BooleanFieldSchema | DateFieldSchema | ArrayFieldSchema)[];
   readonly discriminator?: UnionDiscriminator;
   readonly default?: UnionDefaultValue;
 

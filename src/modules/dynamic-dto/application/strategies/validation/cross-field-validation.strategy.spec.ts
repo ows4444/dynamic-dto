@@ -12,12 +12,12 @@ describe('CrossFieldValidationStrategy', () => {
 
   describe('name property', () => {
     it('should have correct strategy name', () => {
-      expect(strategy.name).toBe('cross-field');
+      expect(strategy.name).toBe('CrossFieldValidation');
     });
   });
 
-  describe('validate method', () => {
-    it('should return successful validation for simple data without cross-field rules', async () => {
+  describe('execute method', () => {
+    it('should return successful validation for simple data without cross-field rules', () => {
       const schema = new DynamicSchemaEntity(
         'test-schema',
         'TestDto',
@@ -29,89 +29,80 @@ describe('CrossFieldValidationStrategy', () => {
       );
 
       const context: ValidationContext = {
-        schema,
+        fieldPath: '',
+        depth: 0,
         data: { name: 'John', age: 30 },
-        path: '',
-        schemaPath: '',
       };
 
-      const result = await strategy.validate(context);
+      const result = strategy.execute(schema, context);
 
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual([]);
     });
 
-    it('should validate password confirmation cross-field rule', async () => {
+    it('should validate conflicting field visibility settings', () => {
       const schema = new DynamicSchemaEntity(
         'user-schema',
         'UserDto',
         {
-          password: { type: FieldType.string, expose: true },
+          password: { type: FieldType.string, expose: true, exclude: true }, // conflicting
           confirmPassword: { type: FieldType.string, expose: true },
         },
         ['password', 'confirmPassword'],
       );
 
-      const validContext: ValidationContext = {
-        schema,
+      const context: ValidationContext = {
+        fieldPath: '',
+        depth: 0,
         data: { password: 'secret123', confirmPassword: 'secret123' },
-        path: '',
-        schemaPath: '',
       };
 
-      const invalidContext: ValidationContext = {
-        schema,
-        data: { password: 'secret123', confirmPassword: 'different' },
-        path: '',
-        schemaPath: '',
-      };
+      const result = strategy.execute(schema, context);
 
-      const validResult = await strategy.validate(validContext);
-      const invalidResult = await strategy.validate(invalidContext);
-
-      expect(validResult.isValid).toBe(true);
-      expect(invalidResult.isValid).toBe(false);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.length).toBe(1);
+      expect(result.errors?.[0]?.code).toBe('CONFLICTING_FIELD_VISIBILITY');
     });
 
-    it('should validate date range cross-field rules', async () => {
+    it('should validate conditional validation dependencies', () => {
       const schema = new DynamicSchemaEntity(
         'event-schema',
         'EventDto',
         {
-          startDate: { type: FieldType.date, expose: true },
+          startDate: {
+            type: FieldType.date,
+            expose: true,
+            conditionalValidation: [
+              {
+                condition: { field: 'nonExistentField', operator: 'eq', value: true },
+                validationRules: [{ type: 'required' }],
+              },
+            ],
+          },
           endDate: { type: FieldType.date, expose: true },
         },
         ['startDate', 'endDate'],
       );
 
-      const validContext: ValidationContext = {
-        schema,
+      const context: ValidationContext = {
+        fieldPath: '',
+        depth: 0,
         data: {
           startDate: '2024-01-01T00:00:00Z',
           endDate: '2024-01-02T00:00:00Z',
         },
-        path: '',
-        schemaPath: '',
       };
 
-      const invalidContext: ValidationContext = {
-        schema,
-        data: {
-          startDate: '2024-01-02T00:00:00Z',
-          endDate: '2024-01-01T00:00:00Z',
-        },
-        path: '',
-        schemaPath: '',
-      };
+      const result = strategy.execute(schema, context);
 
-      const validResult = await strategy.validate(validContext);
-      const invalidResult = await strategy.validate(invalidContext);
-
-      expect(validResult.isValid).toBe(true);
-      expect(invalidResult.isValid).toBe(false);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.length).toBe(1);
+      expect(result.errors?.[0]?.code).toBe('MISSING_DEPENDENT_FIELD');
     });
 
-    it('should handle missing data gracefully', async () => {
+    it('should handle missing data gracefully', () => {
       const schema = new DynamicSchemaEntity(
         'test-schema',
         'TestDto',
@@ -123,20 +114,19 @@ describe('CrossFieldValidationStrategy', () => {
       );
 
       const context: ValidationContext = {
-        schema,
+        fieldPath: '',
+        depth: 0,
         data: { field1: 'value1' }, // field2 missing
-        path: '',
-        schemaPath: '',
       };
 
-      const result = await strategy.validate(context);
+      const result = strategy.execute(schema, context);
 
       expect(result).toBeDefined();
       expect(typeof result.isValid).toBe('boolean');
       expect(Array.isArray(result.errors)).toBe(true);
     });
 
-    it('should handle null/undefined data', async () => {
+    it('should handle null/undefined data', () => {
       const schema = new DynamicSchemaEntity(
         'test-schema',
         'TestDto',
@@ -147,21 +137,19 @@ describe('CrossFieldValidationStrategy', () => {
       );
 
       const nullContext: ValidationContext = {
-        schema,
-        data: null as any,
-        path: '',
-        schemaPath: '',
+        fieldPath: '',
+        depth: 0,
+        data: null,
       };
 
       const undefinedContext: ValidationContext = {
-        schema,
-        data: undefined as any,
-        path: '',
-        schemaPath: '',
+        fieldPath: '',
+        depth: 0,
+        data: undefined,
       };
 
-      const nullResult = await strategy.validate(nullContext);
-      const undefinedResult = await strategy.validate(undefinedContext);
+      const nullResult = strategy.execute(schema, nullContext);
+      const undefinedResult = strategy.execute(schema, undefinedContext);
 
       expect(nullResult).toBeDefined();
       expect(undefinedResult).toBeDefined();
@@ -170,7 +158,7 @@ describe('CrossFieldValidationStrategy', () => {
     });
   });
 
-  describe('canHandle method', () => {
+  describe('canExecute method', () => {
     it('should return true for contexts that may have cross-field validation needs', () => {
       const schema = new DynamicSchemaEntity(
         'test-schema',
@@ -183,13 +171,12 @@ describe('CrossFieldValidationStrategy', () => {
       );
 
       const context: ValidationContext = {
-        schema,
+        fieldPath: '',
+        depth: 0,
         data: { field1: 'value1', field2: 'value2' },
-        path: '',
-        schemaPath: '',
       };
 
-      expect(strategy.canHandle(context)).toBe(true);
+      expect(strategy.canExecute(schema, context)).toBe(true);
     });
 
     it('should handle single field contexts', () => {
@@ -203,13 +190,12 @@ describe('CrossFieldValidationStrategy', () => {
       );
 
       const context: ValidationContext = {
-        schema,
+        fieldPath: '',
+        depth: 0,
         data: { field1: 'value1' },
-        path: '',
-        schemaPath: '',
       };
 
-      const result = strategy.canHandle(context);
+      const result = strategy.canExecute(schema, context);
       expect(typeof result).toBe('boolean');
     });
   });
@@ -226,14 +212,13 @@ describe('CrossFieldValidationStrategy', () => {
       );
 
       const context: ValidationContext = {
-        schema,
+        fieldPath: '',
+        depth: 0,
         data: { field1: 'value1' },
-        path: '',
-        schemaPath: '',
       };
 
-      expect(async () => {
-        const result = await strategy.validate(context);
+      expect(() => {
+        const result = strategy.execute(schema, context);
         expect(result).toBeDefined();
       }).not.toThrow();
     });

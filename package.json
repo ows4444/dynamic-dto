@@ -1,12 +1,30 @@
 {
   "name": "dynamic-dto",
   "version": "1.0.0",
-  "description": "A NestJS library for dynamic DTO generation and validation from JSON schemas at runtime",
-  "author": "Dynamic DTO Team",
+  "description": "A high-performance NestJS library for dynamic DTO generation and validation from JSON schemas at runtime with advanced caching and memory management",
+  "author": {
+    "name": "Dynamic DTO Team",
+    "email": "team@dynamic-dto.dev"
+  },
+  "maintainers": [
+    {
+      "name": "Dynamic DTO Team",
+      "email": "team@dynamic-dto.dev"
+    }
+  ],
   "private": false,
   "license": "MIT",
   "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "keywords": [
     "nestjs",
     "dto",
@@ -15,41 +33,91 @@
     "schema",
     "typescript",
     "class-validator",
-    "class-transformer"
+    "class-transformer",
+    "runtime",
+    "json-schema",
+    "clean-architecture",
+    "performance",
+    "caching",
+    "memory-management",
+    "field-processors",
+    "string-formats"
   ],
   "files": [
     "dist/**/*",
+    "src/**/*.ts",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/dynamic-dto.git"
+    "url": "git+https://github.com/your-org/dynamic-dto.git",
+    "directory": "packages/dynamic-dto"
   },
   "bugs": {
     "url": "https://github.com/your-org/dynamic-dto/issues"
   },
   "homepage": "https://github.com/your-org/dynamic-dto#readme",
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/dynamic-dto"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.6.0",
+    "pnpm": ">=8.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
   "scripts": {
+    "prebuild": "npm run clean",
     "build": "nest build",
+    "build:prod": "NODE_ENV=production npm run build",
+    "clean": "rimraf dist coverage .nyc_output",
+    "postinstall": "husky install || true",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --config jest.config.js",
+    "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:unit",
+    "test:all": "jest --config jest.config.js",
     "test:unit": "jest --config jest.unit.config.js",
     "test:integration": "jest --config jest.integration.config.js",
     "test:e2e": "jest --config jest.e2e.config.js",
-    "test:watch": "jest --watch --config jest.config.js",
-    "test:cov": "jest --coverage --config jest.config.js",
-    "test:cov:unit": "jest --coverage --config jest.unit.config.js --coverageDirectory=coverage/unit",
-    "test:cov:integration": "jest --coverage --config jest.integration.config.js --coverageDirectory=coverage/integration",
-    "test:cov:e2e": "jest --coverage --config jest.e2e.config.js --coverageDirectory=coverage/e2e",
+    "test:watch": "jest --watch --config jest.unit.config.js",
+    "test:watch:all": "jest --watch --config jest.config.js",
+    "test:watch:integration": "jest --watch --config jest.integration.config.js",
+    "test:cov": "npm run test:cov:unit",
+    "test:cov:all": "jest --coverage --config jest.config.js",
+    "test:cov:unit": "jest --coverage --config jest.unit.config.js",
+    "test:cov:integration": "jest --coverage --config jest.integration.config.js",
+    "test:cov:e2e": "jest --coverage --config jest.e2e.config.js",
     "test:coverage": "node scripts/test-coverage.js",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "prepublishOnly": "npm run build"
+    "test:coverage:report": "npm run test:coverage && open coverage/html/index.html",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config jest.unit.config.js --runInBand",
+    "test:debug:integration": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config jest.integration.config.js --runInBand",
+    "test:ci": "npm run test:coverage",
+    "validate": "npm run typecheck && npm run lint:check && npm run format:check",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run validate && npm run build && npm run test:coverage",
+    "release": "npm run prepublishOnly && npm publish",
+    "release:dry": "npm run prepublishOnly && npm publish --dry-run",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor", 
+    "version:major": "npm version major"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -80,8 +148,10 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.3.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
@@ -89,21 +159,16 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+  "volta": {
+    "node": "18.17.0",
+    "npm": "9.6.0"
+  },
+  "browserslist": [
+    "node >= 18.17.0"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }

@@ -1,97 +1,117 @@
-import type { TestingModule } from '@nestjs/testing';
-import { Test } from '@nestjs/testing';
 import { StringProcessorFactory } from './string-processor.factory';
-import { StringBasicProcessor } from './string-basic.processor';
-import { StringFormatProcessor } from './string-format.processor';
-import { StringTransformationProcessor } from './string-transformation.processor';
-import { StringAutoGenerationProcessor } from './string-auto-generation.processor';
 
 describe('StringProcessorFactory', () => {
   let factory: StringProcessorFactory;
-  let module: TestingModule;
+  let mockBasicProcessor: any;
+  let mockFormatProcessor: any;
+  let mockTransformationProcessor: any;
+  let mockAutoGenerationProcessor: any;
 
-  beforeEach(async () => {
-    module = await Test.createTestingModule({
-      providers: [StringProcessorFactory, StringBasicProcessor, StringFormatProcessor, StringTransformationProcessor, StringAutoGenerationProcessor],
-    }).compile();
+  beforeEach(() => {
+    // Create mock processors with minimal properties needed for the factory
+    mockBasicProcessor = {
+      name: 'BasicProcessor',
+      priority: 1,
+    } as any;
 
-    factory = module.get<StringProcessorFactory>(StringProcessorFactory);
+    mockFormatProcessor = {
+      name: 'FormatProcessor',
+      priority: 2,
+    } as any;
+
+    mockTransformationProcessor = {
+      name: 'TransformationProcessor',
+      priority: 3,
+    } as any;
+
+    mockAutoGenerationProcessor = {
+      name: 'AutoGenerationProcessor',
+      priority: 4,
+    } as any;
+
+    factory = new StringProcessorFactory(mockBasicProcessor, mockFormatProcessor, mockTransformationProcessor, mockAutoGenerationProcessor);
   });
 
-  afterEach(async () => {
-    if (module) {
-      await module.close();
-    }
-  });
+  describe('createProcessorCollection', () => {
+    it('should create processor collection with all methods', () => {
+      const collection = factory.createProcessorCollection();
 
-  describe('createStringProcessors', () => {
-    it('should create array of string processors', () => {
-      const processors = factory.createStringProcessors();
+      expect(collection).toBeDefined();
+      expect(typeof collection.getBasicProcessor).toBe('function');
+      expect(typeof collection.getFormatProcessor).toBe('function');
+      expect(typeof collection.getTransformationProcessor).toBe('function');
+      expect(typeof collection.getAutoGenerationProcessor).toBe('function');
+      expect(typeof collection.getAllProcessors).toBe('function');
+    });
+
+    it('should return mockBasicProcessor from getBasicProcessor', () => {
+      const collection = factory.createProcessorCollection();
+      const processor = collection.getBasicProcessor();
+
+      expect(processor).toBe(mockBasicProcessor);
+    });
+
+    it('should return mockFormatProcessor from getFormatProcessor', () => {
+      const collection = factory.createProcessorCollection();
+      const processor = collection.getFormatProcessor();
+
+      expect(processor).toBe(mockFormatProcessor);
+    });
+
+    it('should return mockTransformationProcessor from getTransformationProcessor', () => {
+      const collection = factory.createProcessorCollection();
+      const processor = collection.getTransformationProcessor();
+
+      expect(processor).toBe(mockTransformationProcessor);
+    });
+
+    it('should return mockAutoGenerationProcessor from getAutoGenerationProcessor', () => {
+      const collection = factory.createProcessorCollection();
+      const processor = collection.getAutoGenerationProcessor();
+
+      expect(processor).toBe(mockAutoGenerationProcessor);
+    });
+
+    it('should return all processors from getAllProcessors', () => {
+      const collection = factory.createProcessorCollection();
+      const processors = collection.getAllProcessors();
 
       expect(Array.isArray(processors)).toBe(true);
-      expect(processors.length).toBeGreaterThan(0);
-    });
-
-    it('should include StringBasicProcessor', () => {
-      const processors = factory.createStringProcessors();
-
-      expect(processors.some((p) => p instanceof StringBasicProcessor)).toBe(true);
-    });
-
-    it('should include StringFormatProcessor', () => {
-      const processors = factory.createStringProcessors();
-
-      expect(processors.some((p) => p instanceof StringFormatProcessor)).toBe(true);
-    });
-
-    it('should include StringTransformationProcessor', () => {
-      const processors = factory.createStringProcessors();
-
-      expect(processors.some((p) => p instanceof StringTransformationProcessor)).toBe(true);
-    });
-
-    it('should include StringAutoGenerationProcessor', () => {
-      const processors = factory.createStringProcessors();
-
-      expect(processors.some((p) => p instanceof StringAutoGenerationProcessor)).toBe(true);
+      expect(processors.length).toBe(4);
+      expect(processors).toContain(mockBasicProcessor);
+      expect(processors).toContain(mockFormatProcessor);
+      expect(processors).toContain(mockTransformationProcessor);
+      expect(processors).toContain(mockAutoGenerationProcessor);
     });
   });
 
-  describe('static factory methods', () => {
-    it('should have static create method', () => {
-      expect(typeof StringProcessorFactory.create).toBe('function');
+  describe('validateProcessors', () => {
+    it('should validate all processors are initialized without throwing', () => {
+      expect(() => factory.validateProcessors()).not.toThrow();
     });
 
-    it('should create processors through static method', () => {
-      const processors = StringProcessorFactory.create();
+    it('should throw error if basicProcessor is null', () => {
+      const factoryWithNullProcessor = new StringProcessorFactory(null as any, mockFormatProcessor, mockTransformationProcessor, mockAutoGenerationProcessor);
 
-      expect(Array.isArray(processors)).toBe(true);
-      expect(processors.length).toBeGreaterThan(0);
+      expect(() => factoryWithNullProcessor.validateProcessors()).toThrow('StringProcessorFactory: BasicProcessor is not properly initialized');
     });
-  });
 
-  describe('processor ordering', () => {
-    it('should return processors in priority order', () => {
-      const processors = factory.createStringProcessors();
+    it('should throw error if formatProcessor is null', () => {
+      const factoryWithNullProcessor = new StringProcessorFactory(mockBasicProcessor, null as any, mockTransformationProcessor, mockAutoGenerationProcessor);
 
-      // Processors should be ordered by priority
-      for (let i = 0; i < processors.length - 1; i++) {
-        const currentPriority = processors[i].priority ?? 0;
-        const nextPriority = processors[i + 1].priority ?? 0;
-        expect(currentPriority).toBeGreaterThanOrEqual(nextPriority);
-      }
+      expect(() => factoryWithNullProcessor.validateProcessors()).toThrow('StringProcessorFactory: FormatProcessor is not properly initialized');
     });
   });
 
-  describe('processor configuration', () => {
-    it('should configure processors with correct types', () => {
-      const processors = factory.createStringProcessors();
+  describe('dependency injection', () => {
+    it('should inject all required processors', () => {
+      expect(factory).toBeDefined();
 
-      processors.forEach((processor) => {
-        expect(processor).toBeDefined();
-        expect(typeof processor.name).toBe('string');
-        expect(typeof processor.priority).toBe('number');
-      });
+      const collection = factory.createProcessorCollection();
+      expect(collection.getBasicProcessor()).toBeDefined();
+      expect(collection.getFormatProcessor()).toBeDefined();
+      expect(collection.getTransformationProcessor()).toBeDefined();
+      expect(collection.getAutoGenerationProcessor()).toBeDefined();
     });
   });
 });

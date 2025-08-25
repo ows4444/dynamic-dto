@@ -24,13 +24,13 @@ describe('SchemaValidationPipeline', () => {
     false,
   );
 
-  const validResult: ValidationResult = {
+  const createValidResult = (): ValidationResult => ({
     isValid: true,
     issues: [],
     errors: [],
     warnings: [],
     infos: [],
-  };
+  });
 
   const invalidResult: ValidationResult = {
     isValid: false,
@@ -80,7 +80,7 @@ describe('SchemaValidationPipeline', () => {
   describe('execute', () => {
     it('should validate schema successfully with default options', () => {
       // Arrange
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(mockSchema);
@@ -96,7 +96,7 @@ describe('SchemaValidationPipeline', () => {
         userRoles: ['admin', 'user'],
         userId: 'user123',
       };
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(mockSchema, options);
@@ -112,7 +112,7 @@ describe('SchemaValidationPipeline', () => {
         includeIntegrityCheck: true,
         userRoles: ['admin'],
       };
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(mockSchema, options);
@@ -141,7 +141,7 @@ describe('SchemaValidationPipeline', () => {
         name: { type: FieldType.string, expose: true },
         age: { type: FieldType.number, expose: true },
       };
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(plainSchema as any);
@@ -153,7 +153,7 @@ describe('SchemaValidationPipeline', () => {
 
     it('should perform business rules validation for valid schema', () => {
       // Arrange
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(mockSchema);
@@ -175,7 +175,7 @@ describe('SchemaValidationPipeline', () => {
         ['name', 'age'], // age is required but not in properties
         false,
       );
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(schemaWithMissingField);
@@ -223,7 +223,7 @@ describe('SchemaValidationPipeline', () => {
       const plainSchema: Record<string, FieldSchema> = {
         name: { type: FieldType.string, expose: true },
       };
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(plainSchema as any);
@@ -247,7 +247,7 @@ describe('SchemaValidationPipeline', () => {
         ['name', 'email'],
         false,
       );
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(completeSchema);
@@ -268,7 +268,7 @@ describe('SchemaValidationPipeline', () => {
         ['name', 'email', 'age'], // email and age are required but missing
         false,
       );
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       const result = pipeline.execute(schemaWithMultipleMissingFields);
@@ -309,7 +309,7 @@ describe('SchemaValidationPipeline', () => {
         userRoles: ['admin', 'moderator'],
         includeIntegrityCheck: true,
       };
-      schemaOrchestrator.validateSchema.mockReturnValue(validResult);
+      schemaOrchestrator.validateSchema.mockReturnValue(createValidResult());
 
       // Act
       pipeline.execute(mockSchema, options);

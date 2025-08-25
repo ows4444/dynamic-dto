@@ -4,27 +4,83 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
+### Build Commands
+
+- `npm run build` - Build the library using NestJS CLI
+- `npm run build:prod` - Production build with NODE_ENV=production
+- `npm run clean` - Clean dist, coverage, and temporary files
+- `npm run prepare` - Prepare package for publishing (runs build)
+
+### Code Quality Commands
+
+- `npm run lint` - ESLint with auto-fix
+- `npm run lint:check` - ESLint check without auto-fix
+- `npm run format` - Prettier formatting with auto-fix
+- `npm run format:check` - Prettier check without auto-fix
+- `npm run typecheck` - TypeScript type checking without emitting files
+- `npm run validate` - Run all checks: typecheck + lint:check + format:check
+
 ### Testing Commands
 
-- `npm test` - Run all tests using Jest
+- `npm test` - Run unit tests (default test command)
+- `npm run test:all` - Run all test suites with Jest
 - `npm run test:unit` - Run unit tests only (99% coverage requirement)
 - `npm run test:integration` - Run integration tests (90% coverage requirement)
 - `npm run test:e2e` - Run end-to-end tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Generate combined coverage report from all test suites (enforces 99% threshold)
+- `npm run test:watch` - Run unit tests in watch mode
+- `npm run test:watch:all` - Run all tests in watch mode
+- `npm run test:watch:integration` - Run integration tests in watch mode
+
+### Coverage Commands
+
+- `npm run test:cov` - Unit test coverage (alias for test:cov:unit)
+- `npm run test:cov:all` - Coverage for all test suites
 - `npm run test:cov:unit` - Unit test coverage only
 - `npm run test:cov:integration` - Integration test coverage only
 - `npm run test:cov:e2e` - E2E test coverage only
+- `npm run test:coverage` - Combined coverage report (enforces 99% threshold)
+- `npm run test:coverage:report` - Generate coverage report and open in browser
 
-### Build and Development
+### Debug Commands
 
-- `npm run build` - Build the library using NestJS CLI
-- `npm run lint` - ESLint with auto-fix
-- `npm run format` - Prettier formatting
+- `npm run test:debug` - Debug unit tests with Node.js inspector
+- `npm run test:debug:integration` - Debug integration tests with Node.js inspector
+
+### Release Commands
+
+- `npm run version:patch` - Bump patch version
+- `npm run version:minor` - Bump minor version  
+- `npm run version:major` - Bump major version
+- `npm run release:dry` - Dry run release (test publish without actually publishing)
+- `npm run release` - Full release: validate + build + test + publish
+- `npm run test:ci` - CI test command (runs coverage)
 
 ## Architecture Overview
 
-This is a NestJS library implementing **Clean Architecture** principles for dynamic DTO generation and validation. The architecture separates concerns into distinct layers:
+This is a **high-performance NestJS library** for dynamic DTO generation and validation from JSON schemas at runtime with **advanced caching and memory management**. The library implements **Clean Architecture** principles and separates concerns into distinct layers:
+
+## Package Information
+
+- **Name**: `dynamic-dto`
+- **Version**: 1.0.0
+- **License**: MIT
+- **Engine Requirements**: Node.js ≥18.17.0, npm ≥9.6.0
+- **Platform Support**: macOS, Linux, Windows (x64, ARM64)
+- **Module Formats**: CommonJS and ESM support via dual exports
+- **Publishing**: Public package on npm registry
+
+## Key Features
+
+Based on the package.json keywords, this library provides:
+
+- **Runtime DTO Generation** - Create DTOs dynamically from JSON schemas
+- **Advanced Validation** - Comprehensive validation with class-validator integration
+- **Clean Architecture** - Well-structured, maintainable codebase
+- **High Performance** - Optimized for production workloads
+- **Memory Management** - Advanced caching with memory leak prevention
+- **Field Processors** - Extensible field processing system
+- **String Formats** - 12+ specialized string format validators
+- **Class Transformer Integration** - Seamless data transformation
 
 ### Layer Structure
 
@@ -188,10 +244,35 @@ DynamicDtoModule.forRoot({
 
 ## Development Workflow
 
+### Standard Development Flow
+
 1. **Code Changes**: Follow Clean Architecture layer separation
-2. **Testing**: Ensure tests pass and meet coverage requirements
-3. **Linting**: Run `npm run lint` for code quality
+2. **Quality Checks**: Run `npm run validate` (typecheck + lint + format)
+3. **Testing**: Ensure tests pass and meet coverage requirements
 4. **Building**: Use `npm run build` to verify compilation
+
+### Pre-commit Workflow
+
+The package includes Husky for Git hooks:
+
+1. **Install hooks**: `npm run postinstall` (installs Husky hooks)
+2. **Automatic checks**: Pre-commit hooks run validation automatically
+3. **Manual validation**: Use `npm run validate` before committing
+
+### Release Workflow
+
+1. **Version Bumping**:
+   - `npm run version:patch` - Bug fixes
+   - `npm run version:minor` - New features  
+   - `npm run version:major` - Breaking changes
+2. **Pre-release Testing**: `npm run release:dry` - Test release without publishing
+3. **Full Release**: `npm run release` - Validate + build + test + publish
+
+### Continuous Integration
+
+- **CI Command**: `npm run test:ci` runs full coverage validation
+- **Coverage Enforcement**: 99% threshold for unit tests, 90% for integration
+- **Build Verification**: All builds must pass TypeScript compilation
 
 ## Key Files to Understand
 
@@ -211,3 +292,62 @@ The library is designed for extensibility:
 - **Custom String Formats** - Add new string format validators
 
 All extensions follow the same decorator-based discovery pattern for automatic registration.
+
+## Modern Package Features
+
+### Module System Support
+
+The package supports both CommonJS and ESM through dual exports:
+
+```json
+{
+  "main": "dist/index.js",           // CommonJS entry
+  "module": "dist/index.esm.js",     // ESM entry  
+  "types": "dist/index.d.ts",        // TypeScript declarations
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js", 
+      "types": "./dist/index.d.ts"
+    }
+  }
+}
+```
+
+### Development Environment
+
+- **Volta Support**: Pin Node.js 18.17.0 and npm 9.6.0 versions
+- **Browserslist**: Target Node.js ≥18.17.0 for compatibility
+- **Platform Support**: Cross-platform (Darwin, Linux, Win32) with x64/ARM64 support
+
+### Publishing Configuration
+
+- **Registry**: Public npm registry with open access
+- **Files Included**: Compiled dist/, source TypeScript files, documentation
+- **Version Management**: Automated with npm version commands
+- **Release Pipeline**: Comprehensive validation before publish
+
+### Quality Tools Integration
+
+- **Husky**: Git hooks for pre-commit validation
+- **Commitizen**: Conventional commit formatting support
+- **Rimraf**: Cross-platform file cleanup
+- **ESLint + Prettier**: Code quality and formatting
+- **TypeScript**: Strict type checking with `--noEmit`
+
+### Dependencies Overview
+
+**Runtime Dependencies:**
+
+- NestJS framework (v11+)
+- class-validator & class-transformer for validation/transformation
+- RxJS for reactive programming
+- UUID for unique identifiers
+
+**Development Dependencies:**
+
+- Jest testing framework with TypeScript support
+- ESLint + TypeScript ESLint for linting
+- Prettier for code formatting
+- Supertest for HTTP testing
+- Various TypeScript type definitions
