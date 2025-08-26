@@ -1249,57 +1249,40 @@ describe('UnionFieldProcessor', () => {
       expect(validator).toBeDefined();
     });
 
-    it('should test hasLength custom validator with edge cases', () => {
-      const hasLengthValidator = UnionFieldProcessor['customValidatorRegistry'].get('hasLength');
-      expect(hasLengthValidator).toBeDefined();
+    // NOTE: Custom validator tests moved to UnionValidatorRegistry service tests
+    // This functionality is now handled by the service-based architecture
+    it('should warn about deprecated custom validator access', () => {
+      // Testing the deprecated static methods
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      // Test string values
-      expect(hasLengthValidator!('hello', { min: 3, max: 10 })).toBe(true);
-      expect(hasLengthValidator!('hi', { min: 3, max: 10 })).toBe(false);
-      expect(hasLengthValidator!('verylongstring', { min: 3, max: 10 })).toBe(false);
+      UnionFieldProcessor.registerCustomValidator('test', () => true);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('deprecated'));
 
-      // Test array values
-      expect(hasLengthValidator!([1, 2, 3], { min: 2, max: 5 })).toBe(true);
-      expect(hasLengthValidator!([1], { min: 2, max: 5 })).toBe(false);
-      expect(hasLengthValidator!([1, 2, 3, 4, 5, 6], { min: 2, max: 5 })).toBe(false);
+      const validators = UnionFieldProcessor.getRegisteredValidators();
+      expect(validators).toEqual([]);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('deprecated'));
 
-      // Test no config (should use defaults)
-      expect(hasLengthValidator!('test')).toBe(true);
-      expect(hasLengthValidator!([])).toBe(true);
-
-      // Test non-string/array values
-      expect(hasLengthValidator!(123)).toBe(false);
-      expect(hasLengthValidator!({})).toBe(false);
-      expect(hasLengthValidator!(null)).toBe(false);
+      consoleSpy.mockRestore();
     });
 
-    it('should test isInRange custom validator with edge cases', () => {
-      const isInRangeValidator = UnionFieldProcessor['customValidatorRegistry'].get('isInRange');
-      expect(isInRangeValidator).toBeDefined();
+    it('should test clearPatternCache deprecated method', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      // Test valid ranges
-      expect(isInRangeValidator!(5, { min: 0, max: 10 })).toBe(true);
-      expect(isInRangeValidator!(0, { min: 0, max: 10 })).toBe(true);
-      expect(isInRangeValidator!(10, { min: 0, max: 10 })).toBe(true);
+      UnionFieldProcessor.clearPatternCache();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('deprecated'));
 
-      // Test out of range
-      expect(isInRangeValidator!(-1, { min: 0, max: 10 })).toBe(false);
-      expect(isInRangeValidator!(11, { min: 0, max: 10 })).toBe(false);
-
-      // Test no config (should use defaults -Infinity to Infinity)
-      expect(isInRangeValidator!(1000000)).toBe(true);
-      expect(isInRangeValidator!(-1000000)).toBe(true);
-
-      // Test non-number values
-      expect(isInRangeValidator!('5')).toBe(false);
-      expect(isInRangeValidator!({})).toBe(false);
-      expect(isInRangeValidator!(null)).toBe(false);
+      consoleSpy.mockRestore();
     });
 
-    it('should test built-in custom validators comprehensively', () => {
-      const isEmailValidator = UnionFieldProcessor['customValidatorRegistry'].get('isEmail');
-      const isUrlValidator = UnionFieldProcessor['customValidatorRegistry'].get('isUrl');
-      const isUuidValidator = UnionFieldProcessor['customValidatorRegistry'].get('isUuid');
+    it('should provide access to processor services for debugging', () => {
+      const services = processor.getProcessorServices();
+
+      expect(services).toHaveProperty('typeDetector');
+      expect(services).toHaveProperty('validator');
+      expect(services).toHaveProperty('discriminatorHandler');
+      expect(services).toHaveProperty('transformer');
+      expect(services).toHaveProperty('safeDefaultService');
+      expect(services).toHaveProperty('validatorRegistry');
 
       // Test email validator
       expect(isEmailValidator!('test@example.com')).toBe(true);
