@@ -50,6 +50,18 @@ export class ValidationErrorRecoveryService {
    * Generate recovery plan for validation errors
    */
   generateRecoveryPlan<TError extends BaseValidationError = BaseValidationError>(aggregator: ValidationErrorAggregator): RecoveryPlan<TError> {
+    if (!aggregator) {
+      this.logger.warn('Null aggregator provided to generateRecoveryPlan');
+      return {
+        canAutoRecover: false,
+        recoverySteps: [],
+        manualSteps: [],
+        estimatedRecoveryTime: 0,
+        riskLevel: 'low',
+        sourceErrors: [] as readonly TError[],
+      };
+    }
+
     const errors = aggregator.getErrors();
     const summary = aggregator.getSummary();
 
@@ -366,5 +378,76 @@ export class ValidationErrorRecoveryService {
   private updateConstraint(schema: any, step: RecoveryStep): any {
     this.logger.debug(`Updating constraint for ${step.targetField}`);
     return schema;
+  }
+
+  /**
+   * Attempt automatic recovery of validation errors
+   */
+  async attemptRecovery(validationResult: any, context: any): Promise<any> {
+    if (validationResult.isValid) {
+      this.logger.debug('Validation result is valid, no recovery needed');
+      return {
+        success: true,
+        recovered: false,
+        result: validationResult,
+        appliedFixes: [],
+      };
+    }
+
+    // Generate recovery plan from errors
+    const errors = validationResult.errors || [];
+    if (errors.length === 0) {
+      return {
+        success: true,
+        recovered: false,
+        result: validationResult,
+        appliedFixes: [],
+      };
+    }
+
+    try {
+      // Convert errors to BaseValidationError format if needed
+      const baseErrors = errors.map((error: any) => ({
+        code: error.code || 'UNKNOWN_ERROR',
+        message: error.message || 'Unknown error',
+        severity: error.severity || 'error',
+        context: { fieldPath: error.fieldPath, ...context },
+        metadata: error.metadata || {},
+      }));
+
+      const plan = this.generateRecoveryPlan(baseErrors);
+      const recoveryResult = this.executeRecoveryPlan(plan, context, false);
+
+      return {
+        success: recoveryResult.success,
+        recovered: recoveryResult.executedSteps.length > 0,
+        result: validationResult,
+        appliedFixes: recoveryResult.executedSteps,
+        remainingIssues: recoveryResult.remainingIssues,
+        plan,
+      };
+    } catch (error) {
+      this.logger.error('Recovery attempt failed', error);
+      return {
+        success: false,
+        recovered: false,
+        result: validationResult,
+        error: error instanceof Error ? error.message : 'Unknown recovery error',
+      };
+    }
+  }
+
+  /**
+   * Check if errors can be recovered from
+   */
+  canRecover(errors: any[]): boolean {
+    if (!Array.isArray(errors) || errors.length === 0) {
+      return false;
+    }
+
+    // Check if we have any recoverable error types
+    const recoverableErrors = ['INVALID_TYPE', 'MISSING_FIELD', 'INVALID_CONSTRAINT', 'FIELD_DEPRECATED', 'DUPLICATE_FIELD_NAMES'];
+
+    return errors.some((error) => recoverableErrors.includes(error.code));
   }
 }

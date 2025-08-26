@@ -92,6 +92,29 @@ export class FieldValidatorRegistry implements OnModuleInit {
   }
 
   /**
+   * Register a validator for a specific field type
+   */
+  register(type: FieldTypeValue, validator: BaseFieldValidator): void {
+    this.validators.set(type, validator);
+    this.logger.debug(`Manually registered validator: ${validator.constructor.name} for type: ${type}`);
+  }
+
+  /**
+   * Get validators for a specific field type (returns array for consistency with tests)
+   */
+  getValidatorsForType(type: FieldTypeValue): BaseFieldValidator[] {
+    const validator = this.getValidator(type);
+    return validator ? [validator] : [];
+  }
+
+  /**
+   * Get the total number of registered validators
+   */
+  getValidatorCount(): number {
+    return this.validators.size;
+  }
+
+  /**
    * Check if validator exists for field type
    */
   hasValidator(type: FieldTypeValue): boolean {

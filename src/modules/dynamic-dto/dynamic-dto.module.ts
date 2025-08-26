@@ -18,9 +18,6 @@ import { SchemaValidationPipeline } from './application/pipelines/schema-validat
 // Infrastructure services
 import { NestedClassGeneratorService } from './infrastructure/services/nested-class-generator.service';
 
-// Explicit export registry to replace complex runtime filtering
-import { ExportRegistry } from './infrastructure/registries/export.registry';
-
 // Configuration
 import { DynamicDtoModuleOptions } from './interfaces/module-options.interface';
 import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } from './dynamic-dto.module-definition';
@@ -33,9 +30,9 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
       global: options.isGlobal ?? false,
       imports: [
         // Core feature modules (always loaded)
-        FieldProcessingModule,
+        FieldProcessingModule.forRoot(options),
         FieldValidationModule,
-        ValidationModule,
+        ValidationModule.forRoot(options),
 
         // Optional feature modules (lazy loaded based on configuration)
         ...(options.cache ? [CacheModule.forRoot(options)] : []),
@@ -66,7 +63,22 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         // === INFRASTRUCTURE SERVICES (1 provider) ===
         NestedClassGeneratorService,
       ],
-      exports: ExportRegistry.getAllExports(),
+      exports: [
+        // Core public API services
+        DtoOrchestratorService,
+        DtoValidationService,
+        DtoCacheService,
+        DtoBatchProcessor,
+        SchemaOrchestratorService,
+
+        // Processing pipelines
+        DtoGenerationPipeline,
+        ValidationPipeline,
+        SchemaValidationPipeline,
+
+        // Infrastructure services
+        NestedClassGeneratorService,
+      ],
     };
   }
 }

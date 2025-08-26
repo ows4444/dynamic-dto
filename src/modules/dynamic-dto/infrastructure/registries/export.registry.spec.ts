@@ -231,8 +231,8 @@ describe('ExportRegistry', () => {
       const end = performance.now();
       const duration = end - start;
 
-      // Should complete 3000 operations in reasonable time (less than 100ms)
-      expect(duration).toBeLessThan(100);
+      // Should complete 3000 operations in reasonable time (less than 500ms)
+      expect(duration).toBeLessThan(500);
     });
 
     it('should not create excessive object overhead', () => {

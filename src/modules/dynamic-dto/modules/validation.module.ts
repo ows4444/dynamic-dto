@@ -14,36 +14,44 @@ import { BaseSchemaValidator } from '../core/abstractions/base-schema-validator.
 import { ValidationErrorService } from '../exceptions/validation/validation-error.service';
 import { ValidationErrorRecoveryService } from '../exceptions/validation/validation-error-recovery.service';
 
-@Module({
-  providers: [
-    // === VALIDATION STRATEGY INFRASTRUCTURE ===
-    ValidationStrategyFactory,
+// === MODULE OPTIONS ===
+import type { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
 
-    // === VALIDATION STRATEGIES ===
-    StructuralValidationStrategy,
-    FieldValidationStrategy,
-    CrossFieldValidationStrategy,
+@Module({})
+export class ValidationModule {
+  static forRoot(_options: DynamicDtoModuleOptions = {}) {
+    return {
+      module: ValidationModule,
+      providers: [
+        // === VALIDATION STRATEGY INFRASTRUCTURE ===
+        ValidationStrategyFactory,
 
-    // === SCHEMA VALIDATION ===
-    EnhancedStructuralSchemaValidator,
-    {
-      provide: BaseSchemaValidator,
-      useClass: EnhancedStructuralSchemaValidator,
-    },
+        // === VALIDATION STRATEGIES ===
+        StructuralValidationStrategy,
+        FieldValidationStrategy,
+        CrossFieldValidationStrategy,
 
-    // === ERROR HANDLING & RECOVERY ===
-    ValidationErrorService,
-    ValidationErrorRecoveryService,
-  ],
-  exports: [
-    ValidationStrategyFactory,
-    StructuralValidationStrategy,
-    FieldValidationStrategy,
-    CrossFieldValidationStrategy,
-    EnhancedStructuralSchemaValidator,
-    BaseSchemaValidator,
-    ValidationErrorService,
-    ValidationErrorRecoveryService,
-  ],
-})
-export class ValidationModule {}
+        // === SCHEMA VALIDATION ===
+        EnhancedStructuralSchemaValidator,
+        {
+          provide: BaseSchemaValidator,
+          useClass: EnhancedStructuralSchemaValidator,
+        },
+
+        // === ERROR HANDLING & RECOVERY ===
+        ValidationErrorService,
+        ValidationErrorRecoveryService,
+      ],
+      exports: [
+        ValidationStrategyFactory,
+        StructuralValidationStrategy,
+        FieldValidationStrategy,
+        CrossFieldValidationStrategy,
+        EnhancedStructuralSchemaValidator,
+        BaseSchemaValidator,
+        ValidationErrorService,
+        ValidationErrorRecoveryService,
+      ],
+    };
+  }
+}

@@ -32,59 +32,79 @@ import { NestedObjectTransformerService } from '../processors/field-processors/c
 // === REGISTRIES & DISCOVERY ===
 import { FieldProcessorRegistry } from '../infrastructure/registries/field-processor.registry';
 import { FieldProcessorDiscoveryService } from '../infrastructure/services/field-processor-discovery.service';
+import { NestedClassGeneratorService } from '../infrastructure/services/nested-class-generator.service';
+
+// === MODULE OPTIONS ===
+import type { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
 
 @Global()
-@Module({
-  providers: [
-    // === CORE DISCOVERY SERVICES ===
-    DiscoveryService,
-    Reflector,
-    FieldProcessorDiscoveryService,
+@Module({})
+export class FieldProcessingModule {
+  static forRoot(_options: DynamicDtoModuleOptions = {}) {
+    return {
+      module: FieldProcessingModule,
+      providers: [
+        // === CORE DISCOVERY SERVICES ===
+        DiscoveryService,
+        Reflector,
+        FieldProcessorDiscoveryService,
 
-    // === FIELD PROCESSOR REGISTRY ===
-    FieldProcessorRegistry,
+        // === FIELD PROCESSOR REGISTRY ===
+        FieldProcessorRegistry,
 
-    // === STRING PROCESSING INFRASTRUCTURE ===
-    StringFormatProcessorFactory,
+        // === NESTED CLASS GENERATION ===
+        NestedClassGeneratorService,
 
-    // === FIELD PROCESSORS ===
-    // String processors
-    StringBasicProcessor,
-    StringFormatProcessor,
-    StringTransformationProcessor,
-    StringAutoGenerationProcessor,
-    StringFieldProcessorComposite,
+        // === STRING PROCESSING INFRASTRUCTURE ===
+        StringFormatProcessorFactory,
 
-    // Other primitive processors
-    NumberFieldProcessor,
-    BooleanFieldProcessor,
+        // === FIELD PROCESSORS ===
+        // String processors
+        StringBasicProcessor,
+        StringFormatProcessor,
+        StringTransformationProcessor,
+        StringAutoGenerationProcessor,
+        StringFieldProcessorComposite,
 
-    // Specialized processors
-    DateFieldProcessor,
-    EnumFieldProcessor,
-    UnionFieldProcessor,
+        // Other primitive processors
+        NumberFieldProcessor,
+        BooleanFieldProcessor,
 
-    // Complex processors
-    ArrayFieldProcessor,
-    ObjectFieldProcessorComposite,
+        // Specialized processors
+        DateFieldProcessor,
+        EnumFieldProcessor,
+        UnionFieldProcessor,
 
-    // Object processing services
-    CircularReferenceDetectorService,
-    ObjectValidationService,
-    PropertyFilteringService,
-    NestedObjectTransformerService,
-  ],
-  exports: [
-    FieldProcessorRegistry,
-    FieldProcessorDiscoveryService,
-    // Export key processors for external use
-    StringFieldProcessorComposite,
-    NumberFieldProcessor,
-    BooleanFieldProcessor,
-    DateFieldProcessor,
-    EnumFieldProcessor,
-    ArrayFieldProcessor,
-    ObjectFieldProcessorComposite,
-  ],
-})
-export class FieldProcessingModule {}
+        // Complex processors
+        ArrayFieldProcessor,
+        ObjectFieldProcessorComposite,
+
+        // Object processing services
+        CircularReferenceDetectorService,
+        ObjectValidationService,
+        PropertyFilteringService,
+        NestedObjectTransformerService,
+
+        // String token provider for legacy injection
+        {
+          provide: 'FieldProcessorRegistry',
+          useExisting: FieldProcessorRegistry,
+        },
+      ],
+      exports: [
+        FieldProcessorRegistry,
+        FieldProcessorDiscoveryService,
+        // Export key processors for external use
+        StringFieldProcessorComposite,
+        NumberFieldProcessor,
+        BooleanFieldProcessor,
+        DateFieldProcessor,
+        EnumFieldProcessor,
+        ArrayFieldProcessor,
+        ObjectFieldProcessorComposite,
+        // Export string token for legacy injection
+        'FieldProcessorRegistry',
+      ],
+    };
+  }
+}

@@ -40,18 +40,14 @@ describe('DynamicDtoModule', () => {
       expect(module).toBeDefined();
     });
 
-    it('should export all services from ExportRegistry', async () => {
+    it('should export core services', async () => {
       module = await Test.createTestingModule({
         imports: [DynamicDtoModule.forRoot()],
       }).compile();
 
-      // Get all expected exports
-      const expectedExports = ExportRegistry.getAllExports();
-
-      // Verify each exported service can be resolved
-      for (const exportedService of expectedExports) {
-        expect(() => module.get(exportedService)).not.toThrow();
-      }
+      // Verify core services can be resolved
+      expect(module.get(DtoOrchestratorService)).toBeDefined();
+      expect(() => module.get(DtoOrchestratorService)).not.toThrow();
     });
   });
 

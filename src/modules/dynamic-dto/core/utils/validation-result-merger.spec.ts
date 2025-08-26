@@ -7,7 +7,7 @@ describe('ValidationResultMerger', () => {
     isValid,
     issues,
     fieldPath,
-    metadata,
+    metadata: metadata ?? {},
     errors: issues.filter((i) => i.severity === ValidationSeverity.error),
     warnings: issues.filter((i) => i.severity === ValidationSeverity.warning),
     infos: issues.filter((i) => i.severity === ValidationSeverity.info),
@@ -51,7 +51,16 @@ describe('ValidationResultMerger', () => {
 
       const result = ValidationResultMerger.mergeResults([singleResult]);
 
-      expect(result).toBe(singleResult);
+      expect(result.isValid).toBe(singleResult.isValid);
+      expect(result.fieldPath).toBe(singleResult.fieldPath);
+      expect(result.issues).toHaveLength(1);
+      expect(result.issues[0]?.code).toBe('TEST_ERROR');
+      expect(result.metadata).toEqual({ source: 'test' });
+      expect(result.errors).toHaveLength(1);
+      expect(result.warnings).toHaveLength(0);
+      expect(result.infos).toHaveLength(0);
+      expect(result.summary).toBeDefined();
+      expect(result.summary?.totalIssues).toBe(1);
     });
 
     it('should merge multiple valid results into valid result', () => {

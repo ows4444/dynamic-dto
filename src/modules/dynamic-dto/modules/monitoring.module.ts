@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 
 // Monitoring services
 import { EnhancedCacheMonitorService } from '../infrastructure/monitoring/enhanced-cache-monitor.service';
+import { CacheManagerService } from '../infrastructure/cache/cache-manager.service';
+import { MemoryCacheStrategy } from '../infrastructure/cache/strategies/memory-cache.strategy';
 
 // Module configuration
 import type { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
@@ -12,6 +14,18 @@ export class MonitoringModule {
     return {
       module: MonitoringModule,
       providers: [
+        // Cache strategy provider
+        {
+          provide: 'ICacheStrategy',
+          useClass: MemoryCacheStrategy,
+        },
+
+        // Cache manager provider
+        {
+          provide: 'ICacheManager',
+          useClass: CacheManagerService,
+        },
+
         // Cache monitor configuration provider
         {
           provide: 'CACHE_MONITOR_CONFIG',
@@ -21,7 +35,7 @@ export class MonitoringModule {
         // Enhanced cache monitor service
         EnhancedCacheMonitorService,
       ],
-      exports: ['CACHE_MONITOR_CONFIG', EnhancedCacheMonitorService],
+      exports: ['CACHE_MONITOR_CONFIG', EnhancedCacheMonitorService, 'ICacheManager'],
     };
   }
 }

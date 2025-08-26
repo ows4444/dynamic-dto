@@ -1,9 +1,15 @@
 import { ValidationStrategy } from './validation-strategy.abstract';
 import type { ValidationContext, ValidationResult } from '../interfaces/validation';
+import { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 
 class TestValidationStrategy extends ValidationStrategy {
-  async validate(context: ValidationContext): Promise<ValidationResult> {
-    if (context.value === 'valid') {
+  readonly name = 'test-strategy';
+  readonly order = 1;
+
+  execute(_schema: DynamicSchemaEntity, context?: ValidationContext): ValidationResult {
+    const testValue = context?.data;
+
+    if (testValue === 'valid') {
       return { isValid: true, issues: [] };
     } else {
       return {
@@ -13,47 +19,45 @@ class TestValidationStrategy extends ValidationStrategy {
             code: 'TEST_INVALID',
             message: 'Test validation failed',
             severity: 'error',
-            fieldPath: context.path || 'value',
+            fieldPath: context?.fieldPath && context.fieldPath !== '' ? context.fieldPath : 'value',
           },
         ],
       };
     }
   }
-
-  protected async executeValidation(context: ValidationContext): Promise<ValidationResult> {
-    return this.validate(context);
-  }
 }
 
 describe('ValidationStrategy', () => {
   let strategy: TestValidationStrategy;
+  let mockSchema: DynamicSchemaEntity;
 
   beforeEach(() => {
     strategy = new TestValidationStrategy();
+    mockSchema = new DynamicSchemaEntity('test-schema', 'TestSchema', {}, [], false, {});
   });
 
-  describe('validate', () => {
-    it('should validate valid values', async () => {
+  describe('execute', () => {
+    it('should validate valid values', () => {
       const context: ValidationContext = {
-        value: 'valid',
-        schema: { type: 'string' } as any,
-        path: 'test.field',
+        data: 'valid',
+        fieldPath: 'test.field',
+        depth: 0,
       };
 
-      const result = await strategy.validate(context);
+      const result = strategy.execute(mockSchema, context);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toEqual([]);
     });
 
-    it('should reject invalid values', async () => {
+    it('should reject invalid values', () => {
       const context: ValidationContext = {
-        value: 'invalid',
-        schema: { type: 'string' } as any,
-        path: 'test.field',
+        data: 'invalid',
+        fieldPath: 'test.field',
+        depth: 0,
       };
 
-      const result = await strategy.validate(context);
+      const result = strategy.execute(mockSchema, context);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
@@ -65,44 +69,49 @@ describe('ValidationStrategy', () => {
       });
     });
 
-    it('should handle context without path', async () => {
+    it('should handle context without fieldPath', () => {
       const context: ValidationContext = {
-        value: 'invalid',
-        schema: { type: 'string' } as any,
+        data: 'invalid',
+        depth: 0,
+        fieldPath: '',
       };
 
-      const result = await strategy.validate(context);
+      const result = strategy.execute(mockSchema, context);
 
       expect(result.isValid).toBe(false);
       expect(result.issues[0]?.fieldPath).toBe('value');
     });
 
-    it('should handle empty validation context', async () => {
-      const context: ValidationContext = {
-        value: undefined,
-        schema: { type: 'string' } as any,
-      };
-
-      const result = await strategy.validate(context);
+    it('should handle empty validation context', () => {
+      const result = strategy.execute(mockSchema);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
     });
   });
 
-  describe('executeValidation (protected)', () => {
-    it('should be callable from subclasses', async () => {
+  describe('canExecute', () => {
+    it('should return true by default', () => {
+      const result = strategy.canExecute(mockSchema);
+      expect(result).toBe(true);
+    });
+
+    it('should return true with context', () => {
       const context: ValidationContext = {
-        value: 'valid',
-        schema: { type: 'string' } as any,
-        path: 'protected.test',
+        data: 'test',
+        fieldPath: 'test.field',
+        depth: 0,
       };
 
-      // Access through public validate method (which calls protected executeValidation)
-      const result = await strategy.validate(context);
+      const result = strategy.canExecute(mockSchema, context);
+      expect(result).toBe(true);
+    });
+  });
 
-      expect(result.isValid).toBe(true);
-      expect(result.issues).toEqual([]);
+  describe('properties', () => {
+    it('should have required properties', () => {
+      expect(strategy.name).toBe('test-strategy');
+      expect(strategy.order).toBe(1);
     });
   });
 });

@@ -1,440 +1,304 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FieldHandlerRegistry } from './field-handler.registry';
-import { FieldType } from '../../core/enums/field-type.enums';
-import { FieldHandlerDiscoveryService } from '../services/field-handler-discovery.service';
-import { Injectable } from '@nestjs/common';
+import { FieldType } from '../../core/types/field.types';
+import { FieldProcessorDiscoveryService } from '../services/field-processor-discovery.service';
+import { FieldValidatorRegistry } from './field-validator.registry';
+import { Injectable, Logger } from '@nestjs/common';
+import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
+import { FieldSchema } from '../../core/interfaces/schema';
+import type { FieldTypeValue } from '../../core/types/field.types';
 
-// Mock field handler for testing
+// Mock field processor for testing
 @Injectable()
-class MockStringHandler {
-  readonly supportedType = FieldType.string;
-  readonly priority = 1;
-  readonly name = 'MockStringHandler';
+class MockStringProcessor extends BaseFieldProcessor {
+  readonly supportedType: FieldTypeValue = FieldType.string;
 
-  canHandle(type: FieldType): boolean {
-    return type === FieldType.string;
+  canProcess(schema: FieldSchema): schema is FieldSchema {
+    return schema.type === FieldType.string;
   }
 
-  handle(data: any): any {
-    return data.toString();
+  generateValidationDecorators(): PropertyDecorator[] {
+    return [];
+  }
+
+  override generateTransformationDecorators(): PropertyDecorator[] {
+    return [];
+  }
+
+  override generateSerializationDecorators(): PropertyDecorator[] {
+    return [];
+  }
+
+  getTypeSpecificTransformations(): any[] {
+    return [];
   }
 }
 
 @Injectable()
-class MockNumberHandler {
-  readonly supportedType = FieldType.number;
-  readonly priority = 2;
-  readonly name = 'MockNumberHandler';
+class MockNumberProcessor extends BaseFieldProcessor {
+  readonly supportedType: FieldTypeValue = FieldType.number;
 
-  canHandle(type: FieldType): boolean {
-    return type === FieldType.number;
+  canProcess(schema: FieldSchema): schema is FieldSchema {
+    return schema.type === FieldType.number;
   }
 
-  handle(data: any): any {
-    return Number(data);
-  }
-}
-
-@Injectable()
-class MockHighPriorityHandler {
-  readonly supportedType = FieldType.string;
-  readonly priority = 0; // Higher priority (lower number)
-  readonly name = 'MockHighPriorityHandler';
-
-  canHandle(type: FieldType): boolean {
-    return type === FieldType.string;
+  generateValidationDecorators(): PropertyDecorator[] {
+    return [];
   }
 
-  handle(data: any): any {
-    return `high-priority-${data}`;
+  override generateTransformationDecorators(): PropertyDecorator[] {
+    return [];
+  }
+
+  override generateSerializationDecorators(): PropertyDecorator[] {
+    return [];
+  }
+
+  getTypeSpecificTransformations(): any[] {
+    return [];
   }
 }
 
 describe('FieldHandlerRegistry', () => {
   let registry: FieldHandlerRegistry;
-  let discoveryService: jest.Mocked<FieldHandlerDiscoveryService>;
+  let discoveryService: jest.Mocked<FieldProcessorDiscoveryService>;
+  let validatorRegistry: jest.Mocked<FieldValidatorRegistry>;
 
-  const mockStringHandler = new MockStringHandler();
-  const mockNumberHandler = new MockNumberHandler();
-  const mockHighPriorityHandler = new MockHighPriorityHandler();
+  const mockStringProcessor = new MockStringProcessor();
+  const mockNumberProcessor = new MockNumberProcessor();
 
   beforeEach(async () => {
     const mockDiscoveryService = {
-      discoverHandlers: jest.fn(),
+      discoverProcessors: jest.fn(),
+      validateProcessorCompatibility: jest.fn(),
+      getProcessorsByCategory: jest.fn(),
+    };
+
+    const mockValidatorRegistry = {
+      getValidator: jest.fn(),
+      hasValidator: jest.fn(),
+      validateField: jest.fn(),
+      getSupportedTypes: jest.fn().mockReturnValue([]),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FieldHandlerRegistry,
         {
-          provide: FieldHandlerDiscoveryService,
+          provide: FieldProcessorDiscoveryService,
           useValue: mockDiscoveryService,
+        },
+        {
+          provide: FieldValidatorRegistry,
+          useValue: mockValidatorRegistry,
         },
       ],
     }).compile();
 
     registry = module.get<FieldHandlerRegistry>(FieldHandlerRegistry);
-    discoveryService = module.get(FieldHandlerDiscoveryService);
+    discoveryService = module.get(FieldProcessorDiscoveryService);
+    validatorRegistry = module.get(FieldValidatorRegistry);
+
+    // Suppress logger output during tests
+    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    jest.spyOn(Logger.prototype, 'debug').mockImplementation();
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    jest.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
-  it('should be defined', () => {
-    expect(registry).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  describe('register', () => {
-    it('should register a field handler', () => {
-      registry.register(mockStringHandler);
+  describe('registerProcessor', () => {
+    it('should register a field processor', () => {
+      registry.registerProcessor(mockStringProcessor);
 
-      const handlers = registry.getHandlersForType(FieldType.string);
-      expect(handlers).toContain(mockStringHandler);
+      expect(registry.hasProcessor(FieldType.string)).toBe(true);
+      expect(registry.getProcessor(FieldType.string)).toBe(mockStringProcessor);
     });
 
-    it('should register multiple handlers for same type', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockHighPriorityHandler);
+    it('should handle invalid processor', () => {
+      const invalidProcessor = null as any;
 
-      const handlers = registry.getHandlersForType(FieldType.string);
-      expect(handlers).toHaveLength(2);
-      expect(handlers).toContain(mockStringHandler);
-      expect(handlers).toContain(mockHighPriorityHandler);
+      registry.registerProcessor(invalidProcessor);
+
+      expect(registry.hasProcessor(FieldType.string)).toBe(false);
     });
 
-    it('should register handlers for different types', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
+    it('should override existing processor with warning', () => {
+      const anotherStringProcessor = new MockStringProcessor();
 
-      const stringHandlers = registry.getHandlersForType(FieldType.string);
-      const numberHandlers = registry.getHandlersForType(FieldType.number);
+      registry.registerProcessor(mockStringProcessor);
+      registry.registerProcessor(anotherStringProcessor);
 
-      expect(stringHandlers).toContain(mockStringHandler);
-      expect(numberHandlers).toContain(mockNumberHandler);
-      expect(stringHandlers).not.toContain(mockNumberHandler);
-      expect(numberHandlers).not.toContain(mockStringHandler);
-    });
-
-    it('should not register duplicate handlers', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockStringHandler); // Duplicate
-
-      const handlers = registry.getHandlersForType(FieldType.string);
-      expect(handlers).toHaveLength(1);
-    });
-
-    it('should handle registration of null handler gracefully', () => {
-      expect(() => registry.register(null as any)).not.toThrow();
-
-      const handlers = registry.getHandlersForType(FieldType.string);
-      expect(handlers).toHaveLength(0);
-    });
-
-    it('should handle registration of undefined handler gracefully', () => {
-      expect(() => registry.register(undefined as any)).not.toThrow();
-
-      const handlers = registry.getHandlersForType(FieldType.string);
-      expect(handlers).toHaveLength(0);
+      expect(registry.getProcessor(FieldType.string)).toBe(anotherStringProcessor);
     });
   });
 
-  describe('getHandlersForType', () => {
-    beforeEach(() => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
-      registry.register(mockHighPriorityHandler);
+  describe('getProcessor', () => {
+    it('should return registered processor', () => {
+      registry.registerProcessor(mockStringProcessor);
+
+      const processor = registry.getProcessor(FieldType.string);
+
+      expect(processor).toBe(mockStringProcessor);
     });
 
-    it('should return handlers for specified type', () => {
-      const stringHandlers = registry.getHandlersForType(FieldType.string);
-
-      expect(stringHandlers).toHaveLength(2);
-      expect(stringHandlers).toContain(mockStringHandler);
-      expect(stringHandlers).toContain(mockHighPriorityHandler);
-    });
-
-    it('should return handlers sorted by priority', () => {
-      const stringHandlers = registry.getHandlersForType(FieldType.string);
-
-      expect(stringHandlers[0]).toBe(mockHighPriorityHandler); // Priority 0
-      expect(stringHandlers[1]).toBe(mockStringHandler); // Priority 1
-    });
-
-    it('should return empty array for type with no handlers', () => {
-      const booleanHandlers = registry.getHandlersForType(FieldType.boolean);
-
-      expect(booleanHandlers).toHaveLength(0);
-      expect(Array.isArray(booleanHandlers)).toBe(true);
-    });
-
-    it('should return empty array for undefined type', () => {
-      const handlers = registry.getHandlersForType(undefined as any);
-
-      expect(handlers).toHaveLength(0);
-      expect(Array.isArray(handlers)).toBe(true);
-    });
-
-    it('should return empty array for null type', () => {
-      const handlers = registry.getHandlersForType(null as any);
-
-      expect(handlers).toHaveLength(0);
-      expect(Array.isArray(handlers)).toBe(true);
+    it('should throw error for unregistered processor', () => {
+      expect(() => registry.getProcessor(FieldType.string)).toThrow('No processor found for field type: string');
     });
   });
 
-  describe('getHandlerByName', () => {
-    beforeEach(() => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
+  describe('hasProcessor', () => {
+    it('should return true for registered processor', () => {
+      registry.registerProcessor(mockStringProcessor);
+
+      expect(registry.hasProcessor(FieldType.string)).toBe(true);
     });
 
-    it('should return handler by exact name match', () => {
-      const handler = registry.getHandlerByName('MockStringHandler');
-
-      expect(handler).toBe(mockStringHandler);
-    });
-
-    it('should return undefined for non-existent handler name', () => {
-      const handler = registry.getHandlerByName('NonExistentHandler');
-
-      expect(handler).toBeUndefined();
-    });
-
-    it('should handle empty string name', () => {
-      const handler = registry.getHandlerByName('');
-
-      expect(handler).toBeUndefined();
-    });
-
-    it('should handle null name gracefully', () => {
-      const handler = registry.getHandlerByName(null as any);
-
-      expect(handler).toBeUndefined();
-    });
-
-    it('should handle undefined name gracefully', () => {
-      const handler = registry.getHandlerByName(undefined as any);
-
-      expect(handler).toBeUndefined();
-    });
-
-    it('should be case sensitive', () => {
-      const handler1 = registry.getHandlerByName('MockStringHandler');
-      const handler2 = registry.getHandlerByName('mockstringhandler');
-
-      expect(handler1).toBe(mockStringHandler);
-      expect(handler2).toBeUndefined();
+    it('should return false for unregistered processor', () => {
+      expect(registry.hasProcessor(FieldType.string)).toBe(false);
     });
   });
 
-  describe('getAllHandlers', () => {
-    it('should return all registered handlers', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
-      registry.register(mockHighPriorityHandler);
+  describe('getAllProcessors', () => {
+    it('should return all registered processors', () => {
+      registry.registerProcessor(mockStringProcessor);
+      registry.registerProcessor(mockNumberProcessor);
 
-      const allHandlers = registry.getAllHandlers();
+      const processors = registry.getAllProcessors();
 
-      expect(allHandlers).toHaveLength(3);
-      expect(allHandlers).toContain(mockStringHandler);
-      expect(allHandlers).toContain(mockNumberHandler);
-      expect(allHandlers).toContain(mockHighPriorityHandler);
+      expect(processors).toHaveLength(2);
+      expect(processors).toContain(mockStringProcessor);
+      expect(processors).toContain(mockNumberProcessor);
     });
 
-    it('should return empty array when no handlers registered', () => {
-      const allHandlers = registry.getAllHandlers();
+    it('should return empty array when no processors registered', () => {
+      const processors = registry.getAllProcessors();
 
-      expect(allHandlers).toHaveLength(0);
-      expect(Array.isArray(allHandlers)).toBe(true);
-    });
-
-    it('should return handlers sorted by priority across all types', () => {
-      registry.register(mockStringHandler); // Priority 1
-      registry.register(mockNumberHandler); // Priority 2
-      registry.register(mockHighPriorityHandler); // Priority 0
-
-      const allHandlers = registry.getAllHandlers();
-
-      expect(allHandlers[0]).toBe(mockHighPriorityHandler);
-      expect(allHandlers[1]).toBe(mockStringHandler);
-      expect(allHandlers[2]).toBe(mockNumberHandler);
-    });
-
-    it('should return a new array instance each time', () => {
-      registry.register(mockStringHandler);
-
-      const handlers1 = registry.getAllHandlers();
-      const handlers2 = registry.getAllHandlers();
-
-      expect(handlers1).not.toBe(handlers2); // Different array instances
-      expect(handlers1).toEqual(handlers2); // But same content
+      expect(processors).toEqual([]);
     });
   });
 
-  describe('clear', () => {
-    it('should clear all registered handlers', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
+  describe('getSupportedTypes', () => {
+    it('should return supported types', () => {
+      registry.registerProcessor(mockStringProcessor);
+      registry.registerProcessor(mockNumberProcessor);
 
-      expect(registry.getAllHandlers()).toHaveLength(2);
+      const types = registry.getSupportedTypes();
 
-      registry.clear();
-
-      expect(registry.getAllHandlers()).toHaveLength(0);
+      expect(types).toContain(FieldType.string);
+      expect(types).toContain(FieldType.number);
     });
 
-    it('should clear handlers for all types', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
+    it('should cache supported types', () => {
+      registry.registerProcessor(mockStringProcessor);
 
-      registry.clear();
+      const types1 = registry.getSupportedTypes();
+      const types2 = registry.getSupportedTypes();
 
-      expect(registry.getHandlersForType(FieldType.string)).toHaveLength(0);
-      expect(registry.getHandlersForType(FieldType.number)).toHaveLength(0);
+      expect(types1).toBe(types2); // Same reference due to caching
     });
 
-    it('should allow re-registration after clear', () => {
-      registry.register(mockStringHandler);
-      registry.clear();
-      registry.register(mockNumberHandler);
+    it('should invalidate cache when processor is registered', () => {
+      registry.registerProcessor(mockStringProcessor);
+      const types1 = registry.getSupportedTypes();
 
-      const handlers = registry.getAllHandlers();
-      expect(handlers).toHaveLength(1);
-      expect(handlers).toContain(mockNumberHandler);
-    });
+      registry.registerProcessor(mockNumberProcessor);
+      const types2 = registry.getSupportedTypes();
 
-    it('should not throw when clearing empty registry', () => {
-      expect(() => registry.clear()).not.toThrow();
-      expect(registry.getAllHandlers()).toHaveLength(0);
+      expect(types1).not.toBe(types2); // Different reference due to cache invalidation
     });
   });
 
-  describe('hasHandler', () => {
-    beforeEach(() => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
+  describe('unregisterProcessor', () => {
+    it('should unregister processor', () => {
+      registry.registerProcessor(mockStringProcessor);
+      expect(registry.hasProcessor(FieldType.string)).toBe(true);
+
+      const result = registry.unregisterProcessor(FieldType.string);
+
+      expect(result).toBe(true);
+      expect(registry.hasProcessor(FieldType.string)).toBe(false);
     });
 
-    it('should return true for registered handler', () => {
-      expect(registry.hasHandler(mockStringHandler)).toBe(true);
-      expect(registry.hasHandler(mockNumberHandler)).toBe(true);
-    });
+    it('should return false for non-existent processor', () => {
+      const result = registry.unregisterProcessor(FieldType.string);
 
-    it('should return false for unregistered handler', () => {
-      expect(registry.hasHandler(mockHighPriorityHandler)).toBe(false);
-    });
-
-    it('should return false for null handler', () => {
-      expect(registry.hasHandler(null as any)).toBe(false);
-    });
-
-    it('should return false for undefined handler', () => {
-      expect(registry.hasHandler(undefined as any)).toBe(false);
+      expect(result).toBe(false);
     });
   });
 
-  describe('getHandlerCount', () => {
-    it('should return correct count of registered handlers', () => {
-      expect(registry.getHandlerCount()).toBe(0);
+  describe('validator delegation', () => {
+    it('should delegate getValidator to validator registry', () => {
+      const mockValidator = { validate: jest.fn() } as any;
+      validatorRegistry.getValidator.mockReturnValue(mockValidator);
 
-      registry.register(mockStringHandler);
-      expect(registry.getHandlerCount()).toBe(1);
+      const result = registry.getValidator(FieldType.string);
 
-      registry.register(mockNumberHandler);
-      expect(registry.getHandlerCount()).toBe(2);
-
-      registry.register(mockHighPriorityHandler);
-      expect(registry.getHandlerCount()).toBe(3);
+      expect(result).toBe(mockValidator);
+      expect(validatorRegistry.getValidator).toHaveBeenCalledWith(FieldType.string);
     });
 
-    it('should return correct count after duplicates', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockStringHandler); // Duplicate
+    it('should delegate hasValidator to validator registry', () => {
+      validatorRegistry.hasValidator.mockReturnValue(true);
 
-      expect(registry.getHandlerCount()).toBe(1);
-    });
+      const result = registry.hasValidator(FieldType.string);
 
-    it('should return zero after clear', () => {
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
-      registry.clear();
-
-      expect(registry.getHandlerCount()).toBe(0);
+      expect(result).toBe(true);
+      expect(validatorRegistry.hasValidator).toHaveBeenCalledWith(FieldType.string);
     });
   });
 
-  describe('onModuleInit integration', () => {
-    it('should call discovery service on module initialization', async () => {
-      const handlers = [mockStringHandler, mockNumberHandler];
-      discoveryService.discoverHandlers.mockResolvedValue(handlers);
+  describe('onModuleInit', () => {
+    it('should initialize processors from discovery service', () => {
+      const discoveredProcessors = [{ instance: mockStringProcessor, metadata: { type: FieldType.string }, type: MockStringProcessor }];
 
-      await registry.onModuleInit();
+      discoveryService.discoverProcessors.mockReturnValue(discoveredProcessors);
+      discoveryService.validateProcessorCompatibility.mockReturnValue(true);
+      discoveryService.getProcessorsByCategory.mockReturnValue({
+        primitive: discoveredProcessors,
+        specialized: [],
+        complex: [],
+        other: [],
+      });
 
-      expect(discoveryService.discoverHandlers).toHaveBeenCalled();
-      expect(registry.getHandlerCount()).toBe(2);
+      registry.onModuleInit();
+
+      expect(registry.hasProcessor(FieldType.string)).toBe(true);
     });
 
-    it('should handle discovery service errors gracefully', async () => {
-      discoveryService.discoverHandlers.mockRejectedValue(new Error('Discovery failed'));
+    it('should skip invalid processors during initialization', () => {
+      const discoveredProcessors = [{ instance: mockStringProcessor, metadata: { type: FieldType.string }, type: MockStringProcessor }];
 
-      await expect(registry.onModuleInit()).resolves.not.toThrow();
-      expect(registry.getHandlerCount()).toBe(0);
+      discoveryService.discoverProcessors.mockReturnValue(discoveredProcessors);
+      discoveryService.validateProcessorCompatibility.mockReturnValue(false);
+      discoveryService.getProcessorsByCategory.mockReturnValue({
+        primitive: [],
+        specialized: [],
+        complex: [],
+        other: [],
+      });
+
+      registry.onModuleInit();
+
+      expect(registry.hasProcessor(FieldType.string)).toBe(false);
     });
 
-    it('should handle empty discovery results', async () => {
-      discoveryService.discoverHandlers.mockResolvedValue([]);
+    it('should not initialize multiple times', () => {
+      discoveryService.discoverProcessors.mockReturnValue([]);
+      discoveryService.getProcessorsByCategory.mockReturnValue({
+        primitive: [],
+        specialized: [],
+        complex: [],
+        other: [],
+      });
 
-      await registry.onModuleInit();
+      registry.onModuleInit();
+      registry.onModuleInit();
 
-      expect(registry.getHandlerCount()).toBe(0);
-    });
-
-    it('should handle null discovery results', async () => {
-      discoveryService.discoverHandlers.mockResolvedValue(null as any);
-
-      await registry.onModuleInit();
-
-      expect(registry.getHandlerCount()).toBe(0);
-    });
-  });
-
-  describe('performance and edge cases', () => {
-    it('should handle large number of handlers efficiently', () => {
-      const startTime = Date.now();
-
-      // Register many handlers
-      for (let i = 0; i < 1000; i++) {
-        const handler = {
-          supportedType: i % 2 === 0 ? FieldType.string : FieldType.number,
-          priority: i,
-          name: `Handler${i}`,
-          canHandle: (type: FieldType) => true,
-          handle: (data: any) => data,
-        };
-        registry.register(handler);
-      }
-
-      const endTime = Date.now();
-
-      expect(registry.getHandlerCount()).toBe(1000);
-      expect(endTime - startTime).toBeLessThan(1000); // Should complete quickly
-    });
-
-    it('should maintain performance with frequent lookups', () => {
-      // Register some handlers
-      registry.register(mockStringHandler);
-      registry.register(mockNumberHandler);
-      registry.register(mockHighPriorityHandler);
-
-      const startTime = Date.now();
-
-      // Perform many lookups
-      for (let i = 0; i < 10000; i++) {
-        registry.getHandlersForType(FieldType.string);
-        registry.getHandlerByName('MockStringHandler');
-        registry.hasHandler(mockNumberHandler);
-      }
-
-      const endTime = Date.now();
-
-      expect(endTime - startTime).toBeLessThan(1000); // Should complete quickly
+      expect(discoveryService.discoverProcessors).toHaveBeenCalledTimes(1);
     });
   });
 });

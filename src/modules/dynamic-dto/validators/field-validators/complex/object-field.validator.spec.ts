@@ -151,7 +151,7 @@ describe('ObjectFieldValidator', () => {
         maxProperties: 2,
       };
 
-      const result = validator.validateStructure(schemaWithTooManyProps, validationContext);
+      const result = validator.validateConstraints(schemaWithTooManyProps, validationContext);
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);

@@ -215,8 +215,8 @@ describe('ValidationErrorService', () => {
       const message = service.formatErrorMessage('name', 'minLength', 2, 'x');
 
       expect(message).toContain('name');
-      expect(message).toContain('minLength');
-      expect(message).toContain('2');
+      expect(message).toContain('at least 2 characters long');
+      expect(message).toContain('1 characters');
       expect(message).toBeDefined();
     });
 

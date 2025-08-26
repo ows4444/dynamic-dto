@@ -30,7 +30,7 @@ describe('FieldProcessorDiscoveryService', () => {
       return [];
     }
 
-    generateSerializationDecorators(): PropertyDecorator[] {
+    override generateSerializationDecorators(): PropertyDecorator[] {
       return [];
     }
 
@@ -98,9 +98,9 @@ describe('FieldProcessorDiscoveryService', () => {
       const processors = service.discoverProcessors();
 
       expect(processors).toHaveLength(1);
-      expect(processors[0].instance).toBe(mockWrapper.instance);
-      expect(processors[0].metadata).toBe(mockMetadata);
-      expect(processors[0].type).toBe(MockFieldProcessor);
+      expect(processors[0]?.instance).toBe(mockWrapper.instance);
+      expect(processors[0]?.metadata).toBe(mockMetadata);
+      expect(processors[0]?.type).toBe(MockFieldProcessor);
     });
 
     it('should skip providers without metatype', () => {
@@ -161,8 +161,8 @@ describe('FieldProcessorDiscoveryService', () => {
       const processors = service.discoverProcessors();
 
       expect(processors).toHaveLength(2);
-      expect(processors[0].metadata.priority).toBe(5);
-      expect(processors[1].metadata.priority).toBe(1);
+      expect(processors[0]?.metadata.priority).toBe(5);
+      expect(processors[1]?.metadata.priority).toBe(1);
     });
 
     it('should handle processors without priority', () => {
@@ -174,7 +174,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const processors = service.discoverProcessors();
 
       expect(processors).toHaveLength(1);
-      expect(processors[0].metadata.priority).toBeUndefined();
+      expect(processors[0]?.metadata.priority).toBeUndefined();
     });
 
     it('should log discovery progress', () => {
@@ -422,7 +422,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const processors = service.discoverProcessors();
 
       expect(processors).toHaveLength(1);
-      expect(processors[0].instance).toBe(validWrapper.instance);
+      expect(processors[0]?.instance).toBe(validWrapper.instance);
     });
 
     it('should handle empty provider list', () => {

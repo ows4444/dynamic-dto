@@ -5,7 +5,7 @@ import { BaseFieldProcessor, type TransformationFunction } from '../../../core/a
 import { FieldSchema } from '../../../core/interfaces/schema';
 import { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';
 import { FieldType } from '../../../core/types/field.types';
-import type { FieldProcessorRegistry } from '../../../infrastructure/registries/field-processor.registry';
+import { FieldProcessorRegistry } from '../../../infrastructure/registries/field-processor.registry';
 
 @FieldProcessor({ type: FieldType.array, priority: 2, category: 'complex' })
 @Injectable()
@@ -13,7 +13,7 @@ export class ArrayFieldProcessor extends BaseFieldProcessor<ArrayFieldSchema> {
   readonly supportedType = FieldType.array;
 
   constructor(
-    @Inject(forwardRef(() => 'FieldProcessorRegistry'))
+    @Inject(forwardRef(() => FieldProcessorRegistry))
     private readonly fieldProcessorRegistry: FieldProcessorRegistry,
   ) {
     super();

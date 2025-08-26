@@ -1,7 +1,8 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { createFieldProcessingProviders } from './field-processing.factory';
-import { FieldProcessorRegistry } from '../../registries/field-processor.registry';
+import type { FieldProcessorRegistry } from '../../registries/field-processor.registry';
+import { FieldHandlerRegistry } from '../../registries/field-handler.registry';
 import { FieldProcessorDiscoveryService } from '../../services/field-processor-discovery.service';
 
 describe('Field Processing Factory', () => {
@@ -43,9 +44,9 @@ describe('Field Processing Factory', () => {
 
   describe('provider instantiation', () => {
     it('should create FieldProcessorRegistry instance', () => {
-      const registry = module.get<FieldProcessorRegistry>('FieldProcessorRegistry');
+      const registry = module.get<FieldHandlerRegistry>('FieldProcessorRegistry');
       expect(registry).toBeDefined();
-      expect(registry).toBeInstanceOf(FieldProcessorRegistry);
+      expect(registry).toBeInstanceOf(FieldHandlerRegistry);
     });
 
     it('should create FieldProcessorDiscoveryService instance', () => {

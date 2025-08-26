@@ -28,6 +28,7 @@ import { CircularReferenceDetectorService } from '../../../processors/field-proc
 import { ObjectValidationService } from '../../../processors/field-processors/complex/services/object-validation.service';
 import { PropertyFilteringService } from '../../../processors/field-processors/complex/services/property-filtering.service';
 import { NestedObjectTransformerService } from '../../../processors/field-processors/complex/services/nested-object-transformer.service';
+import { NestedClassGeneratorService } from '../../services/nested-class-generator.service';
 
 // === FIELD VALIDATORS ===
 // Primitive validators
@@ -118,6 +119,7 @@ export function createFieldProcessingProviders(): Provider[] {
     ObjectValidationService,
     PropertyFilteringService,
     NestedObjectTransformerService,
+    NestedClassGeneratorService,
 
     // === FIELD VALIDATORS ===
     // Primitive validators

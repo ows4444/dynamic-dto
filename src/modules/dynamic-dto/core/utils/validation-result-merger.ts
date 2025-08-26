@@ -13,7 +13,15 @@ export class ValidationResultMerger {
     }
 
     if (results.length === 1) {
-      return results[0] ?? this.createEmptyResult();
+      const result = results[0];
+      if (!result) {
+        return this.createEmptyResult();
+      }
+
+      // Process single result to ensure consistent structure and cleaning
+      const aggregatedData = this.aggregateResults([result]);
+      const uniqueIssues = this.deduplicateIssues(aggregatedData.allIssues);
+      return this.createMergedResult(uniqueIssues, aggregatedData);
     }
 
     const aggregatedData = this.aggregateResults(results);
@@ -37,6 +45,10 @@ export class ValidationResultMerger {
     let isValid = true;
 
     for (const result of results) {
+      if (!result) {
+        continue;
+      }
+
       this.collectIssuesFromResult(result, allIssues);
 
       if (result.metadata) {
@@ -57,10 +69,14 @@ export class ValidationResultMerger {
   }
 
   private static collectIssuesFromResult(result: ValidationResult, allIssues: ValidationIssue[]): void {
+    if (!result) {
+      return;
+    }
+
     const issueSources = [result.issues, result.errors, result.warnings, result.infos];
 
     for (const issues of issueSources) {
-      if (issues?.length) {
+      if (Array.isArray(issues) && issues.length) {
         allIssues.push(...issues);
       }
     }
@@ -104,10 +120,13 @@ export class ValidationResultMerger {
   }
 
   private static getMergedFieldPath(results: ValidationResult[]): string | undefined {
-    const fieldPaths = results.map((result) => result.fieldPath).filter((path): path is string => path !== undefined);
+    const fieldPaths = results
+      .filter((result) => result !== null && result !== undefined)
+      .map((result) => result.fieldPath)
+      .filter((path): path is string => path !== undefined && path !== '');
 
     if (fieldPaths.length === 0) {
-      return undefined;
+      return '';
     }
 
     if (fieldPaths.length === 1) {
@@ -176,16 +195,16 @@ export class ValidationResultMerger {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map((item: T) => this.cleanObject<T>(item)) as T;
+      return obj.map((item: any) => this.cleanObject(item)) as T;
     }
 
-    const cleaned: T = {} as unknown as T;
+    const cleaned: Record<string, any> = {};
     for (const [key, value] of Object.entries(obj)) {
       if (value !== undefined) {
-        (cleaned as Record<string, unknown>)[key] = typeof value === 'object' ? this.cleanObject(value) : value;
+        cleaned[key] = typeof value === 'object' && value !== null ? this.cleanObject(value) : value;
       }
     }
 
-    return cleaned;
+    return cleaned as T;
   }
 }

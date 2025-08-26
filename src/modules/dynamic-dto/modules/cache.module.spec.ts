@@ -20,18 +20,18 @@ describe('CacheModule', () => {
       expect(moduleConfig.providers).toHaveLength(3);
 
       // Check ICacheStrategy provider
-      const cacheStrategyProvider = moduleConfig.providers?.find((p: any) => p.provide === 'ICacheStrategy');
+      const cacheStrategyProvider = moduleConfig.providers?.find((p: any) => p.provide === 'ICacheStrategy') as any;
       expect(cacheStrategyProvider).toBeDefined();
-      expect(cacheStrategyProvider.useClass).toBe(MemoryCacheStrategy);
+      expect(cacheStrategyProvider?.useClass).toBe(MemoryCacheStrategy);
 
       // Check CacheManagerService provider
       const cacheManagerProvider = moduleConfig.providers?.find((p: any) => p === CacheManagerService);
       expect(cacheManagerProvider).toBe(CacheManagerService);
 
       // Check ICacheManager provider
-      const cacheManagerInterfaceProvider = moduleConfig.providers?.find((p: any) => p.provide === 'ICacheManager');
+      const cacheManagerInterfaceProvider = moduleConfig.providers?.find((p: any) => p.provide === 'ICacheManager') as any;
       expect(cacheManagerInterfaceProvider).toBeDefined();
-      expect(cacheManagerInterfaceProvider.useClass).toBe(CacheManagerService);
+      expect(cacheManagerInterfaceProvider?.useClass).toBe(CacheManagerService);
     });
 
     it('should configure exports correctly', () => {

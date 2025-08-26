@@ -8,9 +8,27 @@ describe('MonitoringModule', () => {
   let cacheMonitorService: EnhancedCacheMonitorService;
 
   beforeEach(async () => {
+    const mockCacheManager = {
+      cleanup: jest.fn(),
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      clear: jest.fn(),
+      getMemoryInfo: jest.fn().mockReturnValue({
+        estimatedBytes: 1000,
+        entryCount: 10,
+        hitRate: 0.8,
+        utilizationRate: 0.5,
+        lastCleanup: new Date(),
+      }),
+    };
+
     module = await Test.createTestingModule({
-      imports: [MonitoringModule],
-    }).compile();
+      imports: [MonitoringModule.forRoot()],
+    })
+      .overrideProvider('ICacheManager')
+      .useValue(mockCacheManager)
+      .compile();
 
     cacheMonitorService = module.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
   });
@@ -90,13 +108,49 @@ describe('MonitoringModule', () => {
 
   describe('module isolation', () => {
     it('should create separate instances for different modules', async () => {
+      const mockCacheManager1 = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
+      const mockCacheManager2 = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 2000,
+          entryCount: 20,
+          hitRate: 0.9,
+          utilizationRate: 0.6,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const module1 = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager1)
+        .compile();
 
       const module2 = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager2)
+        .compile();
 
       const monitor1 = module1.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
       const monitor2 = module2.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
@@ -121,9 +175,27 @@ describe('MonitoringModule', () => {
     });
 
     it('should maintain service state independently', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1500,
+          entryCount: 15,
+          hitRate: 0.75,
+          utilizationRate: 0.55,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
 
@@ -144,15 +216,33 @@ describe('MonitoringModule', () => {
 
   describe('module configuration', () => {
     it('should handle module imports correctly', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
+        imports: [MonitoringModule.forRoot()],
         providers: [
           {
             provide: 'TEST_CONFIG',
             useValue: { monitoringEnabled: true },
           },
         ],
-      }).compile();
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       expect(testModule.get('TEST_CONFIG')).toEqual({ monitoringEnabled: true });
       expect(testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService)).toBeDefined();
@@ -161,9 +251,27 @@ describe('MonitoringModule', () => {
     });
 
     it('should support module re-imports', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule, MonitoringModule], // Duplicate import
-      }).compile();
+        imports: [MonitoringModule.forRoot(), MonitoringModule.forRoot()], // Duplicate import
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       expect(testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService)).toBeDefined();
 
@@ -171,8 +279,23 @@ describe('MonitoringModule', () => {
     });
 
     it('should work with dynamic module configuration', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
+        imports: [MonitoringModule.forRoot()],
         providers: [
           {
             provide: 'MONITORING_CONFIG',
@@ -183,7 +306,10 @@ describe('MonitoringModule', () => {
             }),
           },
         ],
-      }).compile();
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const config = testModule.get('MONITORING_CONFIG');
       expect(config.enabled).toBe(true);
@@ -195,9 +321,27 @@ describe('MonitoringModule', () => {
 
   describe('service lifecycle', () => {
     it('should handle module initialization', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
 
@@ -213,9 +357,27 @@ describe('MonitoringModule', () => {
     });
 
     it('should handle module cleanup', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
       monitor.recordCacheHit('test-key');
@@ -224,9 +386,27 @@ describe('MonitoringModule', () => {
     });
 
     it('should maintain metrics across service calls', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
 
@@ -247,9 +427,27 @@ describe('MonitoringModule', () => {
 
   describe('error handling', () => {
     it('should handle service instantiation errors gracefully', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       expect(testModule).toBeDefined();
       expect(() => testModule.get(EnhancedCacheMonitorService)).not.toThrow();
@@ -258,9 +456,27 @@ describe('MonitoringModule', () => {
     });
 
     it('should handle invalid monitoring operations', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
 
@@ -275,9 +491,27 @@ describe('MonitoringModule', () => {
     });
 
     it('should handle concurrent monitoring operations', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
 
@@ -304,10 +538,28 @@ describe('MonitoringModule', () => {
     it('should not leak memory during multiple compilations', async () => {
       const modules = [];
 
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       for (let i = 0; i < 5; i++) {
         const testModule = await Test.createTestingModule({
-          imports: [MonitoringModule],
-        }).compile();
+          imports: [MonitoringModule.forRoot()],
+        })
+          .overrideProvider('ICacheManager')
+          .useValue(mockCacheManager)
+          .compile();
         modules.push(testModule);
       }
 
@@ -319,10 +571,28 @@ describe('MonitoringModule', () => {
     });
 
     it('should handle rapid module creation and destruction', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       for (let i = 0; i < 5; i++) {
         const testModule = await Test.createTestingModule({
-          imports: [MonitoringModule],
-        }).compile();
+          imports: [MonitoringModule.forRoot()],
+        })
+          .overrideProvider('ICacheManager')
+          .useValue(mockCacheManager)
+          .compile();
 
         const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
         expect(monitor).toBeDefined();
@@ -334,9 +604,27 @@ describe('MonitoringModule', () => {
     });
 
     it('should maintain performance under heavy monitoring load', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
-      }).compile();
+        imports: [MonitoringModule.forRoot()],
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
 
@@ -368,15 +656,33 @@ describe('MonitoringModule', () => {
 
   describe('integration scenarios', () => {
     it('should work with other NestJS modules', async () => {
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
+        imports: [MonitoringModule.forRoot()],
         providers: [
           {
             provide: 'LOGGER_SERVICE',
             useValue: { log: jest.fn(), error: jest.fn() },
           },
         ],
-      }).compile();
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       expect(testModule.get('LOGGER_SERVICE')).toBeDefined();
       expect(testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService)).toBeDefined();
@@ -391,15 +697,33 @@ describe('MonitoringModule', () => {
         maxHistorySize: 1000,
       };
 
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
+        imports: [MonitoringModule.forRoot()],
         providers: [
           {
             provide: 'MONITORING_OPTIONS',
             useValue: customConfig,
           },
         ],
-      }).compile();
+      })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
+        .compile();
 
       const config = testModule.get('MONITORING_OPTIONS');
       expect(config).toEqual(customConfig);
@@ -422,9 +746,26 @@ describe('MonitoringModule', () => {
         reset: jest.fn(),
       };
 
+      const mockCacheManager = {
+        cleanup: jest.fn(),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        getMemoryInfo: jest.fn().mockReturnValue({
+          estimatedBytes: 1000,
+          entryCount: 10,
+          hitRate: 0.8,
+          utilizationRate: 0.5,
+          lastCleanup: new Date(),
+        }),
+      };
+
       const testModule = await Test.createTestingModule({
-        imports: [MonitoringModule],
+        imports: [MonitoringModule.forRoot()],
       })
+        .overrideProvider('ICacheManager')
+        .useValue(mockCacheManager)
         .overrideProvider(EnhancedCacheMonitorService)
         .useValue(mockMonitorService)
         .compile();

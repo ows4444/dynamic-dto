@@ -3,47 +3,32 @@ import type { ValidationResult } from '../interfaces/validation';
 import type { FieldSchema } from '../interfaces/schema';
 
 class TestSchemaValidator extends BaseSchemaValidator {
-  canValidate(schema: FieldSchema): boolean {
-    return schema.type === 'test';
-  }
-
-  validateStructure(schema: FieldSchema): ValidationResult {
+  validate(schema: Record<string, FieldSchema>, data?: unknown, context?: string): ValidationResult {
     const issues: any[] = [];
 
-    if (!schema.type) {
+    if (!schema) {
       issues.push({
-        code: 'MISSING_TYPE',
-        message: 'Schema must have a type',
+        code: 'MISSING_SCHEMA',
+        message: 'Schema is required',
         severity: 'error',
-        fieldPath: 'type',
+        fieldPath: context ?? 'schema',
       });
     }
 
-    if (schema.type === 'invalid') {
+    // Test field presence and validation
+    if (schema && Object.keys(schema).length === 0) {
       issues.push({
-        code: 'INVALID_TYPE',
-        message: 'Invalid schema type',
-        severity: 'error',
-        fieldPath: 'type',
-      });
-    }
-
-    return {
-      isValid: issues.filter((issue) => issue.severity === 'error').length === 0,
-      issues,
-    };
-  }
-
-  validateConstraints(schema: FieldSchema, contextData?: Record<string, unknown>): ValidationResult {
-    const issues: any[] = [];
-
-    if (schema.required && contextData?.allowRequired === false) {
-      issues.push({
-        code: 'REQUIRED_NOT_ALLOWED',
-        message: 'Required fields not allowed in this context',
+        code: 'EMPTY_SCHEMA',
+        message: 'Schema cannot be empty',
         severity: 'warning',
-        fieldPath: 'required',
+        fieldPath: context ?? 'schema',
       });
+    }
+
+    // Validate individual fields
+    for (const [fieldName, fieldSchema] of Object.entries(schema || {})) {
+      const fieldValidation = this.validateFieldSchema(fieldName, fieldSchema);
+      issues.push(...fieldValidation.issues);
     }
 
     return {
@@ -60,101 +45,109 @@ describe('BaseSchemaValidator', () => {
     validator = new TestSchemaValidator();
   });
 
-  describe('canValidate', () => {
-    it('should return true for supported schema types', () => {
-      const schema: FieldSchema = { type: 'test' as any, expose: true };
-      expect(validator.canValidate(schema)).toBe(true);
-    });
+  describe('validate', () => {
+    it('should pass for valid schema', () => {
+      const schema: Record<string, FieldSchema> = {
+        testField: { type: 'string' },
+      };
 
-    it('should return false for unsupported schema types', () => {
-      const schema: FieldSchema = { type: 'string' as any, expose: true };
-      expect(validator.canValidate(schema)).toBe(false);
-    });
-  });
-
-  describe('validateStructure', () => {
-    it('should pass validation for valid schema', () => {
-      const schema: FieldSchema = { type: 'test' as any, expose: true };
-      const result = validator.validateStructure(schema);
+      const result = validator.validate(schema);
 
       expect(result.isValid).toBe(true);
       expect(result.issues).toEqual([]);
     });
 
-    it('should fail validation for schema without type', () => {
-      const schema = { expose: true } as FieldSchema;
-      const result = validator.validateStructure(schema);
+    it('should fail for missing schema', () => {
+      const result = validator.validate(null as any);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toHaveLength(1);
       expect(result.issues[0]).toMatchObject({
-        code: 'MISSING_TYPE',
-        message: 'Schema must have a type',
+        code: 'MISSING_SCHEMA',
+        message: 'Schema is required',
         severity: 'error',
-        fieldPath: 'type',
+        fieldPath: 'schema',
       });
     });
 
-    it('should fail validation for invalid schema type', () => {
-      const schema: FieldSchema = { type: 'invalid' as any, expose: true };
-      const result = validator.validateStructure(schema);
+    it('should warn for empty schema', () => {
+      const result = validator.validate({});
 
-      expect(result.isValid).toBe(false);
+      expect(result.isValid).toBe(true); // Warning, not error
       expect(result.issues).toHaveLength(1);
       expect(result.issues[0]).toMatchObject({
-        code: 'INVALID_TYPE',
-        message: 'Invalid schema type',
-        severity: 'error',
-        fieldPath: 'type',
-      });
-    });
-  });
-
-  describe('validateConstraints', () => {
-    it('should pass validation when no constraints conflict', () => {
-      const schema: FieldSchema = { type: 'test' as any, expose: true, required: true };
-      const contextData = { allowRequired: true };
-
-      const result = validator.validateConstraints(schema, contextData);
-
-      expect(result.isValid).toBe(true);
-      expect(result.issues).toEqual([]);
-    });
-
-    it('should generate warning when required field not allowed in context', () => {
-      const schema: FieldSchema = { type: 'test' as any, expose: true, required: true };
-      const contextData = { allowRequired: false };
-
-      const result = validator.validateConstraints(schema, contextData);
-
-      // Should be valid because warning doesn't make it invalid
-      expect(result.isValid).toBe(true);
-      expect(result.issues).toHaveLength(1);
-      expect(result.issues[0]).toMatchObject({
-        code: 'REQUIRED_NOT_ALLOWED',
-        message: 'Required fields not allowed in this context',
+        code: 'EMPTY_SCHEMA',
+        message: 'Schema cannot be empty',
         severity: 'warning',
-        fieldPath: 'required',
+        fieldPath: 'schema',
       });
     });
 
-    it('should handle undefined context data', () => {
-      const schema: FieldSchema = { type: 'test' as any, expose: true, required: true };
+    it('should validate field schemas', () => {
+      const schema: Record<string, FieldSchema> = {
+        validField: { type: 'string' },
+        invalidField: { type: 'invalid' as any },
+      };
 
-      const result = validator.validateConstraints(schema);
+      const result = validator.validate(schema);
 
+      expect(result.isValid).toBe(false);
+      expect(result.issues.some((issue) => issue.code === 'INVALID_TYPE')).toBe(true);
+    });
+  });
+
+  describe('validateFieldSchema (protected method behavior)', () => {
+    it('should validate field with permissions', () => {
+      const schema: Record<string, FieldSchema> = {
+        restrictedField: {
+          type: 'string',
+          permissions: {
+            read: ['admin'],
+            write: [],
+          },
+        },
+      };
+
+      const result = validator.validate(schema);
+
+      // Should pass validation but may have warnings about empty write permissions
       expect(result.isValid).toBe(true);
-      expect(result.issues).toEqual([]);
     });
 
-    it('should handle schema without required field', () => {
-      const schema: FieldSchema = { type: 'test' as any, expose: true };
-      const contextData = { allowRequired: false };
+    it('should validate deprecated field', () => {
+      const schema: Record<string, FieldSchema> = {
+        oldField: {
+          type: 'string',
+          deprecated: {
+            since: '1.0.0',
+            reason: 'Use newField instead',
+          },
+        },
+      };
 
-      const result = validator.validateConstraints(schema, contextData);
+      const result = validator.validate(schema);
 
       expect(result.isValid).toBe(true);
-      expect(result.issues).toEqual([]);
+      // Should have a deprecation warning
+      expect(result.issues.some((issue) => issue.severity === 'warning')).toBe(true);
+    });
+  });
+
+  describe('context handling', () => {
+    it('should use provided context in field paths', () => {
+      const result = validator.validate(null as any, undefined, 'customContext');
+
+      expect(result.issues[0]?.fieldPath).toBe('customContext');
+    });
+
+    it('should handle data parameter', () => {
+      const schema: Record<string, FieldSchema> = {
+        testField: { type: 'string' },
+      };
+
+      const result = validator.validate(schema, { testField: 'test value' });
+
+      expect(result.isValid).toBe(true);
     });
   });
 });

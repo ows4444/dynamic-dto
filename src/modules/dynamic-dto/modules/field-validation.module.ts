@@ -19,10 +19,15 @@ import { UnionFieldValidator } from '../validators/field-validators/specialized/
 // === REGISTRIES & DISCOVERY ===
 import { FieldValidatorRegistry } from '../infrastructure/registries/field-validator.registry';
 import { FieldValidatorDiscoveryService } from '../infrastructure/services/field-validator-discovery.service';
+import { FieldProcessorDiscoveryService } from '../infrastructure/services/field-processor-discovery.service';
 
 // === UNIFIED FIELD HANDLER ===
 import { FieldHandlerRegistry } from '../infrastructure/registries/field-handler.registry';
 import { FieldHandlerDiscoveryService } from '../infrastructure/services/field-handler-discovery.service';
+
+// === ERROR HANDLING ===
+import { ValidationErrorService } from '../exceptions/validation/validation-error.service';
+import { ValidationErrorRecoveryService } from '../exceptions/validation/validation-error-recovery.service';
 
 @Global()
 @Module({
@@ -31,6 +36,7 @@ import { FieldHandlerDiscoveryService } from '../infrastructure/services/field-h
     DiscoveryService,
     Reflector,
     FieldValidatorDiscoveryService,
+    FieldProcessorDiscoveryService,
     FieldHandlerDiscoveryService,
 
     // === FIELD VALIDATOR REGISTRY ===
@@ -52,6 +58,10 @@ import { FieldHandlerDiscoveryService } from '../infrastructure/services/field-h
     EnumFieldValidator,
     UnionFieldValidator,
 
+    // === ERROR HANDLING SERVICES ===
+    ValidationErrorService,
+    ValidationErrorRecoveryService,
+
     // Backward compatibility aliases
     {
       provide: 'FieldValidatorRegistry',
@@ -67,6 +77,8 @@ import { FieldHandlerDiscoveryService } from '../infrastructure/services/field-h
     FieldHandlerRegistry,
     FieldValidatorDiscoveryService,
     FieldHandlerDiscoveryService,
+    ValidationErrorService,
+    ValidationErrorRecoveryService,
     // Export key validators for external use
     StringFieldValidator,
     NumberFieldValidator,

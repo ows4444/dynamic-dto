@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import type { CacheMemoryInfo, ICacheManager } from '../../core/interfaces/cache/cache-manager.interface';
+import type { CacheMetrics } from '../../core/interfaces/cache/cache-metrics.interface';
 
 export interface EnhancedCacheMonitorConfig {
   readonly memoryThresholdBytes?: number;
@@ -39,6 +40,22 @@ export class EnhancedCacheMonitorService implements OnModuleDestroy {
 
   // Store cleanup actions to prevent memory leaks
   private readonly cleanupActions = new Set<() => Promise<void>>();
+
+  // State tracking for compatibility with test expectations
+  private metrics = {
+    hits: 0,
+    misses: 0,
+    evictions: 0,
+    memoryUsage: 0,
+    peakMemoryUsage: 0,
+    cacheSize: 0,
+    currentSize: 0,
+    lastHit: 0,
+    lastMiss: 0,
+    lastEviction: 0,
+    lastMemoryUpdate: 0,
+    startTime: Date.now(),
+  };
 
   constructor(
     @Inject('ICacheManager') cacheManager: ICacheManager,
@@ -88,6 +105,219 @@ export class EnhancedCacheMonitorService implements OnModuleDestroy {
     }
 
     return this.cacheManagerRef;
+  }
+
+  /**
+   * Record a cache hit for monitoring purposes
+   */
+  recordCacheHit(key: string | null): void {
+    if (this.isDestroyed || !key) {
+      return;
+    }
+
+    // Track metrics for compatibility
+    this.metrics.hits++;
+    this.metrics.lastHit = Date.now();
+
+    // For EnhancedCacheMonitorService, cache hits are tracked by the underlying cache manager
+    // This method provides compatibility with the CacheMonitorService interface
+    const cacheManager = this.getCacheManager();
+    if (cacheManager) {
+      // Cache hits are automatically tracked by the cache manager
+      this.logger.debug(`Cache hit recorded for key: ${key}`);
+    }
+  }
+
+  /**
+   * Record a cache miss for monitoring purposes
+   */
+  recordCacheMiss(key: string | null): void {
+    if (this.isDestroyed || !key) {
+      return;
+    }
+
+    // Track metrics for compatibility
+    this.metrics.misses++;
+    this.metrics.lastMiss = Date.now();
+
+    // For EnhancedCacheMonitorService, cache misses are tracked by the underlying cache manager
+    // This method provides compatibility with the CacheMonitorService interface
+    const cacheManager = this.getCacheManager();
+    if (cacheManager) {
+      // Cache misses are automatically tracked by the cache manager
+      this.logger.debug(`Cache miss recorded for key: ${key}`);
+    }
+  }
+
+  /**
+   * Record a cache eviction for monitoring purposes
+   */
+  recordCacheEviction(key: string | null, reason: string): void {
+    if (this.isDestroyed || !key) {
+      return;
+    }
+
+    // Track metrics for compatibility
+    this.metrics.evictions++;
+    this.metrics.lastEviction = Date.now();
+
+    // For EnhancedCacheMonitorService, cache evictions are tracked by the underlying cache manager
+    // This method provides compatibility with the CacheMonitorService interface
+    const cacheManager = this.getCacheManager();
+    if (cacheManager) {
+      // Cache evictions are automatically tracked by the cache manager
+      this.logger.debug(`Cache eviction recorded for key: ${key}, reason: ${reason}`);
+    }
+  }
+
+  /**
+   * Get cache metrics (compatibility method)
+   */
+  getMetrics(): CacheMetrics {
+    if (this.isDestroyed) {
+      return {
+        hits: 0,
+        misses: 0,
+        evictions: 0,
+        hitRate: 0,
+        hitRatio: 0,
+        memoryUsage: 0,
+        peakMemoryUsage: 0,
+        cacheSize: 0,
+        currentSize: 0,
+        maxSize: 0,
+        lastAccess: null,
+        lastHit: 0,
+        lastMiss: 0,
+        lastEviction: 0,
+        lastMemoryUpdate: 0,
+        startTime: 0,
+        uptime: 0,
+      };
+    }
+
+    const now = Date.now();
+    const totalOperations = this.metrics.hits + this.metrics.misses;
+    const hitRate = totalOperations > 0 ? this.metrics.hits / totalOperations : 0;
+    const uptime = now - this.metrics.startTime;
+
+    // Return actual tracked metrics
+    return {
+      hits: this.metrics.hits,
+      misses: this.metrics.misses,
+      evictions: this.metrics.evictions,
+      hitRate,
+      hitRatio: hitRate, // Same as hitRate for compatibility
+      memoryUsage: this.metrics.memoryUsage,
+      peakMemoryUsage: this.metrics.peakMemoryUsage,
+      cacheSize: this.metrics.cacheSize,
+      currentSize: this.metrics.currentSize,
+      maxSize: 1000, // Default max size
+      lastAccess: this.metrics.lastHit > 0 ? new Date(Math.max(this.metrics.lastHit, this.metrics.lastMiss)) : null,
+      lastHit: this.metrics.lastHit,
+      lastMiss: this.metrics.lastMiss,
+      lastEviction: this.metrics.lastEviction,
+      lastMemoryUpdate: this.metrics.lastMemoryUpdate,
+      startTime: this.metrics.startTime,
+      uptime,
+    };
+  }
+
+  /**
+   * Update memory usage (compatibility method)
+   */
+  updateMemoryUsage(bytes: number): void {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    // Track metrics for compatibility
+    this.metrics.memoryUsage = bytes;
+    this.metrics.peakMemoryUsage = Math.max(this.metrics.peakMemoryUsage, bytes);
+    this.metrics.lastMemoryUpdate = Date.now();
+
+    // This is a compatibility method - actual memory tracking is done by the cache manager
+    this.logger.debug(`Memory usage updated: ${this.formatBytes(bytes)}`);
+  }
+
+  /**
+   * Update cache size (compatibility method)
+   */
+  updateCacheSize(size: number): void {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    // Track metrics for compatibility
+    this.metrics.currentSize = size;
+    this.metrics.cacheSize = size; // Same as currentSize for compatibility
+
+    // This is a compatibility method - actual size tracking is done by the cache manager
+    this.logger.debug(`Cache size updated: ${size} entries`);
+  }
+
+  /**
+   * Reset metrics (compatibility method)
+   */
+  reset(): void {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    // Reset all tracked metrics
+    this.metrics = {
+      hits: 0,
+      misses: 0,
+      evictions: 0,
+      memoryUsage: 0,
+      peakMemoryUsage: 0,
+      cacheSize: 0,
+      currentSize: 0,
+      lastHit: 0,
+      lastMiss: 0,
+      lastEviction: 0,
+      lastMemoryUpdate: 0,
+      startTime: Date.now(),
+    };
+
+    this.logger.debug('Metrics reset completed');
+  }
+
+  /**
+   * Get detailed report (compatibility method)
+   */
+  getDetailedReport(): any {
+    if (this.isDestroyed) {
+      return {
+        summary: 'Cache monitor service has been destroyed',
+        metrics: this.getMetrics(),
+        performance: {
+          efficiency: 0,
+          memoryEfficiency: 0,
+          recommendations: [],
+        },
+        trends: [],
+        recommendations: [],
+      };
+    }
+
+    const metrics = this.getMetrics();
+    const hitRate = metrics.hitRate;
+    const memoryEfficiency = metrics.peakMemoryUsage > 0 ? 1 - metrics.memoryUsage / metrics.peakMemoryUsage : 1;
+
+    return {
+      summary: 'Enhanced cache monitor report',
+      metrics,
+      performance: {
+        efficiency: hitRate,
+        memoryEfficiency,
+        recommendations: hitRate < 0.7 ? ['Consider optimizing cache keys', 'Review TTL settings'] : [],
+      },
+      trends: [{ timestamp: new Date(), hitRate, memoryUsage: metrics.memoryUsage }],
+      recommendations: [],
+      config: this.config,
+      isDestroyed: this.isDestroyed,
+    };
   }
 
   /**

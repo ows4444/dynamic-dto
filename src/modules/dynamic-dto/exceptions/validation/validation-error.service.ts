@@ -115,7 +115,7 @@ export class ValidationErrorService {
     const enhancedContext: IValidationErrorContext = {
       fieldPath: context?.fieldPath || field,
       ...context,
-      expectedType: expectedType,
+      expectedType,
       actualType,
     };
 

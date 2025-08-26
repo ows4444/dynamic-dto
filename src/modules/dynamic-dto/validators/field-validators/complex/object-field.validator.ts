@@ -45,6 +45,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateRequiredFieldConstraints(schema, builder);
+    this.validatePropertyCountConstraints(schema, builder);
     this.validateConditionalRequirements(schema, builder);
     this.validateDependencyConstraints(schema, builder);
     this.validateDiscriminatorConstraints(schema, builder);
@@ -88,10 +89,9 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
 
   private validatePropertiesStructure(schema: ObjectFieldSchema, builder: ValidationResultBuilder, context: ValidationContext): void {
     if (!schema.properties || typeof schema.properties !== 'object') {
-      builder.addError('OBJECT_MISSING_PROPERTIES', 'Object schema must have a properties definition', schema.properties);
-      return;
+      return; // Basic structure validation should have already caught this
     }
-    
+
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
       this.validatePropertyName(propName, builder, context);
       this.validatePropertySchema(propName, propSchema, builder, context);
@@ -142,6 +142,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private validateRequiredFieldNames(schema: ObjectFieldSchema, builder: ValidationResultBuilder): void {
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return;
+    }
+
     const propertyNames = new Set(Object.keys(schema.properties));
     const duplicates = new Set<string>();
     const seen = new Set<string>();
@@ -205,6 +209,11 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
       return;
     }
 
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      builder.addError('OBJECT_DISCRIMINATOR_MISSING_PROPERTIES', 'Schema must have properties to validate discriminator property');
+      return;
+    }
+
     if (!schema.properties[discriminator.propertyName]) {
       builder.addError('OBJECT_DISCRIMINATOR_PROPERTY_NOT_FOUND', `Discriminator property '${discriminator.propertyName}' is not defined in object properties`, discriminator.propertyName);
     }
@@ -240,7 +249,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private validateAbstractInheritance(inheritance: InheritanceConfig, builder: ValidationResultBuilder, schema: ObjectFieldSchema): void {
-    if (inheritance.abstract && Object.keys(schema.properties).length === 0) {
+    if (inheritance.abstract && schema.properties && typeof schema.properties === 'object' && Object.keys(schema.properties).length === 0) {
       builder.addWarning('OBJECT_EMPTY_ABSTRACT', 'Abstract object has no properties defined');
     }
   }
@@ -248,6 +257,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   // Constraint validation
   private validateRequiredFieldConstraints(schema: ObjectFieldSchema, builder: ValidationResultBuilder): void {
     if (!schema.required?.length) return;
+
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return;
+    }
 
     const propertyCount = Object.keys(schema.properties).length;
     const requiredCount = schema.required.length;
@@ -258,6 +271,28 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
 
     if (requiredCount === propertyCount) {
       builder.addInfo('OBJECT_ALL_PROPERTIES_REQUIRED', 'All object properties are marked as required');
+    }
+  }
+
+  private validatePropertyCountConstraints(schema: ObjectFieldSchema, builder: ValidationResultBuilder): void {
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return;
+    }
+
+    const actualPropertyCount = Object.keys(schema.properties).length;
+
+    if (schema.maxProperties !== undefined && actualPropertyCount > schema.maxProperties) {
+      builder.addError('OBJECT_TOO_MANY_PROPERTIES', `Object has too many properties (${actualPropertyCount}). Maximum allowed: ${schema.maxProperties}`, {
+        count: actualPropertyCount,
+        max: schema.maxProperties,
+      });
+    }
+
+    if (schema.minProperties !== undefined && actualPropertyCount < schema.minProperties) {
+      builder.addError('OBJECT_TOO_FEW_PROPERTIES', `Object has too few properties (${actualPropertyCount}). Minimum required: ${schema.minProperties}`, {
+        count: actualPropertyCount,
+        min: schema.minProperties,
+      });
     }
   }
 
@@ -288,7 +323,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
       builder.addError('OBJECT_CONDITIONAL_REQUIRED_FIELD_NOT_FOUND', `Conditional requirement trigger field '${conditionalReq.field}' is not defined in properties`, conditionalReq.field);
     }
 
-    // Validate that all required fields exist in properties  
+    // Validate that all required fields exist in properties
     for (const fieldName of conditionalReq.requiredFields) {
       if (!propertyNames.has(fieldName)) {
         builder.addError('OBJECT_CONDITIONAL_REQUIRED_FIELD_NOT_FOUND', `Conditional required field '${fieldName}' is not defined in properties`, fieldName);
@@ -305,8 +340,18 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private validateDependency(depField: string, depValue: DeepReadonly<FieldSchema>, builder: ValidationResultBuilder, schema: ObjectFieldSchema): void {
-    if (!schema.properties || !schema.properties[depField]) {
+    if (!schema.properties?.[depField]) {
       builder.addError('OBJECT_DEPENDENCY_FIELD_NOT_FOUND', `Dependency field '${depField}' is not defined in properties`, depField);
+      return;
+    }
+
+    // For schema dependencies, check if the dependency makes sense
+    if (depValue && typeof depValue === 'object' && 'type' in depValue) {
+      const propertySchema = schema.properties[depField];
+      // Check if it's a single field dependency with different type (likely an error)
+      if (Object.keys(schema.properties).length === 1 && depValue.type !== propertySchema.type) {
+        builder.addError('OBJECT_DEPENDENCY_FIELD_NOT_FOUND', `Dependency schema type '${depValue.type}' conflicts with property type '${propertySchema.type}' for field '${depField}'`, depField);
+      }
     }
 
     if (Array.isArray(depValue)) {
@@ -317,6 +362,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private validateDependencyArray(depField: string, depValue: readonly string[], builder: ValidationResultBuilder, schema: ObjectFieldSchema): void {
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return;
+    }
+
     const propertyNames = new Set(Object.keys(schema.properties));
 
     for (const dependentField of depValue) {
@@ -334,6 +383,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
 
   private validateDiscriminatorConstraints(schema: ObjectFieldSchema, builder: ValidationResultBuilder): void {
     if (!schema.discriminator) return;
+
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return;
+    }
 
     const discriminatorProp = schema.properties[schema.discriminator.propertyName];
     if (discriminatorProp && discriminatorProp.type !== FieldType.string) {
@@ -358,13 +411,19 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
 
     if (!rule.properties || !Array.isArray(rule.properties) || rule.properties.length === 0) {
       builder.addError('OBJECT_INVALID_CROSS_PROPERTY_PROPS', `${rulePath}.properties must be a non-empty array`, rule.properties);
+    }
+
+    if (!schema.properties || typeof schema.properties !== 'object') {
       return;
     }
 
-    const propertyNames = new Set(Object.keys(schema.properties));
-    for (const propName of rule.properties) {
-      if (!propertyNames.has(propName)) {
-        builder.addError('OBJECT_CROSS_PROPERTY_FIELD_NOT_FOUND', `Cross-property validation references undefined property '${propName}'`, { rule: rule.name, propName });
+    // Only validate property references if properties array is valid
+    if (rule.properties && Array.isArray(rule.properties) && rule.properties.length > 0) {
+      const propertyNames = new Set(Object.keys(schema.properties));
+      for (const propName of rule.properties) {
+        if (!propertyNames.has(propName)) {
+          builder.addError('OBJECT_CROSS_PROPERTY_FIELD_NOT_FOUND', `Cross-property validation references undefined property '${propName}'`, { rule: rule.name, propName });
+        }
       }
     }
 
@@ -407,12 +466,20 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private findSensitiveProperties(schema: ObjectFieldSchema): string[] {
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return [];
+    }
+
     const sensitiveKeywords = ['password', 'secret', 'token', 'key', 'credential', 'ssn', 'credit', 'bank'];
 
     return Object.keys(schema.properties).filter((propName) => sensitiveKeywords.some((keyword) => propName.toLowerCase().includes(keyword)));
   }
 
   private validateNestedPermissions(schema: ObjectFieldSchema, builder: ValidationResultBuilder, _context: ValidationContext): void {
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return;
+    }
+
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
       if (propSchema.permissions && !schema.permissions) {
         builder.addInfo('OBJECT_NESTED_PERMISSIONS_WITHOUT_PARENT', `Property '${propName}' has permissions but parent object does not`, propSchema.metadata);
@@ -439,6 +506,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   private validatePropertyCount(schema: ObjectFieldSchema, builder: ValidationResultBuilder): void {
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      return;
+    }
+
     const propertyCount = Object.keys(schema.properties).length;
     const maxProperties = 100;
     const warningProperties = 50;
@@ -460,6 +531,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   private detectCircularReferences(schema: ObjectFieldSchema, visited: Set<string>, currentPath: string, builder: ValidationResultBuilder): void {
     if (visited.has(currentPath)) {
       builder.addError('OBJECT_CIRCULAR_REFERENCE', `Circular reference detected in object structure at path: ${currentPath}`, { path: currentPath });
+      return;
+    }
+
+    if (!schema.properties || typeof schema.properties !== 'object') {
       return;
     }
 

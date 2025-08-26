@@ -111,9 +111,11 @@ export class FieldProcessorDiscoveryService {
    * Type guard to check if an instance is a BaseFieldProcessor
    */
   private isFieldProcessorInstance(instance: any): instance is BaseFieldProcessor {
+    if (!instance || typeof instance !== 'object') {
+      return false;
+    }
+
     return (
-      instance &&
-      typeof instance === 'object' &&
       'supportedType' in instance &&
       'canProcess' in instance &&
       typeof instance.canProcess === 'function' &&

@@ -72,7 +72,7 @@ describe('FieldValidationModule', () => {
 
       // Test basic registry functionality
       expect(() => fieldValidatorRegistry.clear()).not.toThrow();
-      expect(fieldValidatorRegistry.getAllValidators()).toEqual([]);
+      expect(fieldValidatorRegistry.getAllValidators().size).toBe(0);
     });
 
     it('should allow error service operations', () => {

@@ -18,14 +18,12 @@ export class NestedClassGeneratorService implements INestedClassGenerator {
   private classCounter = 0;
 
   constructor(
-    @Optional() private readonly cacheMonitor: CacheMonitorService | undefined,
     @Inject(forwardRef(() => 'FieldProcessorRegistry'))
     private readonly fieldProcessorRegistry: FieldProcessorRegistry,
+    @Optional() private readonly cacheMonitor?: CacheMonitorService,
   ) {
     // Register cache for monitoring if service is available
-    if (this.cacheMonitor) {
-      this.cacheMonitor.registerCache('nested-class-generator', this.generatedClasses);
-    }
+    this.cacheMonitor?.registerCache('nested-class-generator', this.generatedClasses);
   }
 
   generateNestedClass<T extends Record<string, FieldSchema>>(properties: T, required: string[] = [], exclude = false): classConstructor<{ [K in keyof T]: unknown }> {

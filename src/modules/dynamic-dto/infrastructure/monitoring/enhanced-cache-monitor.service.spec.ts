@@ -7,8 +7,33 @@ describe('EnhancedCacheMonitorService', () => {
   let service: EnhancedCacheMonitorService;
 
   beforeEach(async () => {
+    const mockCacheManager = {
+      cleanup: jest.fn(),
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      clear: jest.fn(),
+      getMemoryInfo: jest.fn().mockReturnValue({
+        estimatedBytes: 1000,
+        entryCount: 10,
+        hitRate: 0.8,
+        utilizationRate: 0.5,
+        lastCleanup: new Date(),
+      }),
+    };
+
+    const mockConfig = {
+      memoryThresholdBytes: 50 * 1024 * 1024,
+      utilizationThreshold: 0.85,
+      hitRateThreshold: 0.7,
+      enableAutoCleanup: true,
+      enableAlerting: true,
+      alertingIntervalMs: 5 * 60 * 1000,
+      aggressiveCleanupThreshold: 0.95,
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [EnhancedCacheMonitorService],
+      providers: [EnhancedCacheMonitorService, { provide: 'ICacheManager', useValue: mockCacheManager }, { provide: 'CACHE_MONITOR_CONFIG', useValue: mockConfig }],
     }).compile();
 
     service = module.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);

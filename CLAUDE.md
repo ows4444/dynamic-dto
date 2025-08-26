@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## Development Commands
 
@@ -44,20 +45,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Debug Commands
 
 - `npm run test:debug` - Debug unit tests with Node.js inspector
-- `npm run test:debug:integration` - Debug integration tests with Node.js inspector
+- `npm run test:debug:integration` - Debug integration tests with Node.js
+  inspector
 
 ### Release Commands
 
 - `npm run version:patch` - Bump patch version
-- `npm run version:minor` - Bump minor version  
+- `npm run version:minor` - Bump minor version
 - `npm run version:major` - Bump major version
-- `npm run release:dry` - Dry run release (test publish without actually publishing)
+- `npm run release:dry` - Dry run release (test publish without actually
+  publishing)
 - `npm run release` - Full release: validate + build + test + publish
 - `npm run test:ci` - CI test command (runs coverage)
 
 ## Architecture Overview
 
-This is a **high-performance NestJS library** for dynamic DTO generation and validation from JSON schemas at runtime with **advanced caching and memory management**. The library implements **Clean Architecture** principles and separates concerns into distinct layers:
+This is a **high-performance NestJS library** for dynamic DTO generation and
+validation from JSON schemas at runtime with **advanced caching and memory
+management**. The library implements **Clean Architecture** principles and
+separates concerns into distinct layers:
 
 ## Package Information
 
@@ -74,7 +80,8 @@ This is a **high-performance NestJS library** for dynamic DTO generation and val
 Based on the package.json keywords, this library provides:
 
 - **Runtime DTO Generation** - Create DTOs dynamically from JSON schemas
-- **Advanced Validation** - Comprehensive validation with class-validator integration
+- **Advanced Validation** - Comprehensive validation with class-validator
+  integration
 - **Clean Architecture** - Well-structured, maintainable codebase
 - **High Performance** - Optimized for production workloads
 - **Memory Management** - Advanced caching with memory leak prevention
@@ -84,10 +91,14 @@ Based on the package.json keywords, this library provides:
 
 ### Layer Structure
 
-- **Domain Layer**: `src/modules/dynamic-dto/domain/` - Core business entities (DynamicSchemaEntity, SchemaValidationResultEntity)
-- **Application Layer**: `src/modules/dynamic-dto/application/` - Use cases, services, and processing pipelines
-- **Infrastructure Layer**: `src/modules/dynamic-dto/infrastructure/` - Technical concerns (caching, registries, factories, monitoring)
-- **Core Layer**: `src/modules/dynamic-dto/core/` - Shared abstractions, types, interfaces, and utilities
+- **Domain Layer**: `src/modules/dynamic-dto/domain/` - Core business entities
+  (DynamicSchemaEntity, SchemaValidationResultEntity)
+- **Application Layer**: `src/modules/dynamic-dto/application/` - Use cases,
+  services, and processing pipelines
+- **Infrastructure Layer**: `src/modules/dynamic-dto/infrastructure/` -
+  Technical concerns (caching, registries, factories, monitoring)
+- **Core Layer**: `src/modules/dynamic-dto/core/` - Shared abstractions, types,
+  interfaces, and utilities
 
 ### Key Architectural Patterns
 
@@ -95,8 +106,9 @@ Based on the package.json keywords, this library provides:
 
 The library uses **consolidated provider factories** to reduce complexity:
 
-- `createCoreServicesProviders()` - Main orchestration services + processing pipelines
-- `createFieldProcessingProviders()` - Field processors and registries  
+- `createCoreServicesProviders()` - Main orchestration services + processing
+  pipelines
+- `createFieldProcessingProviders()` - Field processors and registries
 - `createInfrastructureProviders()` - Caching, monitoring, discovery services
 - `createValidationProviders()` - Validation strategies and pipelines
 
@@ -122,7 +134,8 @@ export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> 
 
 Sequential processing through specialized pipelines:
 
-- `DtoGenerationPipeline` - Creates DTO classes with memory management via WeakRef
+- `DtoGenerationPipeline` - Creates DTO classes with memory management via
+  WeakRef
 - `ValidationPipeline` - Multi-stage validation workflows
 - `SchemaValidationPipeline` - Schema structure validation
 
@@ -152,12 +165,13 @@ The field processing system is highly extensible and uses several key patterns:
 String processing includes 12+ specialized format validators:
 
 - Email, URL, UUID, Phone, Currency
-- Country codes, Coordinates, Domains  
+- Country codes, Coordinates, Domains
 - Password validation, Username patterns
 - Cron expressions, Semantic versioning
 - Time formats
 
-Located in: `src/modules/dynamic-dto/processors/field-processors/primitive/string-formats/`
+Located in:
+`src/modules/dynamic-dto/processors/field-processors/primitive/string-formats/`
 
 ### Caching Architecture
 
@@ -187,22 +201,25 @@ Multi-layered validation approach:
 
 ### Adding New Field Types
 
-1. Create processor in appropriate category folder (`primitive/`, `specialized/`, `complex/`)
+1. Create processor in appropriate category folder (`primitive/`,
+   `specialized/`, `complex/`)
 2. Extend `BaseFieldProcessor<YourFieldSchema>`
 3. Add `@FieldProcessor` decorator with metadata
-4. Implement required methods: `canProcess`, `generateValidationDecorators`, etc.
+4. Implement required methods: `canProcess`, `generateValidationDecorators`,
+   etc.
 5. The registry will auto-discover and register the processor
 
 ### Processor Responsibilities
 
 - **Validation Decorators** - Generate class-validator decorators
-- **Transformation Decorators** - Generate class-transformer decorators  
+- **Transformation Decorators** - Generate class-transformer decorators
 - **Serialization Decorators** - Generate serialization rules
 - **Schema Validation** - Validate field schema structure
 
 ## Memory Management
 
-The library implements sophisticated memory management with configurable settings:
+The library implements sophisticated memory management with configurable
+settings:
 
 - **WeakRef** for generated DTO classes to allow garbage collection
 - **FinalizationRegistry** for cleanup callbacks
@@ -224,23 +241,30 @@ DynamicDtoModule.forRoot({
     utilizationThreshold: 0.85, // Memory pressure threshold (85%)
     aggressiveCleanupThreshold: 0.15, // Max 15% eviction per cleanup
     cleanupIntervalMs: 60000, // Cleanup interval (1 minute minimum)
-  }
-})
+  },
+});
 ```
 
 ### Memory Management Best Practices
 
-1. **TTL Configuration**: Set appropriate TTL based on your application's DTO usage patterns
-2. **Cleanup Intervals**: Use longer intervals (60s+) for production to avoid performance overhead
-3. **Memory Thresholds**: Monitor cache utilization and adjust thresholds based on memory constraints
-4. **Error Handling**: Cleanup operations include error boundaries to prevent memory management failures
+1. **TTL Configuration**: Set appropriate TTL based on your application's DTO
+   usage patterns
+2. **Cleanup Intervals**: Use longer intervals (60s+) for production to avoid
+   performance overhead
+3. **Memory Thresholds**: Monitor cache utilization and adjust thresholds based
+   on memory constraints
+4. **Error Handling**: Cleanup operations include error boundaries to prevent
+   memory management failures
 
 ## Test Requirements
 
-- **Unit Tests**: 99% coverage requirement (lines, functions, branches, statements)
+- **Unit Tests**: 99% coverage requirement (lines, functions, branches,
+  statements)
 - **Integration Tests**: 90% coverage requirement
-- **Test Structure**: Uses separate Jest configs for unit, integration, and e2e tests
-- **Coverage Enforcement**: `scripts/test-coverage.js` enforces coverage thresholds
+- **Test Structure**: Uses separate Jest configs for unit, integration, and e2e
+  tests
+- **Coverage Enforcement**: `scripts/test-coverage.js` enforces coverage
+  thresholds
 
 ## Development Workflow
 
@@ -263,9 +287,10 @@ The package includes Husky for Git hooks:
 
 1. **Version Bumping**:
    - `npm run version:patch` - Bug fixes
-   - `npm run version:minor` - New features  
+   - `npm run version:minor` - New features
    - `npm run version:major` - Breaking changes
-2. **Pre-release Testing**: `npm run release:dry` - Test release without publishing
+2. **Pre-release Testing**: `npm run release:dry` - Test release without
+   publishing
 3. **Full Release**: `npm run release` - Validate + build + test + publish
 
 ### Continuous Integration
@@ -277,9 +302,12 @@ The package includes Husky for Git hooks:
 ## Key Files to Understand
 
 - `src/modules/dynamic-dto/dynamic-dto.module.ts` - Main module configuration
-- `src/modules/dynamic-dto/application/services/dto-orchestrator.service.ts` - Main entry point
-- `src/modules/dynamic-dto/infrastructure/factories/consolidated/` - Provider factories
-- `src/modules/dynamic-dto/infrastructure/registries/field-processor.registry.ts` - Processor registration
+- `src/modules/dynamic-dto/application/services/dto-orchestrator.service.ts` -
+  Main entry point
+- `src/modules/dynamic-dto/infrastructure/factories/consolidated/` - Provider
+  factories
+- `src/modules/dynamic-dto/infrastructure/registries/field-processor.registry.ts` -
+  Processor registration
 - `test/fixtures/schema-fixtures.ts` - Test schemas for all field types
 
 ## Extensions and Customization
@@ -291,7 +319,8 @@ The library is designed for extensibility:
 - **Custom Caching Strategies** - Implement cache strategy interfaces
 - **Custom String Formats** - Add new string format validators
 
-All extensions follow the same decorator-based discovery pattern for automatic registration.
+All extensions follow the same decorator-based discovery pattern for automatic
+registration.
 
 ## Modern Package Features
 
@@ -301,13 +330,13 @@ The package supports both CommonJS and ESM through dual exports:
 
 ```json
 {
-  "main": "dist/index.js",           // CommonJS entry
-  "module": "dist/index.esm.js",     // ESM entry  
-  "types": "dist/index.d.ts",        // TypeScript declarations
+  "main": "dist/index.js", // CommonJS entry
+  "module": "dist/index.esm.js", // ESM entry
+  "types": "dist/index.d.ts", // TypeScript declarations
   "exports": {
     ".": {
       "import": "./dist/index.esm.js",
-      "require": "./dist/index.js", 
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   }
@@ -318,7 +347,8 @@ The package supports both CommonJS and ESM through dual exports:
 
 - **Volta Support**: Pin Node.js 18.17.0 and npm 9.6.0 versions
 - **Browserslist**: Target Node.js ≥18.17.0 for compatibility
-- **Platform Support**: Cross-platform (Darwin, Linux, Win32) with x64/ARM64 support
+- **Platform Support**: Cross-platform (Darwin, Linux, Win32) with x64/ARM64
+  support
 
 ### Publishing Configuration
 
