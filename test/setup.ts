@@ -19,7 +19,7 @@ beforeAll(() => {
 afterAll(() => {
   // Restore console methods
   Object.assign(console, originalConsole);
-  
+
   // Clear all timers to help with cleanup
   jest.clearAllTimers();
 });
