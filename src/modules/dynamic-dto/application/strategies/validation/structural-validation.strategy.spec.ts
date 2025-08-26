@@ -2,7 +2,7 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { StructuralValidationStrategy } from './structural-validation.strategy';
-import { SchemaValidationPipeline } from '../../pipelines/schema-validation.pipeline';
+import { EnhancedStructuralSchemaValidator } from '../../../validators/schema-validators/enhanced-structural-schema.validator';
 import { BaseSchemaValidator } from '../../../core/abstractions/base-schema-validator.abstract';
 import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.entity';
 import { FieldType } from '../../../core/types/field.types';
@@ -10,7 +10,7 @@ import type { ValidationContext, ValidationResult } from '../../../core/interfac
 
 describe('StructuralValidationStrategy', () => {
   let strategy: StructuralValidationStrategy;
-  let schemaValidationPipeline: jest.Mocked<SchemaValidationPipeline>;
+  let enhancedValidator: jest.Mocked<EnhancedStructuralSchemaValidator>;
   let baseSchemaValidator: jest.Mocked<BaseSchemaValidator>;
 
   const mockSchema = new DynamicSchemaEntity(
@@ -31,8 +31,9 @@ describe('StructuralValidationStrategy', () => {
   };
 
   beforeEach(async () => {
-    const mockSchemaValidationPipeline = {
-      execute: jest.fn(),
+    const mockEnhancedValidator = {
+      validate: jest.fn(),
+      validateWithContext: jest.fn(),
     };
 
     const mockBaseSchemaValidator = {
@@ -43,8 +44,8 @@ describe('StructuralValidationStrategy', () => {
       providers: [
         StructuralValidationStrategy,
         {
-          provide: SchemaValidationPipeline,
-          useValue: mockSchemaValidationPipeline,
+          provide: EnhancedStructuralSchemaValidator,
+          useValue: mockEnhancedValidator,
         },
         {
           provide: BaseSchemaValidator,
@@ -54,7 +55,7 @@ describe('StructuralValidationStrategy', () => {
     }).compile();
 
     strategy = module.get<StructuralValidationStrategy>(StructuralValidationStrategy);
-    schemaValidationPipeline = module.get(SchemaValidationPipeline);
+    enhancedValidator = module.get(EnhancedStructuralSchemaValidator);
     baseSchemaValidator = module.get(BaseSchemaValidator);
 
     // Suppress logger output during tests
@@ -93,14 +94,14 @@ describe('StructuralValidationStrategy', () => {
         },
       };
 
-      schemaValidationPipeline.execute.mockReturnValue(enhancedResult);
+      enhancedValidator.validateWithContext.mockReturnValue(enhancedResult);
       baseSchemaValidator.validate.mockReturnValue(baseResult);
 
       // Act
       const result = strategy.execute(mockSchema, mockContext);
 
       // Assert
-      expect(schemaValidationPipeline.execute).toHaveBeenCalledWith(mockSchema);
+      expect(enhancedValidator.validateWithContext).toHaveBeenCalledWith(mockSchema.properties, mockContext);
       expect(baseSchemaValidator.validate).toHaveBeenCalledWith(mockSchema.properties, mockContext, mockSchema.name);
       expect(result.isValid).toBe(true);
       expect(result.issues).toHaveLength(0);
@@ -156,7 +157,7 @@ describe('StructuralValidationStrategy', () => {
         },
       };
 
-      schemaValidationPipeline.execute.mockReturnValue(enhancedResult);
+      enhancedValidator.validateWithContext.mockReturnValue(enhancedResult);
       baseSchemaValidator.validate.mockReturnValue(baseResult);
 
       // Act
@@ -210,7 +211,7 @@ describe('StructuralValidationStrategy', () => {
         },
       };
 
-      schemaValidationPipeline.execute.mockReturnValue(enhancedResult);
+      enhancedValidator.validateWithContext.mockReturnValue(enhancedResult);
       baseSchemaValidator.validate.mockReturnValue(baseResult);
 
       // Act
@@ -260,7 +261,7 @@ describe('StructuralValidationStrategy', () => {
         },
       };
 
-      schemaValidationPipeline.execute.mockReturnValue(enhancedResult);
+      enhancedValidator.validateWithContext.mockReturnValue(enhancedResult);
       baseSchemaValidator.validate.mockReturnValue(baseResult);
 
       // Act
@@ -298,27 +299,27 @@ describe('StructuralValidationStrategy', () => {
         },
       };
 
-      schemaValidationPipeline.execute.mockReturnValue(enhancedResult);
+      enhancedValidator.validate.mockReturnValue(enhancedResult);
       baseSchemaValidator.validate.mockReturnValue(baseResult);
 
       // Act
       const result = strategy.execute(mockSchema);
 
       // Assert
-      expect(schemaValidationPipeline.execute).toHaveBeenCalledWith(mockSchema);
+      expect(enhancedValidator.validate).toHaveBeenCalledWith(mockSchema.properties);
       expect(baseSchemaValidator.validate).toHaveBeenCalledWith(mockSchema.properties, undefined, mockSchema.name);
       expect(result.isValid).toBe(true);
     });
 
     it('should handle and rethrow validation errors', () => {
       // Arrange
-      const error = new Error('Validation pipeline failed');
-      schemaValidationPipeline.execute.mockImplementation(() => {
+      const error = new Error('Enhanced validation failed');
+      enhancedValidator.validateWithContext.mockImplementation(() => {
         throw error;
       });
 
       // Act & Assert
-      expect(() => strategy.execute(mockSchema, mockContext)).toThrow('Validation pipeline failed');
+      expect(() => strategy.execute(mockSchema, mockContext)).toThrow('Enhanced validation failed');
       expect(Logger.prototype.error).toHaveBeenCalledWith('StructuralValidation failed for schema: TestSchema', error);
     });
 
@@ -337,7 +338,7 @@ describe('StructuralValidationStrategy', () => {
       };
 
       const error = new Error('Base validator failed');
-      schemaValidationPipeline.execute.mockReturnValue(enhancedResult);
+      enhancedValidator.validateWithContext.mockReturnValue(enhancedResult);
       baseSchemaValidator.validate.mockImplementation(() => {
         throw error;
       });

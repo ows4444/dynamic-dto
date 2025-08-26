@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ArrayFieldProcessor } from './array-field.processor';
 import { FieldType } from '../../../core/types/field.types';
 import type { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';
-import type { FieldProcessorRegistry } from '../../../infrastructure/registries/field-processor.registry';
+import { FieldProcessorRegistry } from '../../../infrastructure/registries/field-processor.registry';
 
 describe('ArrayFieldProcessor', () => {
   let processor: ArrayFieldProcessor;
@@ -43,14 +43,14 @@ describe('ArrayFieldProcessor', () => {
       providers: [
         ArrayFieldProcessor,
         {
-          provide: 'FieldProcessorRegistry',
+          provide: FieldProcessorRegistry,
           useValue: mockFieldProcessorRegistry,
         },
       ],
     }).compile();
 
     processor = module.get<ArrayFieldProcessor>(ArrayFieldProcessor);
-    fieldProcessorRegistry = module.get('FieldProcessorRegistry');
+    fieldProcessorRegistry = module.get<jest.Mocked<FieldProcessorRegistry>>(FieldProcessorRegistry);
   });
 
   describe('canProcess', () => {

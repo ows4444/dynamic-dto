@@ -64,28 +64,18 @@ describe('Core Services Factory', () => {
       expect(providers).toContain(SchemaValidationPipeline);
     });
 
-    it('should create module with all core service providers', async () => {
+    it('should create module with all core service providers', () => {
       const providers = createCoreServicesProviders();
 
-      const testModule = await Test.createTestingModule({
-        providers: [
-          ...providers.map((provider) => ({
-            provide: provider,
-            useValue: {},
-          })),
-        ],
-      }).compile();
-
-      expect(testModule.get(DtoCacheService)).toBeDefined();
-      expect(testModule.get(DtoValidationService)).toBeDefined();
-      expect(testModule.get(DtoBatchProcessor)).toBeDefined();
-      expect(testModule.get(DtoOrchestratorService)).toBeDefined();
-      expect(testModule.get(SchemaOrchestratorService)).toBeDefined();
-      expect(testModule.get(DtoGenerationPipeline)).toBeDefined();
-      expect(testModule.get(ValidationPipeline)).toBeDefined();
-      expect(testModule.get(SchemaValidationPipeline)).toBeDefined();
-
-      await testModule.close();
+      // Since this is a factory test, just verify the providers are correct types
+      expect(providers).toContain(DtoCacheService);
+      expect(providers).toContain(DtoValidationService);
+      expect(providers).toContain(DtoBatchProcessor);
+      expect(providers).toContain(DtoOrchestratorService);
+      expect(providers).toContain(SchemaOrchestratorService);
+      expect(providers).toContain(DtoGenerationPipeline);
+      expect(providers).toContain(ValidationPipeline);
+      expect(providers).toContain(SchemaValidationPipeline);
     });
 
     it('should not include duplicate providers', () => {
@@ -148,7 +138,7 @@ describe('Core Services Factory', () => {
       ];
 
       serviceTypes.forEach((serviceType) => {
-        const hasService = providers.some((provider) => provider.name === serviceType || (typeof provider === 'function' && provider.name === serviceType));
+        const hasService = providers.some((provider) => (typeof provider === 'function' && provider.name === serviceType));
         expect(hasService).toBe(true);
       });
     });
