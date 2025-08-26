@@ -138,7 +138,7 @@ describe('Core Services Factory', () => {
       ];
 
       serviceTypes.forEach((serviceType) => {
-        const hasService = providers.some((provider) => (typeof provider === 'function' && provider.name === serviceType));
+        const hasService = providers.some((provider) => typeof provider === 'function' && provider.name === serviceType);
         expect(hasService).toBe(true);
       });
     });

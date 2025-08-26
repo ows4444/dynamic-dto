@@ -270,15 +270,12 @@ describe('CacheMonitorService', () => {
       mockCache.getStats.mockImplementation(() => {
         throw new Error('Stats error');
       });
-      
+
       service.registerCache('cache1', mockCache);
-      
+
       // Should not throw - errors should be caught and logged as warnings in getAllCacheStats
       expect(() => service.performHealthCheck()).not.toThrow();
-      expect(warnSpy).toHaveBeenCalledWith(
-        "Failed to get stats for cache 'cache1'",
-        expect.objectContaining({ error: expect.any(String) })
-      );
+      expect(warnSpy).toHaveBeenCalledWith("Failed to get stats for cache 'cache1'", expect.objectContaining({ error: expect.any(String) }));
     });
 
     it('should handle unknown errors during health check', () => {
@@ -286,15 +283,12 @@ describe('CacheMonitorService', () => {
       mockCache.getStats.mockImplementation(() => {
         throw 'String error';
       });
-      
+
       service.registerCache('cache1', mockCache);
-      
+
       // Should not throw - errors should be caught and logged as warnings in getAllCacheStats
       expect(() => service.performHealthCheck()).not.toThrow();
-      expect(warnSpy).toHaveBeenCalledWith(
-        "Failed to get stats for cache 'cache1'",
-        expect.objectContaining({ error: 'Unknown error' })
-      );
+      expect(warnSpy).toHaveBeenCalledWith("Failed to get stats for cache 'cache1'", expect.objectContaining({ error: 'Unknown error' }));
     });
 
     it('should throttle alerts based on alerting interval', () => {

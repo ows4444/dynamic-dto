@@ -44,7 +44,7 @@ describe('MonitoringModule', () => {
   });
 
   describe('module compilation', () => {
-    it('should compile successfully', async () => {
+    it('should compile successfully', () => {
       expect(module).toBeDefined();
       expect(module.get).toBeDefined();
     });
@@ -481,7 +481,7 @@ describe('MonitoringModule', () => {
       const monitor = testModule.get<EnhancedCacheMonitorService>(EnhancedCacheMonitorService);
 
       // These should not throw errors
-      expect(() => monitor.recordCacheHit(null as any)).not.toThrow();
+      expect(() => monitor.recordCacheHit(null)).not.toThrow();
       expect(() => monitor.recordCacheMiss('')).not.toThrow();
       expect(() => monitor.recordCacheEviction('key', null as any)).not.toThrow();
       expect(() => monitor.updateMemoryUsage(-100)).not.toThrow();

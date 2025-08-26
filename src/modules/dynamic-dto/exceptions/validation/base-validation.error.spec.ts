@@ -10,7 +10,7 @@ class TestValidationError extends BaseValidationError {
     public readonly value?: unknown,
     public readonly constraints?: Record<string, unknown>,
     context?: ValidationErrorContext,
-    suggestions?: ValidationErrorSuggestion[]
+    suggestions?: ValidationErrorSuggestion[],
   ) {
     super('TEST_VALIDATION_ERROR', message, ValidationSeverity.error, context, suggestions || []);
   }

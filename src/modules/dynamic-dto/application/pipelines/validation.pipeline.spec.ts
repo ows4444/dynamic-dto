@@ -293,11 +293,7 @@ describe('ValidationPipeline', () => {
 
     it('should map strategy objects to names correctly', () => {
       // Arrange
-      validationStrategyFactory.getAllStrategies.mockReturnValue([
-        { name: 'strategy1', order: 1 } as any,
-        { name: 'strategy2', order: 2 } as any,
-        { name: 'strategy3', order: 3 } as any,
-      ]);
+      validationStrategyFactory.getAllStrategies.mockReturnValue([{ name: 'strategy1', order: 1 } as any, { name: 'strategy2', order: 2 } as any, { name: 'strategy3', order: 3 } as any]);
 
       // Act
       const strategies = pipeline.getAvailableStrategies();

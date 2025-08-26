@@ -1,12 +1,11 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
-import { Logger, Type } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import type { DiscoveredProcessor } from './field-processor-discovery.service';
 import { FieldProcessorDiscoveryService } from './field-processor-discovery.service';
 import { BaseFieldProcessor } from '../../core/abstractions/base-field-processor.abstract';
 import type { FieldProcessorMetadata } from '../../core/decorators/field-processor.decorator';
-import { FIELD_PROCESSOR_METADATA_KEY } from '../../core/decorators/field-processor.decorator';
 import type { FieldTypeValue } from '../../core/types/field.types';
 import type { FieldSchema } from '../../core/interfaces/schema';
 
@@ -166,7 +165,7 @@ describe('FieldProcessorDiscoveryService', () => {
     });
 
     it('should handle processors without priority', () => {
-      const noPriorityMetadata = { type: 'string', category: 'primitive' } as FieldProcessorMetadata;
+      const noPriorityMetadata = { type: 'string', category: 'primitive' };
 
       discoveryService.getProviders.mockReturnValue([mockWrapper] as any);
       reflector.get.mockReturnValue(noPriorityMetadata);
@@ -213,8 +212,8 @@ describe('FieldProcessorDiscoveryService', () => {
 
   describe('getProcessorsByCategory', () => {
     it('should group processors by category', () => {
-      const primitiveMetadata = { type: 'string', category: 'primitive', priority: 1 } as FieldProcessorMetadata;
-      const specializedMetadata = { type: 'date', category: 'specialized', priority: 2 } as FieldProcessorMetadata;
+      const primitiveMetadata = { type: 'string', category: 'primitive', priority: 1 };
+      const specializedMetadata = { type: 'date', category: 'specialized', priority: 2 };
 
       const primitiveWrapper = {
         metatype: MockFieldProcessor,
@@ -238,7 +237,7 @@ describe('FieldProcessorDiscoveryService', () => {
     });
 
     it('should handle processors without category', () => {
-      const noCategoryMetadata = { type: 'string', priority: 1 } as FieldProcessorMetadata;
+      const noCategoryMetadata = { type: 'string', priority: 1 };
 
       discoveryService.getProviders.mockReturnValue([mockWrapper] as any);
       reflector.get.mockReturnValue(noCategoryMetadata);

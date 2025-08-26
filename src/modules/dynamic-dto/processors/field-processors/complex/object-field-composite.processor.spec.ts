@@ -5,7 +5,6 @@ import { CircularReferenceDetectorService } from './services/circular-reference-
 import { ObjectValidationService } from './services/object-validation.service';
 import { PropertyFilteringService } from './services/property-filtering.service';
 import { NestedObjectTransformerService } from './services/nested-object-transformer.service';
-import { IsDefined, IsObject, IsOptional, ValidateNested } from 'class-validator';
 import { FieldType } from '../../../core/types/field.types';
 import type { ObjectFieldSchema } from '../../../core/interfaces/schema/complex/object-field.schema';
 
@@ -431,7 +430,7 @@ describe('ObjectFieldProcessorComposite', () => {
       const decorators = processor.generateValidationDecorators(schema, true);
       expect(decorators).toHaveLength(3);
 
-      const enhancedDecorators = processor.generateEnhancedTransformationDecorators(schema);
+      processor.generateEnhancedTransformationDecorators(schema);
       expect(mockNestedObjectTransformer.generateNestedClassDecorator).toHaveBeenCalledWith(schema);
     });
   });

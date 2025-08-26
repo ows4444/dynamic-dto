@@ -4,9 +4,6 @@ import { ArrayFieldValidator } from './array-field.validator';
 import { FieldType } from '../../../core/types/field.types';
 import type { ArrayFieldSchema } from '../../../core/interfaces/schema/complex/array-field.schema';
 import type { ValidationContext } from '../../../core/interfaces/validation';
-import type { ValidationRule } from '../../../core/interfaces/schema/base/base-field.schema';
-import type { CrossItemValidationRule } from '../../../core/interfaces/schema/complex/array-field.schema';
-import { ValidationSeverity } from '../../../core/enums/validation.enums';
 
 describe('ArrayFieldValidator', () => {
   let validator: ArrayFieldValidator;

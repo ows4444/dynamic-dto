@@ -32,7 +32,7 @@ describe('FieldValidationModule', () => {
   });
 
   describe('module compilation', () => {
-    it('should compile successfully', async () => {
+    it('should compile successfully', () => {
       expect(module).toBeDefined();
       expect(module.get).toBeDefined();
     });
