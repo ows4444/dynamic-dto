@@ -380,4 +380,236 @@ describe('NestedClassGeneratorService', () => {
       );
     });
   });
+
+  describe('memory management and performance', () => {
+    it('should log warning when cache approaches capacity', () => {
+      const properties = { name: createStringSchema() };
+      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation(() => {});
+
+      // Mock the cache to simulate near capacity
+      jest.spyOn(service['generatedClasses'], 'isNearCapacity').mockReturnValue(true);
+      jest.spyOn(service['generatedClasses'], 'getStats').mockReturnValue({
+        size: 280,
+        maxSize: 300,
+        hitCount: 100,
+        missCount: 50,
+        hitRate: 0.67,
+        evictionCount: 10,
+        utilizationRate: 0.93,
+      });
+      jest.spyOn(service['generatedClasses'], 'getApproximateMemoryUsage').mockReturnValue(1024 * 1024);
+
+      service.generateNestedClass(properties);
+
+      expect(loggerSpy).toHaveBeenCalledWith('Nested class generation cache approaching capacity', {
+        size: 280,
+        maxSize: 300,
+        hitCount: 100,
+        missCount: 50,
+        hitRate: 0.67,
+        evictionCount: 10,
+        utilizationRate: 0.93,
+        memoryUsageBytes: 1024 * 1024,
+      });
+
+      loggerSpy.mockRestore();
+    });
+
+    it('should not log warning when cache is not near capacity', () => {
+      const properties = { name: createStringSchema() };
+      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation(() => {});
+
+      // Mock the cache to simulate normal capacity
+      jest.spyOn(service['generatedClasses'], 'isNearCapacity').mockReturnValue(false);
+
+      service.generateNestedClass(properties);
+
+      expect(loggerSpy).not.toHaveBeenCalled();
+
+      loggerSpy.mockRestore();
+    });
+  });
+
+  describe('class constructor validation', () => {
+    it('should create valid class constructor', () => {
+      const properties = { name: createStringSchema() };
+
+      const GeneratedClass = service.generateNestedClass(properties);
+
+      // Verify the class constructor is valid by instantiating it
+      expect(GeneratedClass).toBeDefined();
+      expect(typeof GeneratedClass).toBe('function');
+
+      const instance = new GeneratedClass();
+      expect(instance).toBeInstanceOf(GeneratedClass);
+    });
+
+    it('should validate class constructor creation process', () => {
+      const properties = { name: createStringSchema() };
+
+      // This test verifies the class creation process works correctly
+      const GeneratedClass = service.generateNestedClass(properties);
+
+      // The createBaseClass method should create a valid constructor
+      // that passes the isClassConstructor type guard
+      expect(GeneratedClass).toBeDefined();
+      expect(typeof GeneratedClass).toBe('function');
+      expect(GeneratedClass.prototype).toBeDefined();
+      expect(GeneratedClass.prototype.constructor).toBe(GeneratedClass);
+    });
+  });
+
+  describe('decorator application errors', () => {
+    it('should throw error for non-array decorators', () => {
+      const properties = { name: createStringSchema() };
+
+      mockFieldProcessorRegistry.processField.mockReturnValue('invalid' as any);
+
+      expect(() => {
+        service.generateNestedClass(properties);
+      }).toThrow('Decorators must be an array');
+    });
+
+    it('should log and throw error for invalid decorator type', () => {
+      const properties = { name: createStringSchema() };
+      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => {});
+
+      mockFieldProcessorRegistry.processField.mockReturnValue(['invalid-decorator'] as any);
+
+      expect(() => {
+        service.generateNestedClass(properties);
+      }).toThrow('Invalid decorator: expected function, got string');
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Invalid decorator at index 0 for field name',
+        expect.objectContaining({
+          decorator: 'invalid-decorator',
+          typeof: 'string',
+        }),
+      );
+
+      loggerSpy.mockRestore();
+    });
+
+    it('should log decorator format error details', () => {
+      const properties = { name: createStringSchema() };
+      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => {});
+
+      mockFieldProcessorRegistry.processField.mockReturnValue('not-an-array' as any);
+
+      expect(() => {
+        service.generateNestedClass(properties);
+      }).toThrow('Decorators must be an array');
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Invalid decorators format for field name',
+        expect.objectContaining({
+          decorators: 'not-an-array',
+          typeof: 'string',
+          isArray: false,
+        }),
+      );
+
+      loggerSpy.mockRestore();
+    });
+
+    it('should handle decorator application failure', () => {
+      const properties = { name: createStringSchema() };
+      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => {});
+
+      const failingDecorator = jest.fn().mockImplementation(() => {
+        throw new Error('Decorator application failed');
+      });
+
+      mockFieldProcessorRegistry.processField.mockReturnValue([failingDecorator]);
+
+      expect(() => {
+        service.generateNestedClass(properties);
+      }).toThrow('Decorator application failed');
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Failed to apply decorator 0 to field name',
+        expect.objectContaining({
+          error: 'Decorator application failed',
+        }),
+      );
+
+      loggerSpy.mockRestore();
+    });
+
+    it('should handle non-Error decorator failures', () => {
+      const properties = { name: createStringSchema() };
+      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => {});
+
+      const failingDecorator = jest.fn().mockImplementation(() => {
+        throw 'String error';
+      });
+
+      mockFieldProcessorRegistry.processField.mockReturnValue([failingDecorator]);
+
+      expect(() => {
+        service.generateNestedClass(properties);
+      }).toThrow('Nested field processing failed for name: Unknown error');
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Failed to apply decorator 0 to field name',
+        expect.objectContaining({
+          error: 'String error',
+        }),
+      );
+
+      loggerSpy.mockRestore();
+    });
+  });
+
+  describe('hash functions and cache key generation', () => {
+    it('should generate consistent hash for same object', () => {
+      const properties1 = { name: createStringSchema({ minLength: 5 }) };
+      const properties2 = { name: createStringSchema({ minLength: 5 }) };
+
+      const class1 = service.generateNestedClass(properties1);
+      const class2 = service.generateNestedClass(properties2);
+
+      // Should use cached version
+      expect(class1).toBe(class2);
+    });
+
+    it('should handle empty string in hash function', () => {
+      const properties = {};
+
+      const GeneratedClass = service.generateNestedClass(properties);
+
+      expect(GeneratedClass).toBeDefined();
+    });
+
+    it('should handle complex object hashing with various field properties', () => {
+      const properties = {
+        field1: createStringSchema({ nullable: true, exclude: true }),
+        field2: createNumberSchema({ nullable: false, exclude: false }),
+        field3: createStringSchema(), // No nullable/exclude properties
+      };
+
+      const GeneratedClass = service.generateNestedClass(properties);
+
+      expect(GeneratedClass).toBeDefined();
+      expect(mockFieldProcessorRegistry.processField).toHaveBeenCalledTimes(3);
+    });
+
+    it('should handle array hashing with sorted required fields', () => {
+      const properties = {
+        field1: createStringSchema(),
+        field2: createNumberSchema(),
+        field3: createStringSchema(),
+      };
+
+      const required1 = ['field3', 'field1']; // Unsorted
+      const required2 = ['field1', 'field3']; // Different order, same fields
+
+      const class1 = service.generateNestedClass(properties, required1);
+      const class2 = service.generateNestedClass(properties, required2);
+
+      // Should be the same class due to sorted hashing
+      expect(class1).toBe(class2);
+    });
+  });
 });
