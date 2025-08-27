@@ -19,6 +19,16 @@ import { DateFieldProcessor } from '../../../processors/field-processors/special
 import { EnumFieldProcessor } from '../../../processors/field-processors/specialized/enum-field.processor';
 import { UnionFieldProcessor } from '../../../processors/field-processors/specialized/union-field.processor';
 
+// Union processor services (after SRP refactoring)
+import {
+  UnionDiscriminatorHandlerService,
+  UnionSafeDefaultService,
+  UnionTransformerService,
+  UnionTypeDetectorService,
+  UnionValidatorRegistry,
+  UnionValidatorService,
+} from '../../../processors/field-processors/specialized/services';
+
 // Complex processors
 import { ArrayFieldProcessor } from '../../../processors/field-processors/complex/array-field.processor';
 import { ObjectFieldProcessorComposite } from '../../../processors/field-processors/complex/object-field-composite.processor';
@@ -109,6 +119,14 @@ export function createFieldProcessingProviders(): Provider[] {
     DateFieldProcessor,
     EnumFieldProcessor,
     UnionFieldProcessor,
+
+    // Union processor services (extracted for SRP compliance)
+    UnionTypeDetectorService,
+    UnionValidatorService,
+    UnionDiscriminatorHandlerService,
+    UnionTransformerService,
+    UnionSafeDefaultService,
+    UnionValidatorRegistry,
 
     // Complex processors
     ArrayFieldProcessor,
