@@ -1,0 +1,306 @@
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { Logger } from '@nestjs/common';
+import classTransformer from 'class-transformer';
+import classValidator from 'class-validator';
+import type { ValidationResult } from '@src/index';
+import { DtoValidationService, DynamicSchemaEntity, FieldType } from '@src/index';
+import { ValidationPipeline } from '@src/modules/dynamic-dto/application/pipelines/validation.pipeline';
+
+// Mock class-validator and class-transformer
+jest.mock('class-validator');
+jest.mock('class-transformer');
+
+describe('DtoValidationService', () => {
+  let service: DtoValidationService;
+  let validationPipeline: jest.Mocked<ValidationPipeline>;
+
+  const mockSchema = new DynamicSchemaEntity(
+    'test-schema',
+    'TestSchema',
+    {
+      name: { type: FieldType.string, expose: true },
+      age: { type: FieldType.number, expose: true },
+    },
+    ['name'],
+    false,
+  );
+
+  class MockDto {
+    name = '';
+    age = 0;
+  }
+
+  beforeEach(async () => {
+    const mockValidationPipeline = {
+      validate: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        DtoValidationService,
+        {
+          provide: ValidationPipeline,
+          useValue: mockValidationPipeline,
+        },
+      ],
+    }).compile();
+
+    service = module.get<DtoValidationService>(DtoValidationService);
+    validationPipeline = module.get(ValidationPipeline);
+
+    // Suppress logger output during tests
+    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('validateSchema', () => {
+    it('should return valid result when schema passes validation', () => {
+      // Arrange
+      const mockValidationResult = {
+        isValid: true,
+        issues: [],
+        errors: [],
+      };
+      validationPipeline.validate.mockReturnValue(mockValidationResult);
+
+      // Act
+      const result = service.validateSchema(mockSchema);
+
+      // Assert
+      expect(result.isValid).toBe(true);
+      expect(result.issues).toEqual([]);
+      expect(result.errors).toEqual([]);
+      expect(result.summary?.totalIssues).toBe(0);
+      expect(result.summary?.errorCount).toBe(0);
+    });
+
+    it('should return invalid result when schema fails validation', () => {
+      // Arrange
+      const mockValidationResult: ValidationResult = {
+        isValid: false,
+        issues: [],
+        errors: [
+          {
+            message: 'Invalid field configuration',
+            severity: 'error',
+            code: 'INVALID_CONFIG',
+            fieldPath: 'field1',
+          },
+          {
+            message: 'Field type mismatch',
+            severity: 'error',
+            code: 'TYPE_MISMATCH',
+            fieldPath: 'field2',
+          },
+        ],
+      };
+      validationPipeline.validate.mockReturnValue(mockValidationResult);
+
+      // Act
+      const result = service.validateSchema(mockSchema);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.issues).toHaveLength(2);
+      expect(result.issues[0]?.message).toBe('Invalid field configuration');
+      expect(result.issues[1]?.message).toBe('Field type mismatch');
+      expect(result.issues[0]?.severity).toBe('error');
+      expect(result.issues[0]?.code).toBe('SCHEMA_VALIDATION_ERROR');
+      expect(result.summary?.totalIssues).toBe(2);
+      expect(result.summary?.errorCount).toBe(2);
+    });
+
+    it('should handle error objects with empty messages', () => {
+      // Arrange - Create a validation result that simulates errors with empty messages
+      const mockValidationResult = {
+        isValid: false,
+        issues: [],
+        errors: [
+          {
+            message: '',
+            severity: 'error',
+            code: 'EMPTY_MESSAGE',
+            fieldPath: 'field',
+          },
+        ],
+      } as ValidationResult;
+      validationPipeline.validate.mockReturnValue(mockValidationResult);
+
+      // Act
+      const result = service.validateSchema(mockSchema);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.issues[0]?.message).toBe('Unknown validation error');
+    });
+
+    it('should handle validation result with undefined errors', () => {
+      // Arrange - Create a validation result with undefined errors
+      const mockValidationResult = {
+        isValid: false,
+        issues: [],
+        errors: undefined as any,
+      } as ValidationResult;
+      validationPipeline.validate.mockReturnValue(mockValidationResult);
+
+      // Act
+      const result = service.validateSchema(mockSchema);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.issues).toEqual([]);
+    });
+  });
+
+  describe('validateSchemas', () => {
+    it('should return valid schemas and count invalid ones', () => {
+      // Arrange
+      const schema1 = mockSchema;
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
+      const schemas = [schema1, schema2];
+
+      validationPipeline.validate.mockReturnValueOnce({ isValid: true, issues: [], errors: [] }).mockReturnValueOnce({
+        isValid: false,
+        issues: [],
+        errors: [
+          {
+            message: 'Invalid schema',
+            severity: 'error',
+            code: 'INVALID_SCHEMA',
+            fieldPath: 'schema',
+          },
+        ],
+      });
+
+      // Act
+      const result = service.validateSchemas(schemas);
+
+      // Assert
+      expect(result.validSchemas).toHaveLength(1);
+      expect(result.validSchemas[0]).toBe(schema1);
+      expect(result.invalidCount).toBe(1);
+    });
+
+    it('should handle empty schemas array', () => {
+      // Act
+      const result = service.validateSchemas([]);
+
+      // Assert
+      expect(result.validSchemas).toHaveLength(0);
+      expect(result.invalidCount).toBe(0);
+    });
+  });
+
+  describe('validateData', () => {
+    const mockData = { name: 'John', age: 30 };
+    const schemaId = 'test-schema';
+
+    beforeEach(() => {
+      (classTransformer.plainToInstance as jest.Mock).mockReturnValue(new MockDto());
+    });
+
+    it('should return valid result when data passes validation', async () => {
+      // Arrange
+      (classValidator.validate as jest.Mock).mockResolvedValue([]);
+
+      // Act
+      const result = await service.validateData(mockData, MockDto, schemaId);
+
+      // Assert
+      expect(result.isValid).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.issues).toEqual([]);
+      expect(result.errors).toEqual([]);
+      expect(result.summary?.totalIssues).toBe(0);
+    });
+
+    it('should return invalid result when data fails validation', async () => {
+      // Arrange
+      const mockValidationErrors = [
+        {
+          property: 'name',
+          value: '',
+          constraints: { isNotEmpty: 'name should not be empty' },
+        },
+        {
+          property: 'age',
+          value: -1,
+          constraints: { min: 'age must be at least 0' },
+        },
+      ];
+      (classValidator.validate as jest.Mock).mockResolvedValue(mockValidationErrors);
+
+      // Act
+      const result = await service.validateData(mockData, MockDto, schemaId);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.data).toBeUndefined();
+      expect(result.issues).toHaveLength(2);
+      expect(result.issues[0]?.message).toBe('name should not be empty');
+      expect(result.issues[0]?.fieldPath).toBe('name');
+      expect(result.issues[0]?.severity).toBe('error');
+      expect(result.issues[0]?.code).toBe('VALIDATION_ERROR');
+      expect(result.issues[1]?.message).toBe('age must be at least 0');
+      expect(result.summary?.errorCount).toBe(2);
+    });
+
+    it('should handle validation errors with missing constraints', async () => {
+      // Arrange
+      const mockValidationErrors = [
+        {
+          property: 'name',
+          value: '',
+          constraints: undefined,
+        },
+      ];
+      (classValidator.validate as jest.Mock).mockResolvedValue(mockValidationErrors);
+
+      // Act
+      const result = await service.validateData(mockData, MockDto, schemaId);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.issues[0]?.message).toBe('Validation failed');
+      expect(result.issues[0]?.constraint).toBe('validation_failed');
+    });
+
+    it('should handle exceptions during validation', async () => {
+      // Arrange
+      const error = new Error('Transformation failed');
+      (classTransformer.plainToInstance as jest.Mock).mockImplementation(() => {
+        throw error;
+      });
+
+      // Act
+      const result = await service.validateData(mockData, MockDto, schemaId);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.issues).toHaveLength(1);
+      expect(result.issues[0]?.message).toBe('Transformation failed');
+      expect(result.issues[0]?.code).toBe('VALIDATION_EXCEPTION');
+      expect(result.summary?.errorCount).toBe(1);
+    });
+
+    it('should handle non-Error exceptions', async () => {
+      // Arrange
+      (classTransformer.plainToInstance as jest.Mock).mockImplementation(() => {
+        throw 'String error';
+      });
+
+      // Act
+      const result = await service.validateData(mockData, MockDto, schemaId);
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.issues[0]?.message).toBe('Unknown error');
+      expect(result.issues[0]?.code).toBe('VALIDATION_EXCEPTION');
+    });
+  });
+});

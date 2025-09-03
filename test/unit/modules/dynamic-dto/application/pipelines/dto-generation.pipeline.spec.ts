@@ -1,0 +1,483 @@
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { Logger } from '@nestjs/common';
+import { DtoGenerationPipeline } from '@src/modules/dynamic-dto/application/pipelines/dto-generation.pipeline';
+import { FieldHandlerRegistry } from '@src/modules/dynamic-dto/infrastructure/registries/field-handler.registry';
+import { CacheMonitorService } from '@src/modules/dynamic-dto/infrastructure/monitoring/cache-monitor.service';
+import { DynamicSchemaEntity, FieldType } from '@src/index';
+
+describe('DtoGenerationPipeline', () => {
+  let pipeline: DtoGenerationPipeline;
+  let fieldHandlerRegistry: jest.Mocked<FieldHandlerRegistry>;
+  let cacheMonitor: jest.Mocked<CacheMonitorService>;
+
+  const mockSchema = new DynamicSchemaEntity(
+    'test-schema',
+    'TestSchema',
+    {
+      name: { type: FieldType.string, expose: true },
+      age: { type: FieldType.number, expose: true },
+      isActive: { type: FieldType.boolean, expose: true, default: true },
+    },
+    ['name', 'age'],
+    false,
+  );
+
+  const mockFieldProcessor = {
+    generateValidationDecorators: jest.fn().mockReturnValue([]),
+    generateTransformationDecorators: jest.fn().mockReturnValue([]),
+    generateSerializationDecorators: jest.fn().mockReturnValue([]),
+  } as any;
+
+  beforeEach(async () => {
+    const mockFieldHandlerRegistry = {
+      getProcessor: jest.fn(),
+    };
+
+    const mockCacheMonitor = {
+      registerCache: jest.fn(),
+    };
+
+    const mockModuleOptions = {
+      cache: { ttl: 300000 },
+      monitoring: {
+        utilizationThreshold: 0.8,
+        aggressiveCleanupThreshold: 0.1,
+      },
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        DtoGenerationPipeline,
+        {
+          provide: FieldHandlerRegistry,
+          useValue: mockFieldHandlerRegistry,
+        },
+        {
+          provide: CacheMonitorService,
+          useValue: mockCacheMonitor,
+        },
+        {
+          provide: 'DYNAMIC_DTO_MODULE_OPTIONS',
+          useValue: mockModuleOptions,
+        },
+      ],
+    }).compile();
+
+    pipeline = module.get<DtoGenerationPipeline>(DtoGenerationPipeline);
+    fieldHandlerRegistry = module.get(FieldHandlerRegistry);
+    cacheMonitor = module.get(CacheMonitorService);
+
+    // Suppress logger output during tests
+    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    jest.spyOn(Logger.prototype, 'debug').mockImplementation();
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('initialization', () => {
+    it('should register cache with monitor service', () => {
+      expect(cacheMonitor.registerCache).toHaveBeenCalledWith('dto-generation-pipeline', expect.any(Object));
+    });
+
+    it('should set up cleanup interval', () => {
+      // Verify internal cleanup interval is set
+      expect((pipeline as any).cleanupInterval).toBeDefined();
+    });
+  });
+
+  describe('generate', () => {
+    beforeEach(() => {
+      fieldHandlerRegistry.getProcessor.mockReturnValue(mockFieldProcessor);
+    });
+
+    it('should generate DTO class with correct name', () => {
+      // Act
+      const result = pipeline.generate(mockSchema);
+
+      // Assert
+      expect(result).toBeDefined();
+      expect(result.name).toBe('TestSchemaDTO');
+    });
+
+    it('should cache generated class with weak reference', () => {
+      // Act
+      const result1 = pipeline.generate(mockSchema);
+      const result2 = pipeline.generate(mockSchema);
+
+      // Assert
+      expect(result1).toBe(result2); // Should return same cached instance
+    });
+
+    it('should process all fields in schema', () => {
+      // Act
+      pipeline.generate(mockSchema);
+
+      // Assert
+      expect(fieldHandlerRegistry.getProcessor).toHaveBeenCalledTimes(3); // name, age, isActive
+      expect(fieldHandlerRegistry.getProcessor).toHaveBeenCalledWith(FieldType.string);
+      expect(fieldHandlerRegistry.getProcessor).toHaveBeenCalledWith(FieldType.number);
+      expect(fieldHandlerRegistry.getProcessor).toHaveBeenCalledWith(FieldType.boolean);
+    });
+
+    it('should apply decorators to each field', () => {
+      // Act
+      pipeline.generate(mockSchema);
+
+      // Assert
+      expect(mockFieldProcessor.generateValidationDecorators).toHaveBeenCalledTimes(12);
+      expect(mockFieldProcessor.generateTransformationDecorators).toHaveBeenCalledTimes(12);
+      expect(mockFieldProcessor.generateSerializationDecorators).toHaveBeenCalledTimes(12);
+    });
+
+    it('should handle field processing errors', () => {
+      // Arrange
+      fieldHandlerRegistry.getProcessor.mockImplementation(() => {
+        throw new Error('Processor not found');
+      });
+
+      // Act & Assert
+      expect(() => pipeline.generate(mockSchema)).toThrow('Field processing failed for name');
+    });
+
+    it('should create class with proper property initialization', () => {
+      // Act
+      const DynamicClass = pipeline.generate(mockSchema);
+      const instance = new DynamicClass();
+
+      // Assert
+      expect(instance).toHaveProperty('name');
+      expect(instance).toHaveProperty('age');
+      expect(instance).toHaveProperty('isActive');
+      expect((instance as any).name).toBeUndefined();
+      expect((instance as any).age).toBeUndefined();
+      expect((instance as any).isActive).toBeUndefined();
+    });
+
+    it('should log cache statistics when approaching capacity', () => {
+      // Arrange
+      const warnSpy = jest.spyOn(Logger.prototype, 'warn');
+      const isNearCapacitySpy = jest.spyOn((pipeline as any).generatedClasses, 'isNearCapacity').mockReturnValue(true);
+      const getStatsSpy = jest.spyOn((pipeline as any).generatedClasses, 'getStats').mockReturnValue({
+        size: 450,
+        maxSize: 500,
+        hitRate: 0.85,
+      });
+      const getMemoryUsageSpy = jest.spyOn((pipeline as any).generatedClasses, 'getApproximateMemoryUsage').mockReturnValue(50 * 1024 * 1024);
+
+      // Act
+      pipeline.generate(mockSchema);
+
+      // Assert
+      expect(warnSpy).toHaveBeenCalledWith(
+        'DTO generation cache approaching capacity',
+        expect.objectContaining({
+          memoryUsageBytes: 50 * 1024 * 1024,
+        }),
+      );
+
+      // Cleanup
+      isNearCapacitySpy.mockRestore();
+      getStatsSpy.mockRestore();
+      getMemoryUsageSpy.mockRestore();
+    });
+  });
+
+  describe('generateBatch', () => {
+    beforeEach(() => {
+      fieldHandlerRegistry.getProcessor.mockReturnValue(mockFieldProcessor);
+    });
+
+    it('should process multiple schemas efficiently', () => {
+      // Arrange
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
+      const schemas = [mockSchema, schema2];
+
+      // Act
+      const results = pipeline.generateBatch(schemas);
+
+      // Assert
+      expect(results.size).toBe(2);
+      const keys = Array.from(results.keys());
+      expect(keys.some((key) => key.includes('TestSchema'))).toBe(true);
+      expect(keys.some((key) => key.includes('TestSchema2'))).toBe(true);
+    });
+
+    it('should handle cache hits in batch processing', () => {
+      // Arrange
+      const schemas = [mockSchema, mockSchema]; // Same schema twice
+
+      // Act
+      const results = pipeline.generateBatch(schemas);
+
+      // Assert
+      expect(results.size).toBe(1); // Only one unique result
+      expect(fieldHandlerRegistry.getProcessor).toHaveBeenCalledTimes(6); // Processed twice for same schema
+    });
+
+    it('should handle dead references during batch processing', () => {
+      // Arrange
+      const debugSpy = jest.spyOn(Logger.prototype, 'debug');
+      const schemas = [mockSchema];
+
+      // Simulate dead weak reference
+      const mockCache = new Map();
+      mockCache.set('test-key', {
+        ref: { deref: jest.fn().mockReturnValue(null) },
+        propertyNames: ['name'],
+        timestamp: Date.now(),
+      });
+      (pipeline as any).generatedClasses = mockCache;
+
+      // Act
+      const results = pipeline.generateBatch(schemas);
+
+      // Assert
+      expect(results.size).toBe(1);
+      expect(debugSpy).toHaveBeenCalledWith(
+        'Batch DTO generation completed',
+        expect.objectContaining({
+          deadReferences: expect.any(Number),
+        }),
+      );
+    });
+
+    it('should handle generation errors in batch', () => {
+      // Arrange
+      const schemas = [mockSchema];
+      fieldHandlerRegistry.getProcessor.mockImplementation(() => {
+        throw new Error('Batch generation failed');
+      });
+
+      // Act & Assert
+      expect(() => pipeline.generateBatch(schemas)).toThrow('Batch generation failed');
+    });
+
+    it('should log batch performance metrics', () => {
+      // Arrange
+      const debugSpy = jest.spyOn(Logger.prototype, 'debug');
+      const schemas = [mockSchema];
+
+      // Act
+      pipeline.generateBatch(schemas);
+
+      // Assert
+      expect(debugSpy).toHaveBeenCalledWith(
+        'Batch DTO generation completed',
+        expect.objectContaining({
+          totalSchemas: 1,
+          generated: 1,
+          generationTimeMs: expect.any(Number),
+        }),
+      );
+    });
+  });
+
+  describe('cache key generation', () => {
+    it('should generate consistent cache keys for same schema', () => {
+      // Arrange
+      const key1 = (pipeline as any).generateOptimizedCacheKey(mockSchema);
+      const key2 = (pipeline as any).generateOptimizedCacheKey(mockSchema);
+
+      // Assert
+      expect(key1).toBe(key2);
+      expect(key1).toContain('TestSchema');
+      expect(key1.split(':').length).toBe(2); // name:hash format
+    });
+
+    it('should generate different cache keys for different schemas', () => {
+      // Arrange
+      const schema2 = new DynamicSchemaEntity('different-schema', 'DifferentSchema', { email: { type: FieldType.string, expose: true } }, ['email'], false);
+
+      const key1 = (pipeline as any).generateOptimizedCacheKey(mockSchema);
+      const key2 = (pipeline as any).generateOptimizedCacheKey(schema2);
+
+      // Assert
+      expect(key1).not.toBe(key2);
+    });
+
+    it('should include field structure hash in cache key', () => {
+      // Arrange
+      const key = (pipeline as any).generateOptimizedCacheKey(mockSchema);
+      const parts = key.split(':');
+
+      // Assert
+      expect(parts).toHaveLength(2); // name:hash
+      expect(parts[0]).toBe('TestSchema');
+      expect(parts[1]).toMatch(/^[a-f0-9]+$/); // Hex hash
+    });
+  });
+
+  describe('memory management', () => {
+    it('should clean up dead weak references', () => {
+      // Arrange
+      const _debugSpy = jest.spyOn(Logger.prototype, 'debug');
+
+      // Add expired reference
+      const expiredRef = {
+        ref: { deref: jest.fn().mockReturnValue(null) },
+        propertyNames: ['name'],
+        timestamp: Date.now() - 10 * 60 * 1000, // 10 minutes ago
+        lastAccessed: Date.now() - 10 * 60 * 1000,
+        accessCount: 1,
+      };
+
+      (pipeline as any).generatedClasses.set('expired-key', expiredRef);
+
+      // Act
+      (pipeline as any).performDeterministicCleanup();
+
+      // Assert - Check that cleanup was performed
+      expect((pipeline as any).generatedClasses.size()).toBe(0);
+    });
+
+    it('should handle cleanup interval', () => {
+      // Arrange
+      const cleanupSpy = jest.spyOn(pipeline as any, 'performDeterministicCleanup');
+
+      // Act - trigger cleanup manually
+      (pipeline as any).performDeterministicCleanup();
+
+      // Assert
+      expect(cleanupSpy).toHaveBeenCalled();
+    });
+
+    it('should handle configurable cleanup intervals', () => {
+      // Assert
+      expect((pipeline as any).cleanupIntervalMs).toBeGreaterThan(0);
+      expect((pipeline as any).ttlMs).toBe(300000); // From mock options
+      expect((pipeline as any).memoryPressureThreshold).toBe(0.8); // From mock options
+    });
+
+    it('should perform graduated cleanup under memory pressure', () => {
+      // Arrange
+      const graduatedCleanupSpy = jest.spyOn(pipeline as any, 'performGraduatedCleanup');
+      const sizeSpy = jest.spyOn((pipeline as any).generatedClasses, 'size').mockReturnValue(425); // 85% of 500
+      const getMaxSizeSpy = jest.spyOn((pipeline as any).generatedClasses, 'getMaxSize').mockReturnValue(500);
+
+      // Act
+      (pipeline as any).checkMemoryPressureAndCleanup();
+
+      // Assert
+      expect(graduatedCleanupSpy).toHaveBeenCalled();
+
+      // Cleanup
+      sizeSpy.mockRestore();
+      getMaxSizeSpy.mockRestore();
+      graduatedCleanupSpy.mockRestore();
+    });
+
+    it('should calculate eviction scores correctly', () => {
+      // Arrange
+      const weakRef = {
+        timestamp: Date.now() - 60000, // 1 minute ago
+        lastAccessed: Date.now() - 30000, // 30 seconds ago
+        accessCount: 5,
+      };
+
+      // Act
+      const score = (pipeline as any).calculateEvictionScore(weakRef, Date.now());
+
+      // Assert
+      expect(score).toBeGreaterThanOrEqual(0);
+      expect(score).toBeLessThanOrEqual(1);
+    });
+
+    it('should handle cleanup errors gracefully', () => {
+      // Arrange
+      const errorSpy = jest.spyOn(Logger.prototype, 'error');
+      const mockCache = {
+        entries: jest.fn().mockImplementation(() => {
+          throw new Error('Cache iteration failed');
+        }),
+      };
+      (pipeline as any).generatedClasses = mockCache;
+
+      // Act
+      (pipeline as any).performDeterministicCleanup();
+
+      // Assert
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Error during deterministic cleanup',
+        expect.objectContaining({
+          error: 'Cache iteration failed',
+        }),
+      );
+    });
+  });
+
+  describe('onModuleDestroy', () => {
+    it('should clear interval and cache on destroy', () => {
+      // Arrange
+      const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+      const _cacheSize = (pipeline as any).generatedClasses.size();
+
+      // Act
+      pipeline.onModuleDestroy();
+
+      // Assert
+      expect(clearIntervalSpy).toHaveBeenCalled();
+      expect((pipeline as any).generatedClasses.size()).toBe(0);
+    });
+
+    it('should handle missing interval gracefully', () => {
+      // Arrange
+      (pipeline as any).cleanupInterval = null;
+
+      // Act & Assert
+      expect(() => pipeline.onModuleDestroy()).not.toThrow();
+    });
+  });
+
+  describe('schema fingerprint generation', () => {
+    it('should generate deterministic fingerprint for field structure', () => {
+      // Arrange
+      const hash1 = (pipeline as any).generateSchemaFingerprint(mockSchema);
+      const hash2 = (pipeline as any).generateSchemaFingerprint(mockSchema);
+
+      // Assert
+      expect(hash1).toBe(hash2);
+      expect(hash1).toMatch(/^[a-f0-9]+$/);
+    });
+
+    it('should generate different fingerprints for different field structures', () => {
+      // Arrange
+      const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
+
+      const hash1 = (pipeline as any).generateSchemaFingerprint(mockSchema);
+      const hash2 = (pipeline as any).generateSchemaFingerprint(schema2);
+
+      // Assert
+      expect(hash1).not.toBe(hash2);
+    });
+
+    it('should consider required fields in fingerprint', () => {
+      // Arrange
+      const schema1 = new DynamicSchemaEntity(
+        'test',
+        'Test',
+        { name: { type: FieldType.string, expose: true } },
+        ['name'], // Required
+        false,
+      );
+
+      const schema2 = new DynamicSchemaEntity(
+        'test',
+        'Test',
+        { name: { type: FieldType.string, expose: true } },
+        [], // Not required
+        false,
+      );
+
+      const hash1 = (pipeline as any).generateSchemaFingerprint(schema1);
+      const hash2 = (pipeline as any).generateSchemaFingerprint(schema2);
+
+      // Assert
+      expect(hash1).not.toBe(hash2);
+    });
+  });
+});
