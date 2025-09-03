@@ -1,12 +1,12 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
-import { ObjectFieldProcessorComposite } from './object-field-composite.processor';
-import { CircularReferenceDetectorService } from './services/circular-reference-detector.service';
-import { ObjectValidationService } from './services/object-validation.service';
-import { PropertyFilteringService } from './services/property-filtering.service';
-import { NestedObjectTransformerService } from './services/nested-object-transformer.service';
-import { FieldType } from '../../../core/types/field.types';
-import type { ObjectFieldSchema } from '../../../core/interfaces/schema/complex/object-field.schema';
+import type { ObjectFieldSchema } from '@src/index';
+import { FieldType } from '@src/index';
+import { ObjectFieldProcessorComposite } from '@src/modules/dynamic-dto/processors/field-processors/complex/object-field-composite.processor';
+import { CircularReferenceDetectorService } from '@src/modules/dynamic-dto/processors/field-processors/complex/services/circular-reference-detector.service';
+import { NestedObjectTransformerService } from '@src/modules/dynamic-dto/processors/field-processors/complex/services/nested-object-transformer.service';
+import { ObjectValidationService } from '@src/modules/dynamic-dto/processors/field-processors/complex/services/object-validation.service';
+import { PropertyFilteringService } from '@src/modules/dynamic-dto/processors/field-processors/complex/services/property-filtering.service';
 
 describe('ObjectFieldProcessorComposite', () => {
   let processor: ObjectFieldProcessorComposite;

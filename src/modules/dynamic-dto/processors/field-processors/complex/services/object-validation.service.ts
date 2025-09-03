@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { FieldSchema } from '../../../../core/interfaces/schema';
 import type { ObjectFieldSchema } from '../../../../core/interfaces/schema/complex/object-field.schema';
-import type { EnumFieldSchema } from '../../../../core/interfaces/schema/specialized-primitives/enum-field.schema';
 import { FieldType } from '../../../../core/types/field.types';
 
 @Injectable()
@@ -48,8 +47,6 @@ export class ObjectValidationService {
         return this.validateBooleanProperty(value, propertyName);
       case FieldType.array:
         return this.validateArrayProperty(value, propertyName);
-      case FieldType.enum:
-        return this.validateEnumProperty(value, schema, propertyName);
       case FieldType.object:
         return this.validateObjectProperty(value, schema, propertyName);
       default:
@@ -96,70 +93,5 @@ export class ObjectValidationService {
     }
 
     return value as Record<string, unknown>;
-  }
-
-  private validateEnumProperty(value: unknown, schema: EnumFieldSchema, propertyName: string): unknown {
-    // Handle null/undefined values (required validation is handled elsewhere)
-    if (value === undefined || value === null) {
-      return value;
-    }
-
-    // Validate schema structure
-    if (!schema.values || !Array.isArray(schema.values) || schema.values.length === 0) {
-      throw new Error(`Property '${propertyName}' has invalid enum schema: missing or empty values array`);
-    }
-
-    // Handle case-insensitive validation
-    if (schema.caseSensitive === false && typeof value === 'string') {
-      const matchingValue = schema.values.find((enumValue: unknown) => typeof enumValue === 'string' && enumValue.toLowerCase() === value.toLowerCase()) as string | undefined;
-      if (matchingValue) {
-        return matchingValue; // Return the properly cased version
-      }
-    }
-
-    // Handle multiple value selection
-    if (schema.allowMultiple) {
-      return this.validateMultipleEnumValues(value, schema, propertyName);
-    }
-
-    // Standard single value enum validation
-    return this.validateSingleEnumValue(value, schema, propertyName);
-  }
-
-  private validateMultipleEnumValues(value: unknown, schema: EnumFieldSchema, propertyName: string): unknown {
-    if (Array.isArray(value)) {
-      // Validate each value in the array
-      const invalidValues = value.filter((v: string | number) => !schema.values.includes(v));
-      if (invalidValues.length > 0) {
-        throw new Error(`Property '${propertyName}' contains invalid enum values: [${invalidValues.join(', ')}]. ` + `Valid values: [${schema.values.join(', ')}]`);
-      }
-      return value;
-    }
-
-    // Single value for multiple enum - validate
-    if (!schema.values.includes(value as string | number)) {
-      if (schema.strict === false) {
-        return value; // Allow in non-strict mode
-      }
-      throw new Error(`Property '${propertyName}' must be one of: [${schema.values.join(', ')}], got ${JSON.stringify(value)}`);
-    }
-    return value; // Keep as single value - transformation will handle array conversion if needed
-  }
-
-  private validateSingleEnumValue(value: unknown, schema: EnumFieldSchema, propertyName: string): unknown {
-    if (!schema.values.includes(value as string | number)) {
-      if (schema.strict === false) {
-        // Non-strict mode - allow the value but log warning if needed
-        return value;
-      }
-      throw new Error(`Property '${propertyName}' must be one of: [${schema.values.join(', ')}], got ${JSON.stringify(value)}`);
-    }
-
-    // Check for deprecated values (warning only - don't fail validation)
-    if (schema.deprecatedValues?.includes(value as string | number)) {
-      console.warn(`Property '${propertyName}' uses deprecated enum value: ${JSON.stringify(value)}`);
-    }
-
-    return value;
   }
 }

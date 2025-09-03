@@ -1,8 +1,7 @@
 import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
-import { DynamicDtoModule } from './dynamic-dto.module';
-import { ExportRegistry } from './infrastructure/registries/export.registry';
-import { DtoOrchestratorService } from './application/services/dto-orchestrator.service';
+import { DtoOrchestratorService, DynamicDtoModule } from '@src/index';
+import { ExportRegistry } from '@src/modules/dynamic-dto/infrastructure/registries/export.registry';
 
 describe('DynamicDtoModule', () => {
   let module: TestingModule;

@@ -1,97 +1,18 @@
 {
   "name": "dynamic-dto",
-  "version": "1.0.0",
-  "description": "A high-performance NestJS library for dynamic DTO generation and validation from JSON schemas at runtime with advanced caching and memory management",
-  "author": {
-    "name": "Dynamic DTO Team",
-    "email": "team@dynamic-dto.dev"
-  },
-  "maintainers": [
-    {
-      "name": "Dynamic DTO Team",
-      "email": "team@dynamic-dto.dev"
-    }
-  ],
-  "private": false,
-  "license": "MIT",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./package.json": "./package.json"
-  },
-  "keywords": [
-    "nestjs",
-    "dto",
-    "validation",
-    "dynamic",
-    "schema",
-    "typescript",
-    "class-validator",
-    "class-transformer",
-    "runtime",
-    "json-schema",
-    "clean-architecture",
-    "performance",
-    "caching",
-    "memory-management",
-    "field-processors",
-    "string-formats"
-  ],
-  "files": [
-    "dist/**/*",
-    "src/**/*.ts",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/your-org/dynamic-dto.git",
-    "directory": "packages/dynamic-dto"
-  },
-  "bugs": {
-    "url": "https://github.com/your-org/dynamic-dto/issues"
-  },
-  "homepage": "https://github.com/your-org/dynamic-dto#readme",
-  "funding": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/dynamic-dto"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "engines": {
-    "node": ">=18.17.0",
-    "npm": ">=9.6.0",
-    "pnpm": ">=8.0.0"
-  },
-  "os": [
-    "darwin",
-    "linux",
-    "win32"
-  ],
-  "cpu": [
-    "x64",
-    "arm64"
-  ],
+  "version": "2.0.0",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
   "scripts": {
-    "prebuild": "npm run clean",
     "build": "nest build",
-    "build:prod": "NODE_ENV=production npm run build",
-    "clean": "rimraf dist coverage .nyc_output",
-    "postinstall": "husky install || true",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "typecheck": "tsc --noEmit",
     "test": "jest --config test/jest.config.json",
     "test:unit": "jest --config test/jest-unit.json --runInBand",
     "test:int": "jest --config test/jest-integration.json --runInBand",
@@ -101,16 +22,7 @@
     "test:cov": "jest --config test/jest.config.json --coverage",
     "test:cov:unit": "jest --config test/jest-unit.json --coverage",
     "test:cov:int": "jest --config test/jest-integration.json --coverage",
-    "test:cov:e2e": "jest --config test/jest-e2e.json --coverage",
-    "test:ci": "npm run test --coverage",
-    "validate": "npm run typecheck && npm run lint:check && npm run format:check",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run validate && npm run build && npm run test:coverage",
-    "release": "npm run prepublishOnly && npm publish",
-    "release:dry": "npm run prepublishOnly && npm publish --dry-run",
-    "version:patch": "npm version patch",
-    "version:minor": "npm version minor",
-    "version:major": "npm version major"
+    "test:cov:e2e": "jest --config test/jest-e2e.json --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -152,17 +64,5 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "volta": {
-    "node": "18.17.0",
-    "npm": "9.6.0"
-  },
-  "browserslist": [
-    "node >= 18.17.0"
-  ],
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
   }
 }

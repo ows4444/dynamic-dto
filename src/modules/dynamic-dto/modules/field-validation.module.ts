@@ -13,7 +13,6 @@ import { ObjectFieldValidator } from '../validators/field-validators/complex/obj
 
 // Specialized validators
 import { DateFieldValidator } from '../validators/field-validators/specialized/date-field.validator';
-import { EnumFieldValidator } from '../validators/field-validators/specialized/enum-field.validator';
 import { UnionFieldValidator } from '../validators/field-validators/specialized/union-field.validator';
 
 // === REGISTRIES & DISCOVERY ===
@@ -55,7 +54,6 @@ import { ValidationErrorRecoveryService } from '../exceptions/validation/validat
 
     // Specialized validators
     DateFieldValidator,
-    EnumFieldValidator,
     UnionFieldValidator,
 
     // === ERROR HANDLING SERVICES ===

@@ -119,7 +119,7 @@ describe('ArrayFieldValidator', () => {
       const result = validator.validateStructure(invalidTupleSchema, validationContext);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors?.length || 0).toBeGreaterThanOrEqual(1);
+      expect(result.errors?.length ?? 0).toBeGreaterThanOrEqual(1);
       expect(result.errors?.[0]?.code).toBe('ARRAY_TUPLE_ITEM_MISSING_TYPE');
       expect(result.errors?.[0]?.message).toContain('index 1');
     });
@@ -476,23 +476,6 @@ describe('ArrayFieldValidator', () => {
       };
 
       const result = validator.validateStructure(largeConstraintsSchema, validationContext);
-
-      expect(result.isValid).toBe(true);
-    });
-
-    it('should handle enum item arrays', () => {
-      const enumArraySchema: ArrayFieldSchema = {
-        type: FieldType.array,
-        items: {
-          type: FieldType.enum,
-          values: ['option1', 'option2', 'option3'],
-          expose: true,
-        },
-        uniqueItems: true,
-        expose: true,
-      };
-
-      const result = validator.validateStructure(enumArraySchema, validationContext);
 
       expect(result.isValid).toBe(true);
     });

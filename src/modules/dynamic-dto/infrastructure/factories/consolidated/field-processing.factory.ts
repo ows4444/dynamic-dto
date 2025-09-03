@@ -16,7 +16,6 @@ import { StringFormatProcessorFactory } from '../../../processors/field-processo
 
 // Specialized processors
 import { DateFieldProcessor } from '../../../processors/field-processors/specialized/date-field.processor';
-import { EnumFieldProcessor } from '../../../processors/field-processors/specialized/enum-field.processor';
 import { UnionFieldProcessor } from '../../../processors/field-processors/specialized/union-field.processor';
 
 // Union processor services (after SRP refactoring)
@@ -52,7 +51,6 @@ import { ObjectFieldValidator } from '../../../validators/field-validators/compl
 
 // Specialized validators
 import { DateFieldValidator } from '../../../validators/field-validators/specialized/date-field.validator';
-import { EnumFieldValidator } from '../../../validators/field-validators/specialized/enum-field.validator';
 import { UnionFieldValidator } from '../../../validators/field-validators/specialized/union-field.validator';
 
 // === REGISTRIES & DISCOVERY ===
@@ -117,7 +115,6 @@ export function createFieldProcessingProviders(): Provider[] {
 
     // Specialized processors
     DateFieldProcessor,
-    EnumFieldProcessor,
     UnionFieldProcessor,
 
     // Union processor services (extracted for SRP compliance)
@@ -151,7 +148,6 @@ export function createFieldProcessingProviders(): Provider[] {
 
     // Specialized validators
     DateFieldValidator,
-    EnumFieldValidator,
     UnionFieldValidator,
   ];
 }

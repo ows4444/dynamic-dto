@@ -383,7 +383,7 @@ export class ValidationErrorRecoveryService {
   /**
    * Attempt automatic recovery of validation errors
    */
-  async attemptRecovery(validationResult: any, context: any): Promise<any> {
+  attemptRecovery(validationResult: any, context: any): any {
     if (validationResult.isValid) {
       this.logger.debug('Validation result is valid, no recovery needed');
       return {

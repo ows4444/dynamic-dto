@@ -16,17 +16,16 @@ import { StringFormatProcessorFactory } from '../processors/field-processors/pri
 
 // Specialized processors
 import { DateFieldProcessor } from '../processors/field-processors/specialized/date-field.processor';
-import { EnumFieldProcessor } from '../processors/field-processors/specialized/enum-field.processor';
 import { UnionFieldProcessor } from '../processors/field-processors/specialized/union-field.processor';
 
 // Union processor services (extracted after SRP refactoring)
 import {
-  UnionTypeDetectorService,
-  UnionValidatorService,
   UnionDiscriminatorHandlerService,
-  UnionTransformerService,
   UnionSafeDefaultService,
+  UnionTransformerService,
+  UnionTypeDetectorService,
   UnionValidatorRegistry,
+  UnionValidatorService,
 } from '../processors/field-processors/specialized/services';
 
 // Complex processors
@@ -82,7 +81,6 @@ export class FieldProcessingModule {
 
         // Specialized processors
         DateFieldProcessor,
-        EnumFieldProcessor,
         UnionFieldProcessor,
 
         // Union processor services (extracted for SRP compliance)
@@ -117,7 +115,6 @@ export class FieldProcessingModule {
         NumberFieldProcessor,
         BooleanFieldProcessor,
         DateFieldProcessor,
-        EnumFieldProcessor,
         ArrayFieldProcessor,
         ObjectFieldProcessorComposite,
         // Export string token for legacy injection

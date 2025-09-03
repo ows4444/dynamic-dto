@@ -60,10 +60,6 @@ export class UnionSafeDefaultService {
         return {};
       case FieldType.date:
         return new Date().toISOString();
-      case FieldType.enum:
-        // Return first enum value if available
-        const enumSchema = typeSchema as any;
-        return enumSchema.values?.[0] ?? null;
       default:
         return null;
     }
@@ -179,14 +175,16 @@ export class UnionSafeDefaultService {
         }
         return null;
 
-      case 'integer':
+      case 'integer': {
         const max = (options?.max as number) ?? 100;
         const min = (options?.min as number) ?? 0;
         return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
 
-      case 'string':
+      case 'string': {
         const length = (options?.length as number) ?? 8;
         return this.generateRandomString(length);
+      }
 
       case 'boolean':
         return Math.random() < 0.5;

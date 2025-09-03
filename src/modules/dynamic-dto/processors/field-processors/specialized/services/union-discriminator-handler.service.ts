@@ -106,7 +106,7 @@ export class UnionDiscriminatorHandlerService {
    * @returns True if discriminator is configured
    */
   hasDiscriminator(schema: UnionFieldSchema): boolean {
-    return Boolean(schema.discriminator && schema.discriminator.property);
+    return Boolean(schema.discriminator?.property);
   }
 
   /**

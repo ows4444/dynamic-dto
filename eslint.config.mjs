@@ -14,23 +14,7 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   // Global ignores - optimized for library structure
   {
-    ignores: [
-      'eslint.config.mjs',
-      'scripts/**',
-      'dist/**',
-      'build/**',
-      'node_modules/**',
-      'jest.*.js',
-      // 'src/**/*.spec.ts',
-      // 'src/**/*.test.ts',
-      // '*.test.ts',
-      // 'test/**',
-      // 'tests/**',
-      // 'coverage/**',
-      // '*.config.js',
-      // '**/*.d.ts',
-      // '*.config.ts',
-    ],
+    ignores: ['eslint.config.mjs', 'dist/**/*', 'node_modules/**/*', '*.js', '*.mjs', 'coverage/**/*'],
   },
 
   // Base configurations
@@ -417,7 +401,7 @@ export default tseslint.config(
   },
   // Validators - Allow complex validation methods
   {
-    files: ['**/*spec.ts', '**/*test.ts', '**/test/setup.ts', '**/test/**/*fixtures.ts'],
+    files: ['**/*.spec.ts', '**/*.test.ts'],
     rules: {
       'no-await-in-loop': 'off',
       'max-lines': 'off', // Complex validators legitimately large
@@ -427,9 +411,18 @@ export default tseslint.config(
       '@typescript-eslint/unbound-method': 'off', // Allow unbound methods in tests
       '@typescript-eslint/dot-notation': 'off',
       complexity: 'off', // Validation logic can be complex
-      // '@typescript-eslint/await-thenable': 'off',
-      // '@typescript-eslint/no-unused-vars': 'off',
-      // '@typescript-eslint/no-explicit-any': 'warn', // May need for dynamic validation
+
+      '@typescript-eslint/no-unused-vars': 'warn', // Allow unused vars in tests
+      '@typescript-eslint/no-unsafe-function-type': 'off', // Common in Jest patterns
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      'max-len': 'off', // Test descriptions can be long
+      'max-params': 'off', // Test setups can have many parameters
+      '@typescript-eslint/no-floating-promises': 'off', // Test async patterns
     },
   },
 );
