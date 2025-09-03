@@ -213,7 +213,7 @@ describe('FieldProcessorRegistry', () => {
 
     it('should warn when registering invalid processor', () => {
       // Arrange
-      const invalidProcessor = {} as BaseFieldProcessor;
+      const invalidProcessor = {} as unknown as BaseFieldProcessor<any>;
 
       // Act
       registry.registerProcessor(invalidProcessor);

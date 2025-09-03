@@ -56,7 +56,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
               },
             },
           },
-        } as ObjectFieldSchema,
+        },
       };
 
       const result = validator.validate(circularSchema);
@@ -89,10 +89,10 @@ describe('EnhancedStructuralSchemaValidator', () => {
                     },
                   },
                 },
-              } as ObjectFieldSchema,
+              },
             },
           },
-        } as ObjectFieldSchema,
+        },
       };
 
       const result = validator.validate(schemaWithArrayCircular);
@@ -148,7 +148,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
               },
             },
           },
-        } as ObjectFieldSchema,
+        },
       };
 
       const result = validator.validate(normalNestedSchema);
@@ -191,7 +191,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
               },
             },
           },
-        } as ObjectFieldSchema,
+        },
       };
 
       const result = validator.validate(schemaWithDifferentProps);
@@ -244,7 +244,7 @@ describe('EnhancedStructuralSchemaValidator', () => {
               },
             },
           },
-        } as ObjectFieldSchema,
+        },
       };
 
       const result = validator.validate(selfReferencingSchema);
@@ -357,10 +357,9 @@ describe('EnhancedStructuralSchemaValidator', () => {
         test: {
           type: FieldType.object,
           properties: {
-            // This should be valid
             name: { type: FieldType.string },
           },
-        } as ObjectFieldSchema,
+        },
       };
 
       const result = validator.validate(corruptSchema);

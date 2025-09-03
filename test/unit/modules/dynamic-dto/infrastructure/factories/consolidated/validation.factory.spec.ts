@@ -10,13 +10,13 @@ describe('Validation Factory', () => {
 
     it('should include validation strategy providers', () => {
       const providers = createValidationProviders();
-      const strategyProvider = providers.find((p) => typeof p === 'function' && p.name && p.name.toLowerCase().includes('strategy'));
+      const strategyProvider = providers.find((p) => typeof p === 'function' && p.name?.toLowerCase().includes('strategy'));
       expect(strategyProvider).toBeDefined();
     });
 
     it('should include validation pipeline providers', () => {
       const providers = createValidationProviders();
-      const validatorProvider = providers.find((p) => typeof p === 'function' && p.name && p.name.toLowerCase().includes('validator'));
+      const validatorProvider = providers.find((p) => typeof p === 'function' && p.name?.toLowerCase().includes('validator'));
       expect(validatorProvider).toBeDefined();
     });
   });

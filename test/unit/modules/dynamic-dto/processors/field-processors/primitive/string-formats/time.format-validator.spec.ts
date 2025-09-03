@@ -125,7 +125,9 @@ describe('TimeFormatValidator', () => {
         false,
         [],
         {},
-        () => {},
+        () => {
+          // function
+        },
         Symbol('test'),
         new Date(),
         1200, // number that looks like time

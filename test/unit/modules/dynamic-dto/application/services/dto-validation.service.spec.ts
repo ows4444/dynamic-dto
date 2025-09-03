@@ -128,7 +128,7 @@ describe('DtoValidationService', () => {
             fieldPath: 'field',
           },
         ],
-      } as ValidationResult;
+      };
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
       // Act
@@ -145,7 +145,7 @@ describe('DtoValidationService', () => {
         isValid: false,
         issues: [],
         errors: undefined as any,
-      } as ValidationResult;
+      };
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
       // Act

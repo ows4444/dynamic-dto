@@ -58,7 +58,7 @@ describe('ValidationStrategyFactory', () => {
     it('should add strategies in correct order', () => {
       jest.spyOn(ValidationChain.prototype, 'addStrategy');
 
-      const chain = factory.createValidationChain();
+      const _chain = factory.createValidationChain();
 
       expect(ValidationChain.prototype.addStrategy).toHaveBeenCalledTimes(3);
       expect(ValidationChain.prototype.addStrategy).toHaveBeenNthCalledWith(1, mockStructuralStrategy);

@@ -117,7 +117,20 @@ describe('PasswordFormatValidator', () => {
     });
 
     it('should reject non-string inputs', () => {
-      const nonStringInputs = [null, undefined, 123, true, false, [], {}, () => {}, Symbol('test'), new Date()];
+      const nonStringInputs = [
+        null,
+        undefined,
+        123,
+        true,
+        false,
+        [],
+        {},
+        () => {
+          // function
+        },
+        Symbol('test'),
+        new Date(),
+      ];
 
       nonStringInputs.forEach((input) => {
         expect(validator.validate(input)).toBe(false);

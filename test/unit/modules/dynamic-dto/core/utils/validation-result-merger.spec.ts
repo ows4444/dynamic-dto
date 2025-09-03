@@ -170,7 +170,7 @@ describe('ValidationResultMerger', () => {
         warnings: [warningIssue],
         infos: [infoIssue],
         fieldPath: 'test.field',
-      } as ValidationResult;
+      };
 
       const merged = ValidationResultMerger.mergeResults([result]);
 
@@ -238,7 +238,8 @@ describe('ValidationResultMerger', () => {
       const result = {
         isValid: true,
         fieldPath: 'test.field',
-      } as ValidationResult;
+        issues: [],
+      };
 
       const merged = ValidationResultMerger.mergeResults([result]);
 

@@ -13,7 +13,7 @@ class TestValidationError extends BaseValidationError {
     context?: ValidationErrorContext,
     suggestions?: ValidationErrorSuggestion[],
   ) {
-    super('TEST_VALIDATION_ERROR', message, ValidationSeverity.error, context, suggestions || []);
+    super('TEST_VALIDATION_ERROR', message, ValidationSeverity.error, context, suggestions ?? []);
   }
 
   toJSON(): any {

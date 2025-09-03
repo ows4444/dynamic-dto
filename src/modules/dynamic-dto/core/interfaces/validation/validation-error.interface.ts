@@ -1,5 +1,3 @@
-import type { ValidationContext } from './validation-context.interface';
-
 export interface ValidationError {
   readonly field: string;
   readonly value: unknown;

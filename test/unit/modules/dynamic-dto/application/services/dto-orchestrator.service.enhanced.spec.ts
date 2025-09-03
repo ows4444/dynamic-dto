@@ -522,7 +522,7 @@ describe('DtoOrchestratorService - Enhanced Coverage', () => {
       const schema = createComplexSchema();
       let cleanupCalled = false;
 
-      cacheService.checkMemoryAndCleanup.mockImplementation(async () => {
+      cacheService.checkMemoryAndCleanup.mockImplementation(() => {
         cleanupCalled = true;
       });
       cacheService.get.mockResolvedValue(null);

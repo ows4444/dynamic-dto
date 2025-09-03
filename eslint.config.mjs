@@ -411,6 +411,7 @@ export default tseslint.config(
       '@typescript-eslint/unbound-method': 'off', // Allow unbound methods in tests
       '@typescript-eslint/dot-notation': 'off',
       complexity: 'off', // Validation logic can be complex
+      '@typescript-eslint/no-empty-function':'off',
 
       '@typescript-eslint/no-unused-vars': 'warn', // Allow unused vars in tests
       '@typescript-eslint/no-unsafe-function-type': 'off', // Common in Jest patterns

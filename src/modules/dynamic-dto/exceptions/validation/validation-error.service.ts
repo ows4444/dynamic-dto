@@ -8,7 +8,7 @@ import {
   ValidationIssue,
   ValidationResult,
 } from '../../core/interfaces/validation';
-import { FieldType, FieldTypeValue } from '../../core/types/field.types';
+import { FieldTypeValue } from '../../core/types/field.types';
 import { BaseValidationError, ValidationErrorContext } from './base-validation.error';
 import { ValidationErrorAggregator } from './validation-error-aggregator';
 import {
@@ -92,7 +92,7 @@ export class ValidationErrorService {
    */
   createConstraintError(field: string, value: unknown, constraint: string, expectedValue: unknown, message: string, context?: IValidationErrorContext): ValidationError {
     const enhancedContext: IValidationErrorContext = {
-      fieldPath: context?.fieldPath || field,
+      fieldPath: context?.fieldPath ?? field,
       ...context,
       constraint,
       expectedValue,
@@ -113,7 +113,7 @@ export class ValidationErrorService {
    */
   createTypeError(field: string, value: unknown, expectedType: FieldTypeValue, actualType: string, context?: IValidationErrorContext): ValidationError {
     const enhancedContext: IValidationErrorContext = {
-      fieldPath: context?.fieldPath || field,
+      fieldPath: context?.fieldPath ?? field,
       ...context,
       expectedType,
       actualType,
@@ -142,13 +142,13 @@ export class ValidationErrorService {
       case 'required':
         return `Field '${field}' is required`;
       case 'min':
-        return `Field '${field}' must be at least ${expectedValue} (received: ${actualValue})`;
+        return `Field '${field}' must be at least ${expectedValue as string} (received: ${actualValue as string})`;
       case 'max':
-        return `Field '${field}' must not exceed ${expectedValue} (received: ${actualValue})`;
+        return `Field '${field}' must not exceed ${expectedValue as string} (received: ${actualValue as string})`;
       case 'minlength':
-        return `Field '${field}' must be at least ${expectedValue} characters long (received: ${String(actualValue).length} characters)`;
+        return `Field '${field}' must be at least ${expectedValue as string} characters long (received: ${String(actualValue).length} characters)`;
       case 'maxlength':
-        return `Field '${field}' must not exceed ${expectedValue} characters (received: ${String(actualValue).length} characters)`;
+        return `Field '${field}' must not exceed ${expectedValue as string} characters (received: ${String(actualValue).length} characters)`;
       default:
         return `Field '${field}' failed ${constraint} validation. Expected: ${String(expectedValue)}, Actual: ${String(actualValue)}`;
     }
@@ -163,15 +163,11 @@ export class ValidationErrorService {
 
     for (const error of errors) {
       // Group by field
-      if (!errorsByField[error.field]) {
-        errorsByField[error.field] = [];
-      }
+      errorsByField[error.field] ??= [];
       errorsByField[error.field]!.push(error);
 
       // Group by code
-      if (!errorsByCode[error.code]) {
-        errorsByCode[error.code] = [];
-      }
+      errorsByCode[error.code] ??= [];
       errorsByCode[error.code]!.push(error);
     }
 

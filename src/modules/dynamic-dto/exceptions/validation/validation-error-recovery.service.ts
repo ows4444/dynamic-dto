@@ -408,11 +408,11 @@ export class ValidationErrorRecoveryService {
     try {
       // Convert errors to BaseValidationError format if needed
       const baseErrors = errors.map((error: any) => ({
-        code: error.code || 'UNKNOWN_ERROR',
-        message: error.message || 'Unknown error',
-        severity: error.severity || 'error',
+        code: error.code ?? 'UNKNOWN_ERROR',
+        message: error.message ?? 'Unknown error',
+        severity: error.severity ?? 'error',
         context: { fieldPath: error.fieldPath, ...context },
-        metadata: error.metadata || {},
+        metadata: error.metadata ?? {},
       }));
 
       const plan = this.generateRecoveryPlan(baseErrors);

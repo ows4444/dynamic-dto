@@ -214,30 +214,6 @@ describe('UnionFieldProcessor', () => {
     });
   });
 
-  describe('deprecated functionality warnings', () => {
-    it('should warn about deprecated custom validator registration', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      UnionFieldProcessor.registerCustomValidator('test', () => true);
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('deprecated'));
-
-      const validators = UnionFieldProcessor.getRegisteredValidators();
-      expect(validators).toEqual([]);
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('deprecated'));
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should warn about deprecated pattern cache clearing', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      UnionFieldProcessor.clearPatternCache();
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('deprecated'));
-
-      consoleSpy.mockRestore();
-    });
-  });
-
   describe('supported type verification', () => {
     it('should have correct supported type', () => {
       expect(processor.supportedType).toBe(FieldType.union);

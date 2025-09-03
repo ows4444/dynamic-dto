@@ -146,7 +146,7 @@ export class UnionValidatorRegistry {
     });
 
     // Phone number validation (basic)
-    this.validators.set('isPhoneNumber', (value: unknown) => typeof value === 'string' && /^[\+]?[1-9][\d]{0,15}$/.test(value.replace(/[\s\-\(\)]/g, '')));
+    this.validators.set('isPhoneNumber', (value: unknown) => typeof value === 'string' && /^[+]? [1-9]\d{0,15}$/.test(value.replace(/[\s\-()]/g, '')));
   }
 
   /**

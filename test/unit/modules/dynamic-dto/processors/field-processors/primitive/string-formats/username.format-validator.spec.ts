@@ -155,7 +155,23 @@ describe('UsernameFormatValidator', () => {
     });
 
     it('should reject non-string inputs', () => {
-      const nonStringInputs = [null, undefined, 123, true, false, [], {}, () => {}, Symbol('test'), new Date(), 0, -1, 1.5];
+      const nonStringInputs = [
+        null,
+        undefined,
+        123,
+        true,
+        false,
+        [],
+        {},
+        () => {
+          // function
+        },
+        Symbol('test'),
+        new Date(),
+        0,
+        -1,
+        1.5,
+      ];
 
       nonStringInputs.forEach((input) => {
         expect(validator.validate(input)).toBe(false);

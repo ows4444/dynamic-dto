@@ -1,5 +1,5 @@
 import { FieldType } from '@src/index';
-import type { FieldSchema, SerializationContext, StringFieldSchema } from '@src/modules/dynamic-dto/core';
+import type { FieldSchema, SerializationContext, StringFieldSchema, TransformationFunction } from '@src/modules/dynamic-dto/core';
 import { AutoGenerationType, BaseFieldProcessor, ValidationStrategy } from '@src/modules/dynamic-dto/core';
 
 // Create a concrete implementation for testing
@@ -12,11 +12,11 @@ class TestFieldProcessor extends BaseFieldProcessor<StringFieldSchema> {
     return schema.type === FieldType.string;
   }
 
-  generateValidationDecorators(schema: StringFieldSchema, isRequired: boolean, parentIsArray?: boolean): PropertyDecorator[] {
+  generateValidationDecorators(_schema: StringFieldSchema, _isRequired: boolean, _parentIsArray?: boolean): PropertyDecorator[] {
     return [];
   }
 
-  getTypeSpecificTransformations(schema: StringFieldSchema): TransformationFunction[] {
+  getTypeSpecificTransformations(_schema: StringFieldSchema): TransformationFunction[] {
     return [];
   }
 }
@@ -133,7 +133,7 @@ describe('BaseFieldProcessor', () => {
         type: FieldType.string,
         expose: true,
         validationStrategy: ValidationStrategy.loose,
-      } as StringFieldSchema;
+      };
       const decorators = processor.generateEnhancedValidationDecorators(schema, false);
       expect(decorators).toBeDefined();
     });
@@ -172,7 +172,7 @@ describe('BaseFieldProcessor', () => {
             validationRules: [],
           },
         ],
-      } as StringFieldSchema;
+      };
       const decorators = processor.generateConditionalValidationDecorators(schema);
       expect(decorators).toBeDefined();
       expect(decorators.length).toBeGreaterThan(0);
@@ -344,7 +344,7 @@ describe('BaseFieldProcessor', () => {
         type: FieldType.string,
         expose: true,
         transformationHooks: [{ id: 'hook1', condition: true }, { id: 'hook2' }],
-      } as StringFieldSchema;
+      };
       const decorators = processor.generateTransformationDecorators(schema);
       expect(decorators).toBeDefined();
     });
@@ -446,7 +446,7 @@ describe('BaseFieldProcessor', () => {
           read: ['admin'],
           write: ['admin'],
         },
-      } as StringFieldSchema;
+      };
       const context: SerializationContext = {
         userRoles: ['user'],
         operation: 'read',
@@ -463,7 +463,7 @@ describe('BaseFieldProcessor', () => {
           version: '1.0.0',
           reason: 'test deprecation',
         },
-      } as StringFieldSchema;
+      };
       const context: SerializationContext = {
         includeDeprecated: false,
       };
@@ -479,7 +479,7 @@ describe('BaseFieldProcessor', () => {
           version: '1.0.0',
           reason: 'test deprecation',
         },
-      } as StringFieldSchema;
+      };
       const context: SerializationContext = {
         includeDeprecated: true,
       };
@@ -540,7 +540,7 @@ describe('BaseFieldProcessor', () => {
         type: FieldType.string,
         expose: true,
         validationStrategy: ValidationStrategy.strict,
-      } as StringFieldSchema;
+      };
       const decorators = processor['generateValidationStrategyDecorators'](schema);
       expect(decorators).toEqual([]);
     });
@@ -550,7 +550,7 @@ describe('BaseFieldProcessor', () => {
         type: FieldType.string,
         expose: true,
         validationStrategy: ValidationStrategy.transform,
-      } as StringFieldSchema;
+      };
       const decorators = processor['generateValidationStrategyDecorators'](schema);
       expect(decorators).toEqual([]);
     });
@@ -560,7 +560,7 @@ describe('BaseFieldProcessor', () => {
         type: FieldType.string,
         expose: true,
         validationStrategy: ValidationStrategy.sanitize,
-      } as StringFieldSchema;
+      };
       const decorators = processor['generateValidationStrategyDecorators'](schema);
       expect(decorators).toEqual([]);
     });
@@ -570,7 +570,7 @@ describe('BaseFieldProcessor', () => {
         type: FieldType.string,
         expose: true,
         validationStrategy: ValidationStrategy.loose,
-      } as StringFieldSchema;
+      };
       const decorators = processor['generateValidationStrategyDecorators'](schema);
       expect(decorators).toBeDefined();
     });

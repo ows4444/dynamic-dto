@@ -97,32 +97,4 @@ export class UnionFieldProcessor extends BaseFieldProcessor<UnionFieldSchema> {
       validatorRegistry: this.validatorRegistry,
     };
   }
-
-  /**
-   * Static method for registering custom validators (backward compatibility)
-   * @param name The validator name
-   * @param validator The validation function
-   */
-  static registerCustomValidator(name: string, validator: (value: unknown, config?: Record<string, unknown>) => boolean): void {
-    // This method now uses the registry service instead of static properties
-    // Implementation would need to be handled through module configuration
-    console.warn('UnionFieldProcessor.registerCustomValidator is deprecated. Use UnionValidatorRegistry service instead.');
-  }
-
-  /**
-   * Static method for getting registered validators (backward compatibility)
-   * @returns Array of validator names
-   */
-  static getRegisteredValidators(): string[] {
-    console.warn('UnionFieldProcessor.getRegisteredValidators is deprecated. Use UnionValidatorRegistry service instead.');
-    return [];
-  }
-
-  /**
-   * @deprecated This functionality has been moved to UnionSafeDefaultService
-   * Static method for clearing pattern cache (backward compatibility)
-   */
-  static clearPatternCache(): void {
-    console.warn('UnionFieldProcessor.clearPatternCache is deprecated. Pattern caching is now handled internally by services.');
-  }
 }

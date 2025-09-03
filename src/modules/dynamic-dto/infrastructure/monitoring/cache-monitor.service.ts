@@ -32,7 +32,7 @@ export class CacheMonitorService implements OnModuleDestroy {
   /**
    * Cleanup method to prevent memory leaks
    */
-  async onModuleDestroy(): Promise<void> {
+  onModuleDestroy(): void {
     this.isDestroyed = true;
 
     // Clear all cache references to prevent memory leaks

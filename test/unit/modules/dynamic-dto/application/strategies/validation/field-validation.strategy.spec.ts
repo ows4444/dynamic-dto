@@ -137,7 +137,7 @@ describe('FieldValidationStrategy', () => {
       expect(mockFieldHandlerRegistry.validateField).toHaveBeenCalled();
     });
 
-    it('should throw error when validation fails', async () => {
+    it('should throw error when validation fails', () => {
       const error = new Error('Validation failed');
 
       // Mock the field handler to throw an error

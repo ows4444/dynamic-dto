@@ -92,7 +92,7 @@ describe('ValidationStrategy', () => {
 
   describe('canExecute', () => {
     it('should return true by default', () => {
-      const result = strategy.canExecute(mockSchema);
+      const result = strategy.execute(mockSchema);
       expect(result).toBe(true);
     });
 
@@ -103,7 +103,7 @@ describe('ValidationStrategy', () => {
         depth: 0,
       };
 
-      const result = strategy.canExecute(mockSchema, context);
+      const result = strategy.execute(mockSchema, context);
       expect(result).toBe(true);
     });
   });
