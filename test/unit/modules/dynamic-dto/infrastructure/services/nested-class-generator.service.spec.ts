@@ -271,7 +271,7 @@ describe('NestedClassGeneratorService', () => {
       };
 
       mockFieldProcessorRegistry.processField.mockImplementation(() => {
-        throw 'String error';
+        throw new Error('String error');
       });
 
       expect(() => {
@@ -542,7 +542,7 @@ describe('NestedClassGeneratorService', () => {
       const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => {});
 
       const failingDecorator = jest.fn().mockImplementation(() => {
-        throw 'String error';
+        throw new Error('String error');
       });
 
       mockFieldProcessorRegistry.processField.mockReturnValue([failingDecorator]);

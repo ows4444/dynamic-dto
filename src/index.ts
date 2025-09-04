@@ -19,6 +19,7 @@ export { SchemaValidationResultEntity } from './modules/dynamic-dto/domain/entit
 
 // Core types and interfaces
 export { FieldType, FieldTypeValue } from './modules/dynamic-dto/core/types/field.types';
+export { ValidationSeverity } from './modules/dynamic-dto/core/enums/validation.enums';
 export type { classConstructor } from './modules/dynamic-dto/core/types/common.types';
 
 // Schema interfaces
@@ -32,9 +33,9 @@ export type { UnionFieldSchema } from './modules/dynamic-dto/core/interfaces/sch
 export type { ICacheManager, CacheMemoryInfo, CleanupResult } from './modules/dynamic-dto/core/interfaces/cache/cache-manager.interface';
 export type { ICacheStrategy } from './modules/dynamic-dto/core/interfaces/cache/cache-strategy.interface';
 
-// Validation types
+// Validation types and utilities
 export type { ValidationResult } from './modules/dynamic-dto/core/interfaces/validation/validation-result.interface';
-export type { ValidationError } from './modules/dynamic-dto/application/services/dto-validation.service';
+export { ValidationResultFactory } from './modules/dynamic-dto/core/interfaces/validation/validation-result.interface';
 
 // Validation context
 export type { ValidationContext } from './modules/dynamic-dto/core/interfaces/validation/validation-context.interface';
@@ -42,3 +43,19 @@ export type { ValidationContext } from './modules/dynamic-dto/core/interfaces/va
 // Exception types
 export { BaseValidationError } from './modules/dynamic-dto/exceptions/validation/base-validation.error';
 export { FieldTypeValidationError } from './modules/dynamic-dto/exceptions/validation/field-validation.error';
+export { SchemaValidationError } from './modules/dynamic-dto/exceptions/validation/schema-processing.error';
+
+// Monitoring and health check services
+export { CacheMonitorService } from './modules/dynamic-dto/infrastructure/monitoring/cache-monitor.service';
+export { HealthCheckController } from './modules/dynamic-dto/infrastructure/monitoring/health-check.controller';
+export { SystemMetricsService } from './modules/dynamic-dto/infrastructure/monitoring/system-metrics.service';
+export { PerformanceMetricsService } from './modules/dynamic-dto/infrastructure/monitoring/performance-metrics.service';
+export type { HealthCheckStatus, ComponentHealth } from './modules/dynamic-dto/infrastructure/monitoring/health-check.controller';
+export type { SystemMetrics, MemoryMetrics, PerformanceMetrics, CounterMetrics } from './modules/dynamic-dto/infrastructure/monitoring/system-metrics.service';
+export type {
+  PerformanceSnapshot,
+  ProcessingTimeMetrics,
+  SchemaComplexityMetrics,
+  ValidationMetrics,
+  CacheEfficiencyMetrics,
+} from './modules/dynamic-dto/infrastructure/monitoring/performance-metrics.service';

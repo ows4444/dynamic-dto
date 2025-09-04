@@ -1,6 +1,6 @@
 import type { ValidationContext, ValidationResult } from '@src/index';
-import { DynamicSchemaEntity } from '@src/index';
-import { ValidationStrategy } from '@src/modules/dynamic-dto/core';
+import { DynamicSchemaEntity, ValidationSeverity } from '@src/index';
+import { ValidationStrategy } from '@src/modules/dynamic-dto/core/abstractions/validation-strategy.abstract';
 
 class TestValidationStrategy extends ValidationStrategy {
   readonly name = 'test-strategy';
@@ -10,7 +10,11 @@ class TestValidationStrategy extends ValidationStrategy {
     const testValue = context?.data;
 
     if (testValue === 'valid') {
-      return { isValid: true, issues: [] };
+      return {
+        isValid: true,
+        issues: [],
+        summary: { totalIssues: 0, errorCount: 0, warningCount: 0, infoCount: 0 },
+      };
     } else {
       return {
         isValid: false,
@@ -18,10 +22,11 @@ class TestValidationStrategy extends ValidationStrategy {
           {
             code: 'TEST_INVALID',
             message: 'Test validation failed',
-            severity: 'error',
+            severity: ValidationSeverity.error,
             fieldPath: context?.fieldPath && context.fieldPath !== '' ? context.fieldPath : 'value',
           },
         ],
+        summary: { totalIssues: 1, errorCount: 1, warningCount: 0, infoCount: 0 },
       };
     }
   }
@@ -64,7 +69,7 @@ describe('ValidationStrategy', () => {
       expect(result.issues[0]).toEqual({
         code: 'TEST_INVALID',
         message: 'Test validation failed',
-        severity: 'error',
+        severity: ValidationSeverity.error,
         fieldPath: 'test.field',
       });
     });
@@ -92,7 +97,7 @@ describe('ValidationStrategy', () => {
 
   describe('canExecute', () => {
     it('should return true by default', () => {
-      const result = strategy.execute(mockSchema);
+      const result = strategy.canExecute(mockSchema);
       expect(result).toBe(true);
     });
 
@@ -103,7 +108,7 @@ describe('ValidationStrategy', () => {
         depth: 0,
       };
 
-      const result = strategy.execute(mockSchema, context);
+      const result = strategy.canExecute(mockSchema, context);
       expect(result).toBe(true);
     });
   });

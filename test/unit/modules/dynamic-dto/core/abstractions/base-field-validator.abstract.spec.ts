@@ -1,7 +1,7 @@
 import type { BaseFieldSchema, ValidationContext, ValidationResult } from '@src/index';
 import { FieldType } from '@src/index';
 import type { ConditionalValidation, FieldPermissions } from '@src/modules/dynamic-dto/core';
-import { BaseFieldValidator, ValidationSeverity } from '@src/modules/dynamic-dto/core';
+import { BaseFieldValidator, ValidationResultFactory, ValidationSeverity } from '@src/modules/dynamic-dto/core';
 
 describe('BaseFieldValidator', () => {
   // Create concrete implementation for testing
@@ -450,11 +450,11 @@ describe('BaseFieldValidator', () => {
         }
 
         validateStructure(): ValidationResult {
-          return { isValid: true, issues: [], fieldPath: '', errors: [], warnings: [], infos: [] };
+          return ValidationResultFactory.create({ isValid: true, issues: [], fieldPath: '' });
         }
 
         validateConstraints(): ValidationResult {
-          return { isValid: true, issues: [], fieldPath: '', errors: [], warnings: [], infos: [] };
+          return ValidationResultFactory.create({ isValid: true, issues: [], fieldPath: '' });
         }
       }
 

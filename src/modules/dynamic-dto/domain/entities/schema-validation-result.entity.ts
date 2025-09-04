@@ -1,4 +1,5 @@
 import type { ValidationResult } from '../../core/interfaces/validation';
+import type { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
 
 export class SchemaValidationResultEntity {
   constructor(
@@ -14,23 +15,27 @@ export class SchemaValidationResultEntity {
   }
 
   get hasWarnings(): boolean {
-    return (this.validationResult.warnings?.length ?? 0) > 0;
+    const typedResult = this.validationResult as ValidationResult & { warnings?: ValidationIssue[] };
+    return (typedResult.warnings?.length ?? 0) > 0;
   }
 
   get errorCount(): number {
-    return this.validationResult.errors?.length ?? 0;
+    const typedResult = this.validationResult as ValidationResult & { errors?: ValidationIssue[] };
+    return typedResult.errors?.length ?? 0;
   }
 
   get warningCount(): number {
-    return this.validationResult.warnings?.length ?? 0;
+    const typedResult = this.validationResult as ValidationResult & { warnings?: ValidationIssue[] };
+    return typedResult.warnings?.length ?? 0;
   }
 
   toJSON() {
+    const typedResult = this.validationResult as ValidationResult & { errors?: ValidationIssue[]; warnings?: ValidationIssue[] };
     return {
       schemaId: this.schemaId,
       isValid: this.isValid,
-      errors: this.validationResult.errors,
-      warnings: this.validationResult.warnings,
+      errors: typedResult.errors,
+      warnings: typedResult.warnings,
       errorCount: this.errorCount,
       warningCount: this.warningCount,
       validatedAt: this.validatedAt,

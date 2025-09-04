@@ -1,14 +1,18 @@
 import type { ValidationResult } from '@src/index';
 import { DynamicSchemaEntity, FieldType } from '@src/index';
 import type { ValidationIssue } from '@src/modules/dynamic-dto/core';
-import { ValidationStrategy } from '@src/modules/dynamic-dto/core';
+import { ValidationStrategy } from '@src/modules/dynamic-dto/core/abstractions/validation-strategy.abstract';
 import { ValidationChain } from '@src/modules/dynamic-dto/core/patterns/validation-chain';
 
 class MockValidationStrategy extends ValidationStrategy {
   constructor(
     public name: string,
     public order: number,
-    private readonly mockResult: ValidationResult = { isValid: true, issues: [] },
+    private readonly mockResult: ValidationResult = {
+      isValid: true,
+      issues: [],
+      summary: { totalIssues: 0, errorCount: 0, warningCount: 0, infoCount: 0 },
+    },
   ) {
     super();
   }
@@ -73,9 +77,17 @@ describe('ValidationChain', () => {
     });
 
     it('should combine results from multiple strategies', () => {
-      const strategy1 = new MockValidationStrategy('strategy1', 1, { isValid: true, issues: [{ code: 'ISSUE_1', message: 'Issue 1', severity: 'warning' }] as ValidationIssue[] });
+      const strategy1 = new MockValidationStrategy('strategy1', 1, {
+        isValid: true,
+        issues: [{ code: 'ISSUE_1', message: 'Issue 1', severity: 'warning' }] as ValidationIssue[],
+        summary: { totalIssues: 1, errorCount: 0, warningCount: 1, infoCount: 0 },
+      });
 
-      const strategy2 = new MockValidationStrategy('strategy2', 2, { isValid: true, issues: [{ code: 'ISSUE_2', message: 'Issue 2', severity: 'info' }] as ValidationIssue[] });
+      const strategy2 = new MockValidationStrategy('strategy2', 2, {
+        isValid: true,
+        issues: [{ code: 'ISSUE_2', message: 'Issue 2', severity: 'info' }] as ValidationIssue[],
+        summary: { totalIssues: 1, errorCount: 0, warningCount: 0, infoCount: 1 },
+      });
 
       chain.addStrategy(strategy1);
       chain.addStrategy(strategy2);
@@ -92,6 +104,7 @@ describe('ValidationChain', () => {
       const failingStrategy = new MockValidationStrategy('failing-strategy', 1, {
         isValid: false,
         issues: [{ code: 'ERROR_1', message: 'Validation failed', severity: 'error' }] as ValidationIssue[],
+        summary: { totalIssues: 1, errorCount: 1, warningCount: 0, infoCount: 0 },
       });
 
       chain.addStrategy(failingStrategy);
@@ -104,9 +117,17 @@ describe('ValidationChain', () => {
     });
 
     it('should continue execution even with failures', () => {
-      const strategy1 = new MockValidationStrategy('failing-strategy', 1, { isValid: false, issues: [{ code: 'ERROR_1', message: 'Error 1', severity: 'error' }] as ValidationIssue[] });
+      const strategy1 = new MockValidationStrategy('failing-strategy', 1, {
+        isValid: false,
+        issues: [{ code: 'ERROR_1', message: 'Error 1', severity: 'error' }] as ValidationIssue[],
+        summary: { totalIssues: 1, errorCount: 1, warningCount: 0, infoCount: 0 },
+      });
 
-      const strategy2 = new MockValidationStrategy('warning-strategy', 2, { isValid: true, issues: [{ code: 'WARNING_1', message: 'Warning 1', severity: 'warning' }] as ValidationIssue[] });
+      const strategy2 = new MockValidationStrategy('warning-strategy', 2, {
+        isValid: true,
+        issues: [{ code: 'WARNING_1', message: 'Warning 1', severity: 'warning' }] as ValidationIssue[],
+        summary: { totalIssues: 1, errorCount: 0, warningCount: 1, infoCount: 0 },
+      });
 
       chain.addStrategy(strategy1);
       chain.addStrategy(strategy2);

@@ -3,6 +3,7 @@ import type { BaseFieldSchema, ConditionalValidation, FieldPermissions } from '.
 import type { ValidationContext, ValidationResult } from '../interfaces/validation';
 import type { ValidationIssue } from '../interfaces/validation/validation-issue.interface';
 import type { FieldTypeValue } from '../types/field.types';
+import { ValidationResultCompatibilityUtil } from '../utils/validation-result-compatibility.util';
 
 export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSchema> {
   abstract readonly supportedType: FieldTypeValue;
@@ -53,14 +54,11 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
   protected mergeResults(results: readonly ValidationResult[]): ValidationResult {
     const allIssues = results.flatMap((r) => r.issues);
 
-    return {
+    return ValidationResultCompatibilityUtil.createFromLegacy({
       isValid: allIssues.every((issue) => issue.severity !== ValidationSeverity.error),
       issues: allIssues,
       fieldPath: results[0]?.fieldPath ?? '',
-      errors: allIssues.filter((issue) => issue.severity === ValidationSeverity.error),
-      warnings: allIssues.filter((issue) => issue.severity === ValidationSeverity.warning),
-      infos: allIssues.filter((issue) => issue.severity === ValidationSeverity.info),
-    };
+    });
   }
 
   protected validateCommonProperties(schema: T, context: ValidationContext): ValidationResult {
@@ -81,14 +79,11 @@ export abstract class BaseFieldValidator<T extends BaseFieldSchema = BaseFieldSc
       issues.push(...this.validateConditionalRules(schema.conditionalValidation, context));
     }
 
-    return {
+    return ValidationResultCompatibilityUtil.createFromLegacy({
       isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
       fieldPath: context.fieldPath,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
-    };
+    });
   }
 
   protected validateDeprecation(schema: T, context: ValidationContext): ValidationIssue[] {

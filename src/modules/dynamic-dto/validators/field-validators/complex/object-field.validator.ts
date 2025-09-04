@@ -13,6 +13,7 @@ import {
   ValidationResult,
   ValidationResultBuilder,
 } from '../../../core';
+import type { ValidationIssue } from '../../../core/interfaces/validation/validation-issue.interface';
 import { FieldType } from '../../../core/types/field.types';
 import { DeepReadonly } from '../../../core/types/common.types';
 
@@ -27,7 +28,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     return schema.type === FieldType.object;
   }
 
-  validateStructure(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
+  validateStructure(
+    schema: ObjectFieldSchema,
+    context: ValidationContext,
+  ): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateBasicStructure(schema, builder);
@@ -41,7 +45,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     return builder.build();
   }
 
-  validateConstraints(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
+  validateConstraints(
+    schema: ObjectFieldSchema,
+    context: ValidationContext,
+  ): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateRequiredFieldConstraints(schema, builder);

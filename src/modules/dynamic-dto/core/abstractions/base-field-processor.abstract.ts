@@ -145,7 +145,7 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
   }
 
   protected getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-    return path.split('.').reduce((val: any, key) => val?.[key], obj);
+    return path.split('.').reduce((val: unknown, key) => (val as Record<string, unknown>)?.[key], obj);
   }
 
   // ===== TRANSFORMATION METHODS =====
@@ -206,14 +206,14 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
 
     if ('transformationHooks' in schema && Array.isArray(schema.transformationHooks)) {
       schema.transformationHooks.forEach((hook, index) => {
-        const transformationFunction: any = {
+        const transformationFunction: TransformationFunction = {
           order: 100 + index,
           name: `custom_hook_${index}`,
-          transform: ({ value, obj }: any) => this.executeHook(hook.id, value, obj),
+          transform: ({ value, obj }: TransformParams) => this.executeHook(hook.id, value, obj),
+          ...(hook.condition && {
+            condition: (_: FieldSchema, params: TransformParams) => this.evaluateConditionForHook(hook.condition, params.obj),
+          }),
         };
-        if (hook.condition) {
-          transformationFunction.condition = (_: any, params: any) => this.evaluateConditionForHook(hook.condition, params.obj);
-        }
         functions.push(transformationFunction);
       });
     }

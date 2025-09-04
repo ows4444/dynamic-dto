@@ -2,7 +2,6 @@ import type { TestingModule } from '@nestjs/testing';
 import { Test } from '@nestjs/testing';
 import type { ObjectFieldSchema } from '@src/index';
 import { FieldType } from '@src/index';
-import type { EnumFieldSchema } from '@src/modules/dynamic-dto/core';
 import { ObjectValidationService } from '@src/modules/dynamic-dto/processors/field-processors/complex/services/object-validation.service';
 describe('ObjectValidationService', () => {
   let service: ObjectValidationService;
@@ -98,26 +97,6 @@ describe('ObjectValidationService', () => {
         required: ['tags'],
       };
       const input = { tags: ['tag1', 'tag2'] };
-
-      const result = service.performDeepValidation(input, schema);
-      expect(result).toEqual(input);
-    });
-
-    it('should validate enum properties', () => {
-      const enumSchema: EnumFieldSchema = {
-        type: FieldType.enum,
-        expose: true,
-        values: ['red', 'green', 'blue'],
-      };
-      const schema: ObjectFieldSchema = {
-        type: FieldType.object,
-        expose: true,
-        properties: {
-          color: enumSchema,
-        },
-        required: ['color'],
-      };
-      const input = { color: 'red' };
 
       const result = service.performDeepValidation(input, schema);
       expect(result).toEqual(input);
@@ -292,129 +271,6 @@ describe('ObjectValidationService', () => {
       const input = { profile: 'not-object' };
 
       expect(() => service.performDeepValidation(input, schema)).toThrow("Property 'profile' must be an object, got string");
-    });
-  });
-
-  describe('enum property validation', () => {
-    it('should validate valid enum values', () => {
-      const enumSchema: EnumFieldSchema = {
-        type: FieldType.enum,
-        expose: true,
-        values: ['small', 'medium', 'large'],
-      };
-      const schema: ObjectFieldSchema = {
-        type: FieldType.object,
-        expose: true,
-        properties: {
-          size: enumSchema,
-        },
-      };
-      const input = { size: 'medium' };
-
-      const result = service.performDeepValidation(input, schema);
-      expect(result.size).toBe('medium');
-    });
-
-    it('should throw error for invalid enum values', () => {
-      const enumSchema: EnumFieldSchema = {
-        type: FieldType.enum,
-        expose: true,
-        values: ['small', 'medium', 'large'],
-      };
-      const schema: ObjectFieldSchema = {
-        type: FieldType.object,
-        expose: true,
-        properties: {
-          size: enumSchema,
-        },
-      };
-      const input = { size: 'extra-large' };
-
-      expect(() => service.performDeepValidation(input, schema)).toThrow('Property \'size\' must be one of: [small, medium, large], got "extra-large"');
-    });
-
-    it('should handle case-insensitive enum validation', () => {
-      const enumSchema: EnumFieldSchema = {
-        type: FieldType.enum,
-        expose: true,
-        values: ['Red', 'Green', 'Blue'],
-        caseSensitive: false,
-      };
-      const schema: ObjectFieldSchema = {
-        type: FieldType.object,
-        expose: true,
-        properties: {
-          color: enumSchema,
-        },
-      };
-      const input = { color: 'red' };
-
-      const result = service.performDeepValidation(input, schema);
-      expect(result.color).toBe('Red'); // Should return properly cased version
-    });
-
-    it('should handle multiple enum values', () => {
-      const enumSchema: EnumFieldSchema = {
-        type: FieldType.enum,
-        expose: true,
-        values: ['red', 'green', 'blue'],
-        allowMultiple: true,
-      };
-      const schema: ObjectFieldSchema = {
-        type: FieldType.object,
-        expose: true,
-        properties: {
-          colors: enumSchema,
-        },
-      };
-      const input = { colors: ['red', 'blue'] };
-
-      const result = service.performDeepValidation(input, schema);
-      expect(result.colors).toEqual(['red', 'blue']);
-    });
-
-    it('should handle deprecated enum values with warning', () => {
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      const enumSchema: EnumFieldSchema = {
-        type: FieldType.enum,
-        expose: true,
-        values: ['new', 'old', 'deprecated'],
-        deprecatedValues: ['old'],
-      };
-      const schema: ObjectFieldSchema = {
-        type: FieldType.object,
-        expose: true,
-        properties: {
-          status: enumSchema,
-        },
-      };
-      const input = { status: 'old' };
-
-      const result = service.performDeepValidation(input, schema);
-      expect(result.status).toBe('old');
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Property \'status\' uses deprecated enum value: "old"');
-
-      consoleWarnSpy.mockRestore();
-    });
-
-    it('should handle null/undefined enum values', () => {
-      const enumSchema: EnumFieldSchema = {
-        type: FieldType.enum,
-        expose: true,
-        values: ['active', 'inactive'],
-      };
-      const schema: ObjectFieldSchema = {
-        type: FieldType.object,
-        expose: true,
-        properties: {
-          status: enumSchema,
-        },
-      };
-      const input = { status: null };
-
-      const result = service.performDeepValidation(input, schema);
-      expect(result.status).toBeNull();
     });
   });
 

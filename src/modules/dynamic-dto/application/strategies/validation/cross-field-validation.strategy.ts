@@ -4,6 +4,7 @@ import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.ent
 import { ValidationContext, ValidationResult } from '../../../core/interfaces/validation';
 import { ValidationIssue } from '../../../core/interfaces/validation/validation-issue.interface';
 import { ValidationSeverity } from '../../../core/enums/validation.enums';
+import { ValidationResultCompatibilityUtil } from '../../../core/utils/validation-result-compatibility.util';
 
 @Injectable()
 export class CrossFieldValidationStrategy extends ValidationStrategy {
@@ -60,12 +61,9 @@ export class CrossFieldValidationStrategy extends ValidationStrategy {
       }
     }
 
-    return {
+    return ValidationResultCompatibilityUtil.createFromLegacy({
       isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
-    };
+    });
   }
 }

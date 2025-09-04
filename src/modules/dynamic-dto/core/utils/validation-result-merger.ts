@@ -1,4 +1,5 @@
 import type { ValidationIssue, ValidationResult } from '../interfaces';
+import { ValidationResultFactory } from '../interfaces/validation/validation-result.interface';
 
 type SeverityType = 'error' | 'warning' | 'info';
 
@@ -7,7 +8,7 @@ interface ValidationResultWithSeverityGrouping extends ValidationResult {
 }
 
 export class ValidationResultMerger {
-  static mergeResults(results: ValidationResult[]): ValidationResult {
+  static mergeResults(results: ValidationResult[]): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
     if (!results?.length) {
       return this.createEmptyResult();
     }
@@ -73,7 +74,8 @@ export class ValidationResultMerger {
       return;
     }
 
-    const issueSources = [result.issues, result.errors, result.warnings, result.infos];
+    const typedResult = result as ValidationResult & { errors?: ValidationIssue[]; warnings?: ValidationIssue[]; infos?: ValidationIssue[] };
+    const issueSources = [result.issues, typedResult.errors, typedResult.warnings, typedResult.infos];
 
     for (const issues of issueSources) {
       if (Array.isArray(issues) && issues.length) {
@@ -136,57 +138,25 @@ export class ValidationResultMerger {
     return fieldPaths.join(', ');
   }
 
-  private static createMergedResult(uniqueIssues: ValidationIssue[], aggregatedData: ReturnType<typeof ValidationResultMerger.aggregateResults>): ValidationResult {
+  private static createMergedResult(
+    uniqueIssues: ValidationIssue[],
+    aggregatedData: ReturnType<typeof ValidationResultMerger.aggregateResults>,
+  ): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
     const { mergedMetadata, isValid, fieldPath } = aggregatedData;
 
-    const errorCount = uniqueIssues.filter((issue) => issue.severity === 'error').length;
-    const warningCount = uniqueIssues.filter((issue) => issue.severity === 'warning').length;
-    const infoCount = uniqueIssues.filter((issue) => issue.severity === 'info').length;
-
-    return {
+    return ValidationResultFactory.create({
       isValid,
       issues: uniqueIssues.map((issue) => this.cleanObject(issue)),
       ...(Object.keys(mergedMetadata).length > 0 && { metadata: mergedMetadata }),
       fieldPath: fieldPath ?? '',
-      summary: {
-        totalIssues: uniqueIssues.length,
-        errorCount,
-        warningCount,
-        infoCount,
-      },
-
-      get errors() {
-        return uniqueIssues.filter((issue) => issue.severity === 'error');
-      },
-      get warnings() {
-        return uniqueIssues.filter((issue) => issue.severity === 'warning');
-      },
-      get infos() {
-        return uniqueIssues.filter((issue) => issue.severity === 'info');
-      },
-    };
+    });
   }
 
-  private static createEmptyResult(): ValidationResult {
-    return {
+  private static createEmptyResult(): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
+    return ValidationResultFactory.create({
       isValid: true,
       issues: [],
-      summary: {
-        totalIssues: 0,
-        errorCount: 0,
-        warningCount: 0,
-        infoCount: 0,
-      },
-      get errors() {
-        return [];
-      },
-      get warnings() {
-        return [];
-      },
-      get infos() {
-        return [];
-      },
-    };
+    });
   }
 
   private static cleanObject<T>(obj: T): T {
@@ -195,13 +165,13 @@ export class ValidationResultMerger {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map((item: any) => this.cleanObject(item)) as T;
+      return obj.map((item: unknown) => this.cleanObject(item)) as T;
     }
 
-    const cleaned: Record<string, any> = {};
+    const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       if (value !== undefined) {
-        cleaned[key] = typeof value === 'object' && value !== null ? this.cleanObject(value) : value;
+        cleaned[key] = typeof value === 'object' && value !== null ? this.cleanObject(value as Record<string, unknown>) : value;
       }
     }
 

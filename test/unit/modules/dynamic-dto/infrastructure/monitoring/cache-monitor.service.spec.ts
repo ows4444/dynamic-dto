@@ -281,7 +281,7 @@ describe('CacheMonitorService', () => {
     it('should handle unknown errors during health check', () => {
       const warnSpy = jest.spyOn(service['logger'], 'warn');
       mockCache.getStats.mockImplementation(() => {
-        throw 'String error';
+        throw new Error('String error');
       });
 
       service.registerCache('cache1', mockCache);

@@ -200,7 +200,7 @@ describe('FieldProcessorDiscoveryService', () => {
     it('should handle unknown errors', () => {
       const errorSpy = jest.spyOn(Logger.prototype, 'error');
       discoveryService.getProviders.mockImplementation(() => {
-        throw 'String error';
+        throw new Error('String error');
       });
 
       expect(() => service.discoverProcessors()).toThrow('Field processor discovery failed: Unknown error');
@@ -346,7 +346,7 @@ describe('FieldProcessorDiscoveryService', () => {
       const errorSpy = jest.spyOn(Logger.prototype, 'error');
       const faultyProcessor = {
         get supportedType() {
-          throw 'String error';
+          throw new Error('String error');
         },
       } as any;
 

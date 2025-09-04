@@ -188,7 +188,7 @@ describe('DtoOrchestratorService', () => {
         summary: { totalIssues: 0, errorCount: 0, warningCount: 0, infoCount: 0 },
       });
       generationPipeline.generate.mockImplementation(() => {
-        throw 'String error'; // Non-Error object
+        throw new Error('String error'); // Proper Error object
       });
 
       // Act & Assert - the non-Error object is re-thrown as is

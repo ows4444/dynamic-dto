@@ -26,9 +26,7 @@ describe('SchemaValidationPipeline', () => {
   const createValidResult = (): ValidationResult => ({
     isValid: true,
     issues: [],
-    errors: [],
-    warnings: [],
-    infos: [],
+    summary: { totalIssues: 0, errorCount: 0, warningCount: 0, infoCount: 0 },
   });
 
   const invalidResult: ValidationResult = {
@@ -41,16 +39,7 @@ describe('SchemaValidationPipeline', () => {
         fieldPath: 'test.field',
       },
     ],
-    errors: [
-      {
-        message: 'Schema validation failed',
-        code: 'SCHEMA_ERROR',
-        severity: 'error',
-        fieldPath: 'test.field',
-      },
-    ],
-    warnings: [],
-    infos: [],
+    summary: { totalIssues: 1, errorCount: 1, warningCount: 0, infoCount: 0 },
   };
 
   beforeEach(async () => {
@@ -200,9 +189,7 @@ describe('SchemaValidationPipeline', () => {
       const orchestratorResult: ValidationResult = {
         isValid: false,
         issues: [{ message: 'Orchestrator error', severity: 'error', code: 'ORCH_ERROR', fieldPath: 'test' }],
-        errors: [{ message: 'Orchestrator error', severity: 'error', code: 'ORCH_ERROR', fieldPath: 'test' }],
-        warnings: [{ message: 'Orchestrator warning', severity: 'warning', code: 'ORCH_WARNING', fieldPath: 'test' }],
-        infos: [{ message: 'Orchestrator info', severity: 'info', code: 'ORCH_INFO', fieldPath: 'test' }],
+        summary: { totalIssues: 1, errorCount: 1, warningCount: 0, infoCount: 0 },
       };
 
       schemaOrchestrator.validateSchema.mockReturnValue(orchestratorResult);
@@ -284,9 +271,7 @@ describe('SchemaValidationPipeline', () => {
       const resultWithWarningsAndInfos: ValidationResult = {
         isValid: true,
         issues: [],
-        errors: [],
-        warnings: [{ message: 'Schema warning', severity: 'warning', code: 'SCHEMA_WARNING', fieldPath: 'test' }],
-        infos: [{ message: 'Schema info', severity: 'info', code: 'SCHEMA_INFO', fieldPath: 'test' }],
+        summary: { totalIssues: 0, errorCount: 0, warningCount: 0, infoCount: 0 },
       };
       schemaOrchestrator.validateSchema.mockReturnValue(resultWithWarningsAndInfos);
 

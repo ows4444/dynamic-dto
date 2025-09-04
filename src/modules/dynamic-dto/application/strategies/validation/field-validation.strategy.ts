@@ -6,6 +6,7 @@ import { ValidationIssue } from '../../../core/interfaces/validation/validation-
 import { ValidationSeverity } from '../../../core/enums/validation.enums';
 import { FieldHandlerRegistry } from '../../../infrastructure/registries/field-handler.registry';
 import { ValidationResultMerger } from '../../../core/utils/validation-result-merger';
+import { ValidationResultCompatibilityUtil } from '../../../core/utils/validation-result-compatibility.util';
 
 /**
  * Consolidated field validation strategy that combines:
@@ -90,12 +91,9 @@ export class FieldValidationStrategy extends ValidationStrategy {
       });
     }
 
-    return {
+    return ValidationResultCompatibilityUtil.createFromLegacy({
       isValid: !issues.some((issue) => issue.severity === ValidationSeverity.error),
       issues,
-      errors: issues.filter((issue) => issue.severity === ValidationSeverity.error),
-      warnings: issues.filter((issue) => issue.severity === ValidationSeverity.warning),
-      infos: issues.filter((issue) => issue.severity === ValidationSeverity.info),
-    };
+    });
   }
 }

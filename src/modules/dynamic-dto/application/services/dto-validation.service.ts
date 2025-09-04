@@ -2,18 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { DynamicSchemaEntity } from '../../domain/entities/dynamic-schema.entity';
 import type { classConstructor } from '../../core/types/common.types';
 import type { ValidationResult } from '../../core/interfaces/validation/validation-result.interface';
+import { ValidationResultFactory } from '../../core/interfaces/validation/validation-result.interface';
 import type { ValidationIssue } from '../../core/interfaces/validation/validation-issue.interface';
+import { ValidationSeverity } from '../../core/enums/validation.enums';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { ValidationPipeline } from '../pipelines/validation.pipeline';
-
-export interface ValidationError {
-  property?: string;
-  value?: unknown;
-  constraints?: Record<string, string>;
-  message?: string;
-  path?: string;
-}
 
 @Injectable()
 export class DtoValidationService {
@@ -21,33 +15,41 @@ export class DtoValidationService {
 
   constructor(private readonly validationPipeline: ValidationPipeline) {}
 
-  validateSchema(schema: DynamicSchemaEntity): ValidationResult {
+  validateSchema(schema: DynamicSchemaEntity): ValidationResult & {
+    readonly errors: ValidationIssue[];
+    readonly warnings: ValidationIssue[];
+    readonly infos: ValidationIssue[];
+  } {
+    // Input validation following enterprise standards
+    if (!schema) {
+      this.logger.error('Schema validation failed: null or undefined schema provided');
+      return ValidationResultFactory.create({
+        isValid: false,
+        issues: [
+          {
+            severity: ValidationSeverity.error,
+            code: 'INVALID_INPUT',
+            message: 'Schema cannot be null or undefined',
+          },
+        ],
+      });
+    }
+
     const validationResult = this.validationPipeline.validate(schema);
 
     if (!validationResult.isValid) {
       this.logger.error('Schema validation failed', {
         schemaId: schema.id,
-        errors: validationResult.errors,
+        issueCount: validationResult.issues.length,
       });
     }
 
-    const validationIssues: ValidationIssue[] = (validationResult.errors ?? []).map((error) => ({
-      severity: 'error' as const,
-      code: 'SCHEMA_VALIDATION_ERROR',
-      message: typeof error === 'string' ? error : error.message || 'Unknown validation error',
-    }));
-
-    return {
+    // The validation result already contains properly structured ValidationIssues
+    // No need to transform them again - just pass them through
+    return ValidationResultFactory.create({
       isValid: validationResult.isValid,
-      issues: validationIssues,
-      errors: validationIssues,
-      summary: {
-        totalIssues: validationIssues.length,
-        errorCount: validationIssues.length,
-        warningCount: 0,
-        infoCount: 0,
-      },
-    };
+      issues: validationResult.issues,
+    });
   }
 
   validateSchemas(schemas: DynamicSchemaEntity[]): { validSchemas: DynamicSchemaEntity[]; invalidCount: number } {
@@ -62,7 +64,7 @@ export class DtoValidationService {
         invalidCount++;
         this.logger.error('Schema validation failed in batch', {
           schemaId: schema.id,
-          errors: validation.errors,
+          issueCount: validation.issues.length,
         });
       }
     }
@@ -70,61 +72,79 @@ export class DtoValidationService {
     return { validSchemas, invalidCount };
   }
 
-  async validateData(data: unknown, dtoClass: classConstructor<object>, schemaId: string): Promise<ValidationResult & { data?: unknown; errors: ValidationError[] }> {
+  async validateData(
+    data: unknown,
+    dtoClass: classConstructor<object>,
+    schemaId: string,
+  ): Promise<
+    ValidationResult & {
+      readonly errors: ValidationIssue[];
+      readonly warnings: ValidationIssue[];
+      readonly infos: ValidationIssue[];
+    }
+  > {
+    // Input validation following enterprise standards
+    if (!dtoClass) {
+      this.logger.error('Data validation failed: null or undefined DTO class provided', { schemaId });
+      return ValidationResultFactory.create({
+        isValid: false,
+        issues: [
+          {
+            severity: ValidationSeverity.error,
+            code: 'INVALID_DTO_CLASS',
+            message: 'DTO class cannot be null or undefined',
+            metadata: { schemaId },
+          },
+        ],
+      });
+    }
+
     try {
       const dto = plainToInstance(dtoClass, data);
-      const errors = await validate(dto);
+      const classValidatorErrors = await validate(dto);
 
-      const validationIssues: ValidationIssue[] = errors.map((error) => ({
-        severity: 'error' as const,
+      const validationIssues: ValidationIssue[] = classValidatorErrors.map((error) => ({
+        severity: ValidationSeverity.error,
         message: Object.values(error.constraints ?? {}).join(', ') || 'Validation failed',
         fieldPath: error.property,
-        value: error.value as string,
-        code: 'VALIDATION_ERROR',
+        value: error.value as unknown,
+        code: 'DATA_VALIDATION_ERROR',
         constraint: Object.keys(error.constraints ?? {})[0] ?? 'validation_failed',
         metadata: {
           property: error.property,
           constraints: error.constraints,
+          schemaId,
         },
       }));
 
-      return {
-        isValid: errors.length === 0,
-        data: errors.length === 0 ? dto : undefined,
+      const isValid = classValidatorErrors.length === 0;
+
+      return ValidationResultFactory.create({
+        isValid,
         issues: validationIssues,
-        errors: validationIssues,
-        summary: {
-          totalIssues: validationIssues.length,
-          errorCount: validationIssues.length,
-          warningCount: 0,
-          infoCount: 0,
-        },
-      };
+        data: isValid ? dto : undefined,
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Data validation failed', {
+      this.logger.error('Data validation failed with exception', {
         schemaId,
         error: errorMessage,
       });
 
       const errorIssue: ValidationIssue = {
-        severity: 'error',
-        message: errorMessage,
+        severity: ValidationSeverity.error,
+        message: `Validation exception: ${errorMessage}`,
         code: 'VALIDATION_EXCEPTION',
-        metadata: { error },
-      };
-
-      return {
-        isValid: false,
-        issues: [errorIssue],
-        errors: [errorIssue],
-        summary: {
-          totalIssues: 1,
-          errorCount: 1,
-          warningCount: 0,
-          infoCount: 0,
+        metadata: {
+          error: errorMessage,
+          schemaId,
         },
       };
+
+      return ValidationResultFactory.create({
+        isValid: false,
+        issues: [errorIssue],
+      });
     }
   }
 }

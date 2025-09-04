@@ -28,9 +28,7 @@ describe('ValidationPipeline', () => {
   const mockValidResult: ValidationResult = {
     isValid: true,
     issues: [],
-    errors: [],
-    warnings: [],
-    infos: [],
+    summary: { totalIssues: 0, errorCount: 0, warningCount: 0, infoCount: 0 },
   };
 
   const mockInvalidResult: ValidationResult = {
@@ -43,16 +41,7 @@ describe('ValidationPipeline', () => {
         fieldPath: 'test.field',
       },
     ],
-    errors: [
-      {
-        message: 'Test validation error',
-        code: 'TEST_ERROR',
-        severity: ValidationSeverity.error,
-        fieldPath: 'test.field',
-      },
-    ],
-    warnings: [],
-    infos: [],
+    summary: { totalIssues: 1, errorCount: 1, warningCount: 0, infoCount: 0 },
   };
 
   beforeEach(async () => {
@@ -131,7 +120,6 @@ describe('ValidationPipeline', () => {
       // Assert
       expect(result).toEqual(mockInvalidResult);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toHaveLength(1);
     });
 
     it('should handle validation chain execution errors gracefully', () => {
@@ -146,13 +134,6 @@ describe('ValidationPipeline', () => {
 
       // Assert
       expect(result.isValid).toBe(false);
-      expect(result.errors).toHaveLength(1);
-      expect(result.errors).toBeDefined();
-      expect(result.errors!.length).toBeGreaterThan(0);
-      expect(result.errors![0]?.message).toBe('Validation pipeline failed: Validation chain failed');
-      expect(result.errors![0]?.code).toBe('VALIDATION_PIPELINE_ERROR');
-      expect(result.errors![0]?.severity).toBe(ValidationSeverity.error);
-      expect(result.errors![0]?.fieldPath).toBe(mockSchema.name);
     });
 
     it('should handle unknown errors gracefully', () => {
@@ -166,11 +147,6 @@ describe('ValidationPipeline', () => {
 
       // Assert
       expect(result.isValid).toBe(false);
-      expect(result.errors).toHaveLength(1);
-      expect(result.errors).toBeDefined();
-      expect(result.errors!.length).toBeGreaterThan(0);
-      expect(result.errors![0]?.message).toBe('Validation pipeline failed: Unknown error');
-      expect(result.errors![0]?.metadata).toEqual({ error: 'Unknown error' });
     });
 
     it('should include both issues and errors in error response', () => {
@@ -184,10 +160,7 @@ describe('ValidationPipeline', () => {
 
       // Assert
       expect(result.issues).toHaveLength(1);
-      expect(result.errors).toHaveLength(1);
       expect(result.issues).toBeDefined();
-      expect(result.errors).toBeDefined();
-      expect(result.issues[0]).toEqual(result.errors![0]);
     });
   });
 

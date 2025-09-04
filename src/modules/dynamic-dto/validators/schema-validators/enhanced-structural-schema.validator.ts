@@ -7,6 +7,7 @@ import { ValidationIssue } from '../../core/interfaces/validation/validation-iss
 import { ValidationResultMerger } from '../../core/utils/validation-result-merger';
 import { FieldType } from '../../core/types/field.types';
 import { ObjectFieldSchema } from '../../core/interfaces/schema/complex/object-field.schema';
+import { ValidationResultCompatibilityUtil } from '../../core/utils/validation-result-compatibility.util';
 
 @Injectable()
 export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
@@ -58,8 +59,6 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
   private validateSchemaStructure(schema: Record<string, FieldSchema>, context: string): ValidationResult {
     const errors: ValidationIssue[] = [];
     const warnings: ValidationIssue[] = [];
-    const infos: ValidationIssue[] = [];
-    const issues: ValidationIssue[] = [];
 
     if (!schema || typeof schema !== 'object') {
       errors.push({
@@ -68,7 +67,7 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
         code: 'INVALID_SCHEMA_STRUCTURE',
         severity: 'error',
       });
-      return { isValid: false, errors, infos, issues, warnings };
+      return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: false, issues: errors });
     }
 
     if (Object.keys(schema).length === 0) {
@@ -80,7 +79,7 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       });
     }
 
-    return { isValid: errors.length === 0, errors, infos, issues, warnings };
+    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: errors.length === 0, issues: [...errors, ...warnings] });
   }
 
   /**
@@ -154,7 +153,7 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       });
     }
 
-    return { isValid: errors.length === 0, errors, infos: [], issues: [], warnings };
+    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: errors.length === 0, issues: [...errors, ...warnings] });
   }
 
   /**
@@ -284,12 +283,13 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       };
 
       const result = this.fieldHandlerRegistry.validateField(fieldSchema, context);
-      if (result.errors) errors.push(...result.errors);
-      if (result.warnings) warnings.push(...result.warnings);
-      if (result.infos) infos.push(...result.infos);
+      const typedResult = result as ValidationResult & { errors?: ValidationIssue[]; warnings?: ValidationIssue[]; infos?: ValidationIssue[] };
+      if (typedResult.errors) errors.push(...typedResult.errors);
+      if (typedResult.warnings) warnings.push(...typedResult.warnings);
+      if (typedResult.infos) infos.push(...typedResult.infos);
       if (result.issues) issues.push(...result.issues);
     }
 
-    return { isValid: errors.length === 0, errors, infos, issues, warnings };
+    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: errors.length === 0, issues: [...errors, ...warnings, ...infos] });
   }
 }

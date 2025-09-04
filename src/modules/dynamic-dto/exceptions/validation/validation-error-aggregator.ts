@@ -2,6 +2,7 @@ import { ValidationSeverity } from '../../core/enums/validation.enums';
 import type { SerializedValidationError, ValidationErrorContext } from './base-validation.error';
 import { BaseValidationError } from './base-validation.error';
 import type { ValidationIssue, ValidationResult } from '../../core/interfaces/validation';
+import { ValidationResultCompatibilityUtil } from '../../core/utils/validation-result-compatibility.util';
 
 export interface ValidationErrorSummary {
   readonly totalErrors: number;
@@ -323,30 +324,9 @@ export class ValidationErrorAggregator {
       metadata: error.metadata,
     }));
 
-    return {
+    return ValidationResultCompatibilityUtil.createFromLegacy({
       isValid: !this.hasCriticalErrors(),
       issues,
-      errors: this.getErrorsBySeverity(ValidationSeverity.error).map((e) => ({
-        message: e.message,
-        code: e.code,
-        severity: e.severity,
-        fieldPath: e.context?.fieldPath ?? '',
-        metadata: e.metadata,
-      })),
-      warnings: this.getErrorsBySeverity(ValidationSeverity.warning).map((e) => ({
-        message: e.message,
-        code: e.code,
-        severity: e.severity,
-        fieldPath: e.context?.fieldPath ?? '',
-        metadata: e.metadata,
-      })),
-      infos: this.getErrorsBySeverity(ValidationSeverity.info).map((e) => ({
-        message: e.message,
-        code: e.code,
-        severity: e.severity,
-        fieldPath: e.context?.fieldPath ?? '',
-        metadata: e.metadata,
-      })),
-    };
+    });
   }
 }

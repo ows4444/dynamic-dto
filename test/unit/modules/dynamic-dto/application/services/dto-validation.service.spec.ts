@@ -3,8 +3,7 @@ import { Test } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import classTransformer from 'class-transformer';
 import classValidator from 'class-validator';
-import type { ValidationResult } from '@src/index';
-import { DtoValidationService, DynamicSchemaEntity, FieldType } from '@src/index';
+import { DtoValidationService, DynamicSchemaEntity, FieldType, ValidationResultFactory } from '@src/index';
 import { ValidationPipeline } from '@src/modules/dynamic-dto/application/pipelines/validation.pipeline';
 
 // Mock class-validator and class-transformer
@@ -61,11 +60,10 @@ describe('DtoValidationService', () => {
   describe('validateSchema', () => {
     it('should return valid result when schema passes validation', () => {
       // Arrange
-      const mockValidationResult = {
+      const mockValidationResult = ValidationResultFactory.create({
         isValid: true,
         issues: [],
-        errors: [],
-      };
+      });
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
       // Act
@@ -81,10 +79,9 @@ describe('DtoValidationService', () => {
 
     it('should return invalid result when schema fails validation', () => {
       // Arrange
-      const mockValidationResult: ValidationResult = {
+      const mockValidationResult = ValidationResultFactory.create({
         isValid: false,
-        issues: [],
-        errors: [
+        issues: [
           {
             message: 'Invalid field configuration',
             severity: 'error',
@@ -98,7 +95,7 @@ describe('DtoValidationService', () => {
             fieldPath: 'field2',
           },
         ],
-      };
+      });
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
       // Act
@@ -117,10 +114,9 @@ describe('DtoValidationService', () => {
 
     it('should handle error objects with empty messages', () => {
       // Arrange - Create a validation result that simulates errors with empty messages
-      const mockValidationResult = {
+      const mockValidationResult = ValidationResultFactory.create({
         isValid: false,
-        issues: [],
-        errors: [
+        issues: [
           {
             message: '',
             severity: 'error',
@@ -128,7 +124,7 @@ describe('DtoValidationService', () => {
             fieldPath: 'field',
           },
         ],
-      };
+      });
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
       // Act
@@ -141,11 +137,10 @@ describe('DtoValidationService', () => {
 
     it('should handle validation result with undefined errors', () => {
       // Arrange - Create a validation result with undefined errors
-      const mockValidationResult = {
+      const mockValidationResult = ValidationResultFactory.create({
         isValid: false,
         issues: [],
-        errors: undefined as any,
-      };
+      });
       validationPipeline.validate.mockReturnValue(mockValidationResult);
 
       // Act
@@ -164,18 +159,19 @@ describe('DtoValidationService', () => {
       const schema2 = new DynamicSchemaEntity('test-schema-2', 'TestSchema2', { email: { type: FieldType.string, expose: true } }, ['email'], false);
       const schemas = [schema1, schema2];
 
-      validationPipeline.validate.mockReturnValueOnce({ isValid: true, issues: [], errors: [] }).mockReturnValueOnce({
-        isValid: false,
-        issues: [],
-        errors: [
-          {
-            message: 'Invalid schema',
-            severity: 'error',
-            code: 'INVALID_SCHEMA',
-            fieldPath: 'schema',
-          },
-        ],
-      });
+      validationPipeline.validate.mockReturnValueOnce(ValidationResultFactory.create({ isValid: true, issues: [] })).mockReturnValueOnce(
+        ValidationResultFactory.create({
+          isValid: false,
+          issues: [
+            {
+              message: 'Invalid schema',
+              severity: 'error',
+              code: 'INVALID_SCHEMA',
+              fieldPath: 'schema',
+            },
+          ],
+        }),
+      );
 
       // Act
       const result = service.validateSchemas(schemas);
@@ -291,7 +287,7 @@ describe('DtoValidationService', () => {
     it('should handle non-Error exceptions', async () => {
       // Arrange
       (classTransformer.plainToInstance as jest.Mock).mockImplementation(() => {
-        throw 'String error';
+        throw new Error('String error');
       });
 
       // Act
