@@ -4,6 +4,7 @@ import { DynamicDtoModule } from '@src/modules/dynamic-dto/dynamic-dto.module';
 import { DtoOrchestratorService } from '@src/modules/dynamic-dto/application/services/dto-orchestrator.service';
 import { DtoCacheService } from '@src/modules/dynamic-dto/application/services/dto-cache.service';
 import { DynamicSchemaEntity } from '@src/modules/dynamic-dto/domain/entities/dynamic-schema.entity';
+import type { FieldSchema } from '@src/modules/dynamic-dto/core';
 
 describe('Cache and Performance E2E', () => {
   let module: TestingModule;
@@ -80,7 +81,7 @@ describe('Cache and Performance E2E', () => {
 
   describe('Performance Monitoring', () => {
     it('should track generation performance metrics', async () => {
-      const properties: Record<string, object> = {};
+      const properties: Record<string, FieldSchema> = {};
       Array.from({ length: 20 }, (_, i) => {
         properties[`field${i}`] = {
           type: 'string',
@@ -116,6 +117,7 @@ describe('Cache and Performance E2E', () => {
             {
               data: {
                 type: 'array',
+                items: { type: 'string' },
               },
             },
             ['data'],

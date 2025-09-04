@@ -71,6 +71,7 @@ describe('Dynamic DTO Generation E2E', () => {
                 properties: {
                   settings: {
                     type: 'array',
+                    items: { type: 'string' },
                   },
                 },
               },
@@ -98,6 +99,7 @@ describe('Dynamic DTO Generation E2E', () => {
           },
           status: {
             type: 'union',
+            unionTypes: [{ type: 'string' }, { type: 'number' }],
           },
         },
         ['age', 'status'],

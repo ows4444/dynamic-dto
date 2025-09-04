@@ -104,6 +104,7 @@ describe('Validation Pipeline E2E', () => {
             properties: {
               items: {
                 type: 'array',
+                items: { type: 'string' },
                 minItems: 1,
                 maxItems: 10,
               },
@@ -134,9 +135,11 @@ describe('Validation Pipeline E2E', () => {
         {
           status: {
             type: 'union',
+            unionTypes: [{ type: 'string' }],
           },
           priority: {
             type: 'union',
+            unionTypes: [{ type: 'number' }],
           },
         },
         ['status', 'priority'],

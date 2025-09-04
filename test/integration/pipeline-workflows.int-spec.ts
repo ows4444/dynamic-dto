@@ -31,7 +31,7 @@ describe('Pipeline Workflows Integration', () => {
   });
 
   describe('Generation Pipeline Integration', () => {
-    it('should execute complete DTO generation workflow', async () => {
+    it('should execute complete DTO generation workflow', () => {
       const schema = new DynamicSchemaEntity(
         'workflow-test-schema-1',
         'WorkflowTestDto',
@@ -45,6 +45,7 @@ describe('Pipeline Workflows Integration', () => {
             properties: {
               tags: {
                 type: 'array',
+                items: { type: 'string' },
               },
             },
           },
@@ -60,7 +61,7 @@ describe('Pipeline Workflows Integration', () => {
   });
 
   describe('Validation Pipeline Integration', () => {
-    it('should execute multi-strategy validation workflow', async () => {
+    it('should execute multi-strategy validation workflow', () => {
       const schema = new DynamicSchemaEntity(
         'validation-workflow-schema-1',
         'ValidationWorkflowDto',
@@ -106,6 +107,7 @@ describe('Pipeline Workflows Integration', () => {
         {
           data: {
             type: 'union',
+            unionTypes: [{ type: 'string' }, { type: 'number' }],
           },
         },
         ['data'],

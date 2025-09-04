@@ -32,7 +32,7 @@ describe('Field Processing E2E', () => {
       const processors = processorRegistry.getAllProcessors();
 
       expect(processors.length).toBeGreaterThan(0);
-      const processorTypes = processors.map((p) => p.type);
+      const processorTypes = processors.map((p) => p.supportedType);
       expect(processorTypes).toContain('string');
       expect(processorTypes).toContain('number');
       expect(processorTypes).toContain('boolean');
@@ -49,8 +49,8 @@ describe('Field Processing E2E', () => {
           numberField: { type: 'number' },
           booleanField: { type: 'boolean' },
           dateField: { type: 'date' },
-          arrayField: { type: 'array' },
-          unionField: { type: 'union' },
+          arrayField: { type: 'array', items: { type: 'string' } },
+          unionField: { type: 'union', unionTypes: [{ type: 'string' }] },
         },
         ['stringField', 'numberField', 'booleanField', 'dateField', 'arrayField', 'unionField'],
       );
@@ -76,6 +76,7 @@ describe('Field Processing E2E', () => {
                 properties: {
                   level3: {
                     type: 'array',
+                    items: { type: 'string' },
                   },
                 },
               },
@@ -98,6 +99,7 @@ describe('Field Processing E2E', () => {
         {
           self: {
             type: 'object',
+            properties: {},
           },
           name: {
             type: 'string',
