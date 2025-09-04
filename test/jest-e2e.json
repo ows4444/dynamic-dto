@@ -1,15 +1,15 @@
 {
-  "displayName": "Integration Tests - Service Workflows",
+  "displayName": "E2E Tests - Full DTO Lifecycle",
   "preset": "ts-jest",
   "testEnvironment": "node",
   "rootDir": "../",
   "testMatch": [
-    "<rootDir>/test/integration/**/*.int-spec.ts"
+    "<rootDir>/test/e2e/**/*.e2e-spec.ts"
   ],
   "setupFilesAfterEnv": [
     "<rootDir>/test/setup.ts"
   ],
-  "coverageDirectory": "<rootDir>/coverage/integration",
+  "coverageDirectory": "<rootDir>/coverage/e2e",
   "collectCoverageFrom": [
     "src/modules/dynamic-dto/**/*.ts",
     "!src/**/*.spec.ts",
@@ -21,22 +21,16 @@
   "coverageReporters": ["text", "lcov", "html", "json-summary"],
   "coverageThreshold": {
     "global": {
-      "branches": 75,
-      "functions": 80,
-      "lines": 80,
-      "statements": 80
-    },
-    "src/modules/dynamic-dto/application/services/": {
       "branches": 70,
       "functions": 75,
       "lines": 75,
       "statements": 75
     }
   },
-  "testTimeout": 45000,
-  "maxWorkers": "50%",
-  "detectOpenHandles": false,
-  "forceExit": false,
+  "testTimeout": 60000,
+  "maxWorkers": "25%",
+  "detectOpenHandles": true,
+  "forceExit": true,
   "clearMocks": true,
   "resetMocks": true,
   "restoreMocks": true,

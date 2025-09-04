@@ -12,10 +12,11 @@
   ],
   "coverageDirectory": "<rootDir>/coverage/unit",
   "collectCoverageFrom": [
-    "src/modules/rx-event-emitter/services/**/*.ts",
-    "src/modules/rx-event-emitter/interfaces/**/*.ts",
-    "src/modules/rx-event-emitter/decorators/**/*.ts",
-    "src/modules/rx-event-emitter/adapters/**/*.ts",
+    "src/modules/dynamic-dto/application/services/**/*.ts",
+    "src/modules/dynamic-dto/core/**/*.ts",
+    "src/modules/dynamic-dto/domain/**/*.ts",
+    "src/modules/dynamic-dto/processors/**/*.ts",
+    "src/modules/dynamic-dto/validators/**/*.ts",
     "!src/**/*.spec.ts",
     "!src/**/*.interface.ts",
     "!src/**/*.d.ts",
@@ -29,13 +30,13 @@
       "lines": 85,
       "statements": 85
     },
-    "src/modules/rx-event-emitter/services/event-emitter.service.ts": {
+    "src/modules/dynamic-dto/application/services/dto-orchestrator.service.ts": {
       "branches": 85,
       "functions": 90,
       "lines": 90,
       "statements": 90
     },
-    "src/modules/rx-event-emitter/services/handler-discovery.service.ts": {
+    "src/modules/dynamic-dto/application/services/dto-validation.service.ts": {
       "branches": 85,
       "functions": 90,
       "lines": 90,
