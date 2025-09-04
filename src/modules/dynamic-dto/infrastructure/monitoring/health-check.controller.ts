@@ -42,8 +42,8 @@ export class HealthCheckController {
    * Returns 200 OK if system is healthy, 503 Service Unavailable if not
    */
   @Get()
-  async getHealth(): Promise<HealthCheckStatus> {
-    const healthStatus = await this.performHealthCheck();
+  getHealth(): HealthCheckStatus {
+    const healthStatus = this.performHealthCheck();
 
     // Set HTTP status based on overall health
     if (healthStatus.status === 'unhealthy') {
@@ -57,8 +57,8 @@ export class HealthCheckController {
    * Detailed health check with all component statuses
    */
   @Get('detailed')
-  async getDetailedHealth(): Promise<HealthCheckStatus> {
-    return await this.performHealthCheck();
+  getDetailedHealth(): HealthCheckStatus {
+    return this.performHealthCheck();
   }
 
   /**
@@ -147,7 +147,7 @@ export class HealthCheckController {
     };
   }
 
-  private async performHealthCheck(): Promise<HealthCheckStatus> {
+  private performHealthCheck(): HealthCheckStatus {
     const now = new Date();
     const uptime = Date.now() - this.startTime;
 

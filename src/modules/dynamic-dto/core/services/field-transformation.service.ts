@@ -41,14 +41,14 @@ export class DefaultFieldTransformationService implements FieldTransformationSer
     // Handle transformation hooks if present
     if ('transformationHooks' in schema && Array.isArray(schema.transformationHooks)) {
       schema.transformationHooks.forEach((hook, index) => {
-        const transformationFunction = {
+        const transformationFunction: TransformationFunction = {
           order: 100 + index,
           name: `custom_hook_${index}`,
           transform: ({ value }: TransformParams) => this.executeHook(hook, value),
           ...(hook.condition && {
             condition: (_: FieldSchema, params: TransformParams) => this.evaluateConditionForHook(hook.condition, params.obj),
           }),
-        } as TransformationFunction;
+        };
         functions.push(transformationFunction);
       });
     }

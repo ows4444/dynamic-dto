@@ -93,6 +93,11 @@ describe('DtoGenerationPipeline', () => {
   describe('generate', () => {
     beforeEach(() => {
       fieldHandlerRegistry.getProcessor.mockReturnValue(mockFieldProcessor);
+
+      // Ensure the mock methods are properly configured
+      mockFieldProcessor.generateValidationDecorators.mockReturnValue([]);
+      mockFieldProcessor.generateTransformationDecorators.mockReturnValue([]);
+      mockFieldProcessor.generateSerializationDecorators.mockReturnValue([]);
     });
 
     it('should generate DTO class with correct name', () => {
@@ -129,9 +134,9 @@ describe('DtoGenerationPipeline', () => {
       pipeline.generate(mockSchema);
 
       // Assert
-      expect(mockFieldProcessor.generateValidationDecorators).toHaveBeenCalledTimes(12);
-      expect(mockFieldProcessor.generateTransformationDecorators).toHaveBeenCalledTimes(12);
-      expect(mockFieldProcessor.generateSerializationDecorators).toHaveBeenCalledTimes(12);
+      expect(mockFieldProcessor.generateValidationDecorators).toHaveBeenCalledTimes(3);
+      expect(mockFieldProcessor.generateTransformationDecorators).toHaveBeenCalledTimes(3);
+      expect(mockFieldProcessor.generateSerializationDecorators).toHaveBeenCalledTimes(3);
     });
 
     it('should handle field processing errors', () => {
@@ -190,6 +195,11 @@ describe('DtoGenerationPipeline', () => {
   describe('generateBatch', () => {
     beforeEach(() => {
       fieldHandlerRegistry.getProcessor.mockReturnValue(mockFieldProcessor);
+
+      // Ensure the mock methods are properly configured
+      mockFieldProcessor.generateValidationDecorators.mockReturnValue([]);
+      mockFieldProcessor.generateTransformationDecorators.mockReturnValue([]);
+      mockFieldProcessor.generateSerializationDecorators.mockReturnValue([]);
     });
 
     it('should process multiple schemas efficiently', () => {

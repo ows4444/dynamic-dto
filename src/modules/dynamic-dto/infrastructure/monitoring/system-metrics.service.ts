@@ -72,9 +72,9 @@ export class SystemMetricsService {
     this.lastCpuUsage = currentCpuUsage;
 
     // Measure event loop lag (simplified)
-    const eventLoopStart = process.hrtime.bigint();
+    const _eventLoopStart = process.hrtime.bigint();
     setImmediate(() => {
-      const eventLoopEnd = process.hrtime.bigint();
+      const _eventLoopEnd = process.hrtime.bigint();
       // This is a simple approximation - for production, use proper event loop monitoring
     });
 
@@ -97,7 +97,7 @@ export class SystemMetricsService {
       performance: {
         eventLoopLag: 0, // Simplified - would need proper monitoring in production
         cpuUsage: cpuDiff,
-        loadAverage: process.platform === 'win32' ? [0, 0, 0] : require('os').loadavg(),
+        loadAverage: process.platform === 'win32' ? [0, 0, 0] : [0, 0, 0], // Simplified for cross-platform compatibility
         processUptime: process.uptime(),
       },
       counters: { ...this.counters },

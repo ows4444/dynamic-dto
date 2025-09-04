@@ -96,7 +96,7 @@ export class PerformanceMetricsService {
   /**
    * Record validation result
    */
-  recordValidation(success: boolean, errorCount = 0, errors: string[] = []): void {
+  recordValidation(success: boolean, _errorCount = 0, errors: string[] = []): void {
     this.totalValidations++;
 
     if (!success) {

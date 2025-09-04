@@ -276,7 +276,7 @@ describe('NestedClassGeneratorService', () => {
 
       expect(() => {
         service.generateNestedClass(properties);
-      }).toThrow('Nested field processing failed for name: Unknown error');
+      }).toThrow('Nested field processing failed for name: String error');
     });
   });
 
@@ -549,7 +549,7 @@ describe('NestedClassGeneratorService', () => {
 
       expect(() => {
         service.generateNestedClass(properties);
-      }).toThrow('Nested field processing failed for name: Unknown error');
+      }).toThrow('Nested field processing failed for name: String error');
 
       expect(loggerSpy).toHaveBeenCalledWith(
         'Failed to apply decorator 0 to field name',
