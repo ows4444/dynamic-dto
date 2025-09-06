@@ -88,16 +88,6 @@ export function createFieldProcessingProviders(): Provider[] {
     FieldValidatorRegistry,
     FieldHandlerRegistry,
 
-    // Backward compatibility aliases for existing code
-    {
-      provide: 'FieldProcessorRegistry',
-      useExisting: FieldHandlerRegistry,
-    },
-    {
-      provide: 'FieldValidatorRegistry',
-      useExisting: FieldValidatorRegistry,
-    },
-
     // === STRING PROCESSING INFRASTRUCTURE ===
     StringFormatProcessorFactory,
 

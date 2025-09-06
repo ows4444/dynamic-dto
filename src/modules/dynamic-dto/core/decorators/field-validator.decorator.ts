@@ -24,7 +24,7 @@ export interface FieldValidatorMetadata {
  * }
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
+
 export function FieldValidator(metadata: FieldValidatorMetadata) {
   return function <T extends new (...args: unknown[]) => unknown>(target: T) {
     // Set metadata for NestJS module discovery

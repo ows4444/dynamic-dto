@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ValidationStrategy } from '../../../core/abstractions/validation-strategy.abstract';
 import { DynamicSchemaEntity } from '../../../domain/entities/dynamic-schema.entity';
-import { ValidationContext, ValidationResult } from '../../../core/interfaces/validation';
+import { ValidationResult } from '../../../core/interfaces/validation';
 import { ValidationIssue } from '../../../core/interfaces/validation/validation-issue.interface';
 import { ValidationSeverity } from '../../../core/enums/validation.enums';
 import { ValidationResultCompatibilityUtil } from '../../../core/utils/validation-result-compatibility.util';
@@ -13,7 +13,7 @@ export class CrossFieldValidationStrategy extends ValidationStrategy {
 
   private readonly logger = new Logger(CrossFieldValidationStrategy.name);
 
-  execute(schema: DynamicSchemaEntity, _context?: ValidationContext): ValidationResult {
+  execute(schema: DynamicSchemaEntity): ValidationResult {
     this.logger.debug(`Executing ${this.name} for schema: ${schema.name}`);
 
     try {

@@ -31,7 +31,11 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   validateStructure(
     schema: ObjectFieldSchema,
     context: ValidationContext,
-  ): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
+  ): ValidationResult & {
+    readonly errors: ValidationIssue[];
+    readonly warnings: ValidationIssue[];
+    readonly infos: ValidationIssue[];
+  } {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateBasicStructure(schema, builder);
@@ -48,7 +52,11 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   validateConstraints(
     schema: ObjectFieldSchema,
     context: ValidationContext,
-  ): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
+  ): ValidationResult & {
+    readonly errors: ValidationIssue[];
+    readonly warnings: ValidationIssue[];
+    readonly infos: ValidationIssue[];
+  } {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
     this.validateRequiredFieldConstraints(schema, builder);
@@ -65,8 +73,8 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   protected override validateSecurity(schema: ObjectFieldSchema, context: ValidationContext): ValidationResult {
     const builder = new ValidationResultBuilder(context.fieldPath);
 
-    this.validateSensitiveDataHandling(schema, builder, context);
-    this.validateNestedPermissions(schema, builder, context);
+    this.validateSensitiveDataHandling(schema, builder);
+    this.validateNestedPermissions(schema, builder);
     this.validateInheritanceSecurity(schema, builder);
 
     return builder.build();
@@ -100,12 +108,12 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     }
 
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
-      this.validatePropertyName(propName, builder, context);
+      this.validatePropertyName(propName, builder);
       this.validatePropertySchema(propName, propSchema, builder, context);
     }
   }
 
-  private validatePropertyName(propName: string, builder: ValidationResultBuilder, _context: ValidationContext): void {
+  private validatePropertyName(propName: string, builder: ValidationResultBuilder): void {
     if (!propName || typeof propName !== 'string') {
       builder.addError('OBJECT_INVALID_PROPERTY_NAME', 'Property name must be a non-empty string', propName);
       return;
@@ -454,7 +462,10 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
       try {
         new RegExp(pattern);
       } catch (error) {
-        builder.addError('OBJECT_INVALID_PATTERN_PROPERTY', `Invalid regex pattern in patternProperties: ${pattern}`, { pattern, error: error instanceof Error ? error.message : 'Unknown error' });
+        builder.addError('OBJECT_INVALID_PATTERN_PROPERTY', `Invalid regex pattern in patternProperties: ${pattern}`, {
+          pattern,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
       }
 
       if (!schema.type) {
@@ -464,7 +475,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
   }
 
   // Security validation
-  private validateSensitiveDataHandling(schema: ObjectFieldSchema, builder: ValidationResultBuilder, _context: ValidationContext): void {
+  private validateSensitiveDataHandling(schema: ObjectFieldSchema, builder: ValidationResultBuilder): void {
     const sensitiveProps = this.findSensitiveProperties(schema);
 
     if (sensitiveProps.length > 0 && !schema.permissions) {
@@ -482,7 +493,7 @@ export class ObjectFieldValidator extends BaseFieldValidator<ObjectFieldSchema> 
     return Object.keys(schema.properties).filter((propName) => sensitiveKeywords.some((keyword) => propName.toLowerCase().includes(keyword)));
   }
 
-  private validateNestedPermissions(schema: ObjectFieldSchema, builder: ValidationResultBuilder, _context: ValidationContext): void {
+  private validateNestedPermissions(schema: ObjectFieldSchema, builder: ValidationResultBuilder): void {
     if (!schema.properties || typeof schema.properties !== 'object') {
       return;
     }

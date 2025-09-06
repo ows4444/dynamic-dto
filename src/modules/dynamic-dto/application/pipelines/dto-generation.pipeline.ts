@@ -23,7 +23,7 @@ interface WeakClassReference {
 /**
  * Registry for class cleanup callbacks
  */
-const classCleanupRegistry = new FinalizationRegistry((_heldValue: string) => {
+const classCleanupRegistry = new FinalizationRegistry(() => {
   // Cleanup callback when class is garbage collected - using comment instead of console for lint compliance
   // Debug: Class ${_heldValue} was garbage collected
 });
@@ -42,7 +42,8 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
   constructor(
     private readonly fieldHandlerRegistry: FieldHandlerRegistry,
     @Optional() private readonly cacheMonitor?: CacheMonitorService,
-    @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions = {},
+    @Inject(MODULE_OPTIONS_TOKEN)
+    private readonly options: DynamicDtoModuleOptions = {},
   ) {
     // Configure memory management settings from options
     const monitoring = this.options.monitoring ?? {};
@@ -84,12 +85,17 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
         // Update access tracking
         cachedRef.lastAccessed = Date.now();
         cachedRef.accessCount++;
-        this.logger.debug('Cache hit for DTO class', { cacheKey, accessCount: cachedRef.accessCount });
+        this.logger.debug('Cache hit for DTO class', {
+          cacheKey,
+          accessCount: cachedRef.accessCount,
+        });
         return cachedClass;
       } else {
         // Class was garbage collected or expired, remove reference
         this.generatedClasses.delete(cacheKey);
-        this.logger.debug('Removed expired/dead reference from cache', { cacheKey });
+        this.logger.debug('Removed expired/dead reference from cache', {
+          cacheKey,
+        });
       }
     }
 
@@ -278,7 +284,9 @@ export class DtoGenerationPipeline implements OnModuleDestroy {
 
         // Type-safe handling of nested properties
         if ('properties' in fieldSchema && fieldSchema.properties && typeof fieldSchema.properties === 'object') {
-          Object.assign(baseData, { nestedProps: Object.keys(fieldSchema.properties).sort() });
+          Object.assign(baseData, {
+            nestedProps: Object.keys(fieldSchema.properties).sort(),
+          });
         }
 
         // Type-safe handling of enum values

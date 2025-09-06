@@ -150,7 +150,9 @@ export class UnionValidatorService {
             : [
                 {
                   property: 'unionType',
-                  constraints: { unionType: 'Type does not match expected union type' },
+                  constraints: {
+                    unionType: 'Type does not match expected union type',
+                  },
                   value,
                   message: `Value does not match union type at index ${i}`,
                 },
@@ -165,7 +167,9 @@ export class UnionValidatorService {
           errors: [
             {
               property: 'unionType',
-              constraints: { validationError: 'Validation failed during type checking' },
+              constraints: {
+                validationError: 'Validation failed during type checking',
+              },
               value,
               message: errorMessage,
             },

@@ -97,7 +97,7 @@ export class CronFormatValidator extends BaseStringFormatValidator {
   }
 
   getDefaultMessage(args: ValidationArguments): string {
-    const property = args?.property || 'field';
+    const property = args?.property ?? 'field';
     return `${property} must be a valid cron expression`;
   }
 }

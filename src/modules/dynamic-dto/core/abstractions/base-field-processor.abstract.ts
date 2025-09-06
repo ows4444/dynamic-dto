@@ -185,11 +185,11 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
       functions.push({
         order: 20,
         name: 'default_value',
-        transform: ({ value, obj }) => {
+        transform: ({ value }) => {
           if (value !== undefined) return value;
 
           if (typeof schema.default === 'string' && schema.default.startsWith('${')) {
-            return this.evaluateExpression(schema.default, obj);
+            return this.evaluateExpression(schema.default);
           }
 
           return schema.default;
@@ -209,7 +209,7 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
         const transformationFunction: TransformationFunction = {
           order: 100 + index,
           name: `custom_hook_${index}`,
-          transform: ({ value, obj }: TransformParams) => this.executeHook(hook.id, value, obj),
+          transform: ({ value, obj }: TransformParams) => this.executeHook(hook.id, value),
           ...(hook.condition && {
             condition: (_: FieldSchema, params: TransformParams) => this.evaluateConditionForHook(hook.condition, params.obj),
           }),
@@ -246,7 +246,7 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
     });
   }
 
-  protected generateAutoValue(type: AutoGenerationType, _config?: AutoGenerateConfig): unknown {
+  protected generateAutoValue(type: AutoGenerationType): unknown {
     const generators = {
       [AutoGenerationType.uuid]: 'AUTO_UUID',
       [AutoGenerationType.timestamp]: 'AUTO_TIMESTAMP',
@@ -259,11 +259,11 @@ export abstract class BaseFieldProcessor<T extends FieldSchema = FieldSchema> {
     return generators[type as keyof typeof generators];
   }
 
-  protected evaluateExpression(expression: string, _context: Record<string, unknown>): unknown {
+  protected evaluateExpression(expression: string): unknown {
     return `EXPR:${expression}`;
   }
 
-  protected executeHook(_hookId: string, value: unknown, _context: Record<string, unknown>): unknown {
+  protected executeHook(_hookId: string, value: unknown): unknown {
     return value;
   }
 

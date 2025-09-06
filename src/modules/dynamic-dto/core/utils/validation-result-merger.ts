@@ -8,7 +8,11 @@ interface ValidationResultWithSeverityGrouping extends ValidationResult {
 }
 
 export class ValidationResultMerger {
-  static mergeResults(results: ValidationResult[]): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
+  static mergeResults(results: ValidationResult[]): ValidationResult & {
+    readonly errors: ValidationIssue[];
+    readonly warnings: ValidationIssue[];
+    readonly infos: ValidationIssue[];
+  } {
     if (!results?.length) {
       return this.createEmptyResult();
     }
@@ -74,7 +78,11 @@ export class ValidationResultMerger {
       return;
     }
 
-    const typedResult = result as ValidationResult & { errors?: ValidationIssue[]; warnings?: ValidationIssue[]; infos?: ValidationIssue[] };
+    const typedResult = result as ValidationResult & {
+      errors?: ValidationIssue[];
+      warnings?: ValidationIssue[];
+      infos?: ValidationIssue[];
+    };
     const issueSources = [result.issues, typedResult.errors, typedResult.warnings, typedResult.infos];
 
     for (const issues of issueSources) {
@@ -141,18 +149,28 @@ export class ValidationResultMerger {
   private static createMergedResult(
     uniqueIssues: ValidationIssue[],
     aggregatedData: ReturnType<typeof ValidationResultMerger.aggregateResults>,
-  ): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
+  ): ValidationResult & {
+    readonly errors: ValidationIssue[];
+    readonly warnings: ValidationIssue[];
+    readonly infos: ValidationIssue[];
+  } {
     const { mergedMetadata, isValid, fieldPath } = aggregatedData;
 
     return ValidationResultFactory.create({
       isValid,
       issues: uniqueIssues.map((issue) => this.cleanObject(issue)),
-      ...(Object.keys(mergedMetadata).length > 0 && { metadata: mergedMetadata }),
+      ...(Object.keys(mergedMetadata).length > 0 && {
+        metadata: mergedMetadata,
+      }),
       fieldPath: fieldPath ?? '',
     });
   }
 
-  private static createEmptyResult(): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
+  private static createEmptyResult(): ValidationResult & {
+    readonly errors: ValidationIssue[];
+    readonly warnings: ValidationIssue[];
+    readonly infos: ValidationIssue[];
+  } {
     return ValidationResultFactory.create({
       isValid: true,
       issues: [],

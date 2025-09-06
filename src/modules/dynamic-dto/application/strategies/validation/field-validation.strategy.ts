@@ -55,7 +55,9 @@ export class FieldValidationStrategy extends ValidationStrategy {
         depth: 0,
         parentType: 'schema',
         schemaName: schema.name,
-        ...(context?.userRoles !== undefined && { userRoles: context.userRoles }),
+        ...(context?.userRoles !== undefined && {
+          userRoles: context.userRoles,
+        }),
         data: context?.data,
       };
 

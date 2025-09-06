@@ -28,7 +28,7 @@ import type { DynamicDtoModuleOptions } from '../../../interfaces/module-options
 export function createInfrastructureProviders(options: DynamicDtoModuleOptions = {}): Provider[] {
   return [
     // === CACHE INFRASTRUCTURE ===
-    ...createCacheProviders(options),
+    ...createCacheProviders(),
 
     // === MONITORING SERVICES ===
     ...createMonitoringProviders(options),
@@ -44,19 +44,13 @@ export function createInfrastructureProviders(options: DynamicDtoModuleOptions =
  * This function handles cache strategy selection and configuration.
  * Supports both memory cache (default).
  */
-function createCacheProviders(options: DynamicDtoModuleOptions): Provider[] {
+function createCacheProviders(): Provider[] {
   // Determine cache strategy based on configuration
-  const cacheStrategy = determineCacheStrategy(options);
+  const cacheStrategy = determineCacheStrategy();
 
   return [
     // Cache strategy configuration
     ...(cacheStrategy.configProvider ? [cacheStrategy.configProvider] : []),
-
-    // Cache strategy interface implementation
-    {
-      provide: 'ICacheStrategy',
-      useClass: cacheStrategy.strategyClass,
-    },
 
     // Cache manager service
     CacheManagerService,
@@ -72,7 +66,7 @@ function createCacheProviders(options: DynamicDtoModuleOptions): Provider[] {
 /**
  * Determine cache strategy and configuration based on options
  */
-function determineCacheStrategy(_options: DynamicDtoModuleOptions): {
+function determineCacheStrategy(): {
   strategyClass: any;
   configProvider?: Provider;
 } {

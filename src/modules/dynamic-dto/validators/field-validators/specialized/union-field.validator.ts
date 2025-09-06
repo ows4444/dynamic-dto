@@ -29,7 +29,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
         severity: 'error',
         fieldPath: 'unionTypes',
       });
-      return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: false, issues });
+      return ValidationResultCompatibilityUtil.createFromLegacy({
+        isValid: false,
+        issues,
+      });
     }
 
     if (schema.unionTypes.length === 1) {
@@ -129,7 +132,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
 
     if (value === undefined || value === null) {
       // Note: Required validation is handled at the processor level
-      return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: true, issues });
+      return ValidationResultCompatibilityUtil.createFromLegacy({
+        isValid: true,
+        issues,
+      });
     }
 
     // Validate based on strategy
@@ -266,7 +272,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       });
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: issues.length === 0, issues });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: issues.length === 0,
+      issues,
+    });
   }
 
   private validateFirstMatch(value: unknown, schema: UnionFieldSchema, matches: TypeMatchAnalysis[], issues: ValidationIssue[]): ValidationResult {
@@ -281,7 +290,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       });
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: issues.length === 0, issues });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: issues.length === 0,
+      issues,
+    });
   }
 
   private validateAnyOf(value: unknown, schema: UnionFieldSchema, matches: TypeMatchAnalysis[], issues: ValidationIssue[]): ValidationResult {
@@ -297,7 +309,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
     }
 
     // anyOf strategy: accept if matches any type (similar to firstMatch but explicit)
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: issues.length === 0, issues });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: issues.length === 0,
+      issues,
+    });
   }
 
   private validateBestMatch(value: unknown, schema: UnionFieldSchema, matches: TypeMatchAnalysis[], issues: ValidationIssue[]): ValidationResult {
@@ -323,7 +338,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       }
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: issues.length === 0, issues });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: issues.length === 0,
+      issues,
+    });
   }
 
   private validateAllValid(value: unknown, schema: UnionFieldSchema, matches: TypeMatchAnalysis[], issues: ValidationIssue[]): ValidationResult {
@@ -338,7 +356,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       });
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: issues.length === 0, issues });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: issues.length === 0,
+      issues,
+    });
   }
 
   private validateDiscriminated(value: unknown, schema: UnionFieldSchema, issues: ValidationIssue[]): ValidationResult {
@@ -349,7 +370,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
         severity: 'error',
         fieldPath: 'discriminator',
       });
-      return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: false, issues });
+      return ValidationResultCompatibilityUtil.createFromLegacy({
+        isValid: false,
+        issues,
+      });
     }
 
     if (typeof value !== 'object' || value === null) {
@@ -359,7 +383,10 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
         severity: 'error',
         fieldPath: 'value',
       });
-      return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: false, issues });
+      return ValidationResultCompatibilityUtil.createFromLegacy({
+        isValid: false,
+        issues,
+      });
     }
 
     const discriminatorValue = (value as Record<string, unknown>)[schema.discriminator.property] as string | undefined;
@@ -392,10 +419,13 @@ export class UnionFieldValidator extends BaseFieldValidator<UnionFieldSchema> {
       }
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: issues.length === 0, issues });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: issues.length === 0,
+      issues,
+    });
   }
 
-  validateStructure(schema: UnionFieldSchema, _context: ValidationContext): ValidationResult {
+  validateStructure(schema: UnionFieldSchema): ValidationResult {
     // For now, delegate to validateFieldSchema
     return this.validateFieldSchema(schema);
   }

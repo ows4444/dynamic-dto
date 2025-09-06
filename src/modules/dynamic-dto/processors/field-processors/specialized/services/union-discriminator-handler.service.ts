@@ -68,7 +68,7 @@ export class UnionDiscriminatorHandlerService {
       return !schema.discriminator.required;
     }
 
-    return Object.keys(schema.discriminator.mapping).includes(String(discriminatorValue));
+    return Object.keys(schema.discriminator.mapping).includes(discriminatorValue as string);
   }
 
   /**

@@ -24,7 +24,7 @@ export interface FieldProcessorMetadata {
  * }
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
+
 export function FieldProcessor(metadata: FieldProcessorMetadata) {
   return function <T extends new (...args: any[]) => any>(target: T) {
     // Set metadata for NestJS module discovery

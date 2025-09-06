@@ -183,7 +183,9 @@ export class CacheMonitorService implements OnModuleDestroy {
     const infoIssues = issues.filter((issue) => issue.severity === 'INFO');
 
     if (warningIssues.length > 0) {
-      this.logger.warn('Cache health issues detected', { issues: warningIssues });
+      this.logger.warn('Cache health issues detected', {
+        issues: warningIssues,
+      });
     }
 
     if (infoIssues.length > 0) {

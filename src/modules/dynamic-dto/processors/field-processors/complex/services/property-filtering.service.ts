@@ -21,7 +21,6 @@ export interface SecurityContext {
   readonly userRoles: readonly string[];
   readonly permissions: readonly string[];
   readonly userId?: string;
-  readonly tenantId?: string;
   readonly accessLevel?: 'read' | 'write' | 'admin';
 }
 
@@ -332,7 +331,7 @@ export class PropertyFilteringService {
     try {
       // Simple math evaluation without Function constructor
       if (/^[0-9+\-*/.() ]+$/.test(safeExpression)) {
-        const result = eval(safeExpression) as unknown; // eslint-disable-line no-eval
+        const result = eval(safeExpression) as unknown;
         return typeof result === 'number' ? result : String(result);
       }
     } catch {

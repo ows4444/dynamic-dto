@@ -107,7 +107,9 @@ export class ValidationErrorRecoveryService {
           id: `fix_type_${error.context?.fieldPath}`,
           action: 'fix_type',
           description: `Auto-convert field '${error.context?.fieldPath}' to expected type`,
-          ...(error.context?.fieldPath && { targetField: error.context.fieldPath }),
+          ...(error.context?.fieldPath && {
+            targetField: error.context.fieldPath,
+          }),
           parameters: {
             expectedType: error.metadata.expectedType,
             currentType: error.metadata.actualType,
@@ -132,7 +134,9 @@ export class ValidationErrorRecoveryService {
           id: `fix_constraint_${error.context?.fieldPath}`,
           action: 'update_constraint',
           description: `Auto-adjust constraint for field '${error.context?.fieldPath}'`,
-          ...(error.context?.fieldPath && { targetField: error.context.fieldPath }),
+          ...(error.context?.fieldPath && {
+            targetField: error.context.fieldPath,
+          }),
           parameters: {
             constraintType: error.metadata.constraintType,
             expectedValue: error.metadata.constraintValue,
@@ -159,7 +163,9 @@ export class ValidationErrorRecoveryService {
           id: `replace_deprecated_${error.context?.fieldPath}`,
           action: 'remove_field',
           description: `Replace deprecated field '${error.context?.fieldPath}'`,
-          ...(error.context?.fieldPath && { targetField: error.context.fieldPath }),
+          ...(error.context?.fieldPath && {
+            targetField: error.context.fieldPath,
+          }),
           parameters: {
             replacedBy: error.metadata.replacedBy,
             migrationGuide: error.metadata.migrationGuide,

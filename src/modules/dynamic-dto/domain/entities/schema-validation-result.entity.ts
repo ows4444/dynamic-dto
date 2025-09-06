@@ -15,22 +15,31 @@ export class SchemaValidationResultEntity {
   }
 
   get hasWarnings(): boolean {
-    const typedResult = this.validationResult as ValidationResult & { warnings?: ValidationIssue[] };
+    const typedResult = this.validationResult as ValidationResult & {
+      warnings?: ValidationIssue[];
+    };
     return (typedResult.warnings?.length ?? 0) > 0;
   }
 
   get errorCount(): number {
-    const typedResult = this.validationResult as ValidationResult & { errors?: ValidationIssue[] };
+    const typedResult = this.validationResult as ValidationResult & {
+      errors?: ValidationIssue[];
+    };
     return typedResult.errors?.length ?? 0;
   }
 
   get warningCount(): number {
-    const typedResult = this.validationResult as ValidationResult & { warnings?: ValidationIssue[] };
+    const typedResult = this.validationResult as ValidationResult & {
+      warnings?: ValidationIssue[];
+    };
     return typedResult.warnings?.length ?? 0;
   }
 
   toJSON() {
-    const typedResult = this.validationResult as ValidationResult & { errors?: ValidationIssue[]; warnings?: ValidationIssue[] };
+    const typedResult = this.validationResult as ValidationResult & {
+      errors?: ValidationIssue[];
+      warnings?: ValidationIssue[];
+    };
     return {
       schemaId: this.schemaId,
       isValid: this.isValid,

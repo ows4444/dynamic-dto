@@ -39,8 +39,14 @@ export class StringProcessorFactory {
     const processors = [
       { name: 'BasicProcessor', instance: this.basicProcessor },
       { name: 'FormatProcessor', instance: this.formatProcessor },
-      { name: 'TransformationProcessor', instance: this.transformationProcessor },
-      { name: 'AutoGenerationProcessor', instance: this.autoGenerationProcessor },
+      {
+        name: 'TransformationProcessor',
+        instance: this.transformationProcessor,
+      },
+      {
+        name: 'AutoGenerationProcessor',
+        instance: this.autoGenerationProcessor,
+      },
     ];
 
     for (const { name, instance } of processors) {

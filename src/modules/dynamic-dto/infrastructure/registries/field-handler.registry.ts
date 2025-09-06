@@ -79,7 +79,9 @@ export class FieldHandlerRegistry implements OnModuleInit {
   // Processor management methods
   registerProcessor(processor: BaseFieldProcessor): void {
     if (!processor?.supportedType) {
-      this.logger.warn('Invalid processor provided', { processor: processor?.constructor.name });
+      this.logger.warn('Invalid processor provided', {
+        processor: processor?.constructor.name,
+      });
       return;
     }
 
@@ -135,7 +137,9 @@ export class FieldHandlerRegistry implements OnModuleInit {
       ];
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Failed to process field for type: ${schema.type}`, { error: errorMessage });
+      this.logger.error(`Failed to process field for type: ${schema.type}`, {
+        error: errorMessage,
+      });
       throw new Error(`Field processing failed for type ${schema.type}: ${errorMessage}`);
     }
   }

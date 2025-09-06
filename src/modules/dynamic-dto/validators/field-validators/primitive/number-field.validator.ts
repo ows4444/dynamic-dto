@@ -35,7 +35,10 @@ export class NumberFieldValidator extends BaseFieldValidator<NumberFieldSchema> 
           exclusiveMax: schema.exclusiveMax,
         },
         undefined,
-        { exclusiveMin: schema.exclusiveMin, exclusiveMax: schema.exclusiveMax },
+        {
+          exclusiveMin: schema.exclusiveMin,
+          exclusiveMax: schema.exclusiveMax,
+        },
       );
     }
 

@@ -59,7 +59,8 @@ export class EnhancedCacheMonitorService implements OnModuleDestroy {
 
   constructor(
     @Inject('ICacheManager') cacheManager: ICacheManager,
-    @Inject('CACHE_MONITOR_CONFIG') private readonly userConfig?: Partial<EnhancedCacheMonitorConfig>,
+    @Inject('CACHE_MONITOR_CONFIG')
+    private readonly userConfig?: Partial<EnhancedCacheMonitorConfig>,
   ) {
     // Store reference for controlled cleanup
     this.cacheManagerRef = cacheManager;

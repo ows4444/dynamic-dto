@@ -51,7 +51,9 @@ export class DtoBatchProcessor {
     }
 
     if (uncachedSchemas.length === 0) {
-      this.logger.debug('All DTOs found in cache', { totalSchemas: schemas.length });
+      this.logger.debug('All DTOs found in cache', {
+        totalSchemas: schemas.length,
+      });
       return {
         results,
         metrics: {
@@ -106,7 +108,10 @@ export class DtoBatchProcessor {
     return { results, metrics };
   }
 
-  async getCachedResults(schemas: DynamicSchemaEntity[]): Promise<{ cached: Map<string, classConstructor<object>>; uncached: DynamicSchemaEntity[] }> {
+  async getCachedResults(schemas: DynamicSchemaEntity[]): Promise<{
+    cached: Map<string, classConstructor<object>>;
+    uncached: DynamicSchemaEntity[];
+  }> {
     const cached = new Map<string, classConstructor<object>>();
     const uncached: DynamicSchemaEntity[] = [];
 

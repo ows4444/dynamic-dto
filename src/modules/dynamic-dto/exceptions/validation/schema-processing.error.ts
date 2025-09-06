@@ -20,7 +20,10 @@ export class SchemaValidationError extends BaseValidationError {
   constructor(details: SchemaProcessingErrorDetails, context?: ValidationErrorContext, metadata?: Record<string, unknown>) {
     const { message, suggestions, code } = SchemaValidationError.generateErrorInfo(details);
 
-    super(code, message, ValidationSeverity.error, context, suggestions, { ...metadata, schemaProcessingDetails: details });
+    super(code, message, ValidationSeverity.error, context, suggestions, {
+      ...metadata,
+      schemaProcessingDetails: details,
+    });
 
     this.details = details;
     this.name = 'SchemaValidationError';

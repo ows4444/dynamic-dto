@@ -76,7 +76,9 @@ export class ValidationChain {
 
   private shouldStopOnCriticalError(result: ValidationResult): boolean {
     // Stop if there are any critical errors (you can customize this logic)
-    const typedResult = result as ValidationResult & { errors?: ValidationIssue[] };
+    const typedResult = result as ValidationResult & {
+      errors?: ValidationIssue[];
+    };
     return typedResult.errors?.some((error) => error.code === 'VALIDATION_PIPELINE_ERROR' || error.code === 'STRATEGY_EXECUTION_ERROR') ?? false;
   }
 

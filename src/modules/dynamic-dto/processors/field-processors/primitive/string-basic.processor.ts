@@ -30,7 +30,11 @@ export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> 
     const eachOption = parentIsArray ? { each: true } : undefined;
 
     // Add length validation using shared utilities
-    const lengthOptions: { minLength?: number; maxLength?: number; exactLength?: number } = {};
+    const lengthOptions: {
+      minLength?: number;
+      maxLength?: number;
+      exactLength?: number;
+    } = {};
     if (schema.minLength !== undefined) lengthOptions.minLength = schema.minLength;
     if (schema.maxLength !== undefined) lengthOptions.maxLength = schema.maxLength;
     if (schema.exactLength !== undefined) lengthOptions.exactLength = schema.exactLength;
@@ -38,7 +42,10 @@ export class StringBasicProcessor extends BaseFieldProcessor<StringFieldSchema> 
     StringValidationUtils.addLengthValidation(decorators, lengthOptions, eachOption);
 
     // Add pattern validation using shared utilities
-    const patternOptions: { pattern?: string | RegExp; antiPattern?: string | RegExp } = {};
+    const patternOptions: {
+      pattern?: string | RegExp;
+      antiPattern?: string | RegExp;
+    } = {};
     if (schema.pattern !== undefined) patternOptions.pattern = schema.pattern;
     if (schema.antiPattern !== undefined) patternOptions.antiPattern = schema.antiPattern;
 

@@ -67,7 +67,10 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
         code: 'INVALID_SCHEMA_STRUCTURE',
         severity: 'error',
       });
-      return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: false, issues: errors });
+      return ValidationResultCompatibilityUtil.createFromLegacy({
+        isValid: false,
+        issues: errors,
+      });
     }
 
     if (Object.keys(schema).length === 0) {
@@ -79,7 +82,10 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       });
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: errors.length === 0, issues: [...errors, ...warnings] });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: errors.length === 0,
+      issues: [...errors, ...warnings],
+    });
   }
 
   /**
@@ -153,7 +159,10 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       });
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: errors.length === 0, issues: [...errors, ...warnings] });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: errors.length === 0,
+      issues: [...errors, ...warnings],
+    });
   }
 
   /**
@@ -265,7 +274,10 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       }
     }
 
-    const result: ObjectFieldSchema = { type: FieldType.object, properties: current };
+    const result: ObjectFieldSchema = {
+      type: FieldType.object,
+      properties: current,
+    };
     return result;
   }
 
@@ -283,13 +295,20 @@ export class EnhancedStructuralSchemaValidator extends BaseSchemaValidator {
       };
 
       const result = this.fieldHandlerRegistry.validateField(fieldSchema, context);
-      const typedResult = result as ValidationResult & { errors?: ValidationIssue[]; warnings?: ValidationIssue[]; infos?: ValidationIssue[] };
+      const typedResult = result as ValidationResult & {
+        errors?: ValidationIssue[];
+        warnings?: ValidationIssue[];
+        infos?: ValidationIssue[];
+      };
       if (typedResult.errors) errors.push(...typedResult.errors);
       if (typedResult.warnings) warnings.push(...typedResult.warnings);
       if (typedResult.infos) infos.push(...typedResult.infos);
       if (result.issues) issues.push(...result.issues);
     }
 
-    return ValidationResultCompatibilityUtil.createFromLegacy({ isValid: errors.length === 0, issues: [...errors, ...warnings, ...infos] });
+    return ValidationResultCompatibilityUtil.createFromLegacy({
+      isValid: errors.length === 0,
+      issues: [...errors, ...warnings, ...infos],
+    });
   }
 }

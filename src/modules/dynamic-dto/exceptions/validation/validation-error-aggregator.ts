@@ -152,11 +152,11 @@ export class ValidationErrorAggregator {
 
       // Group by code
       errorsByCode[error.code] ??= [];
-      errorsByCode[error.code]!.push(error);
+      errorsByCode[error.code].push(error);
 
       // Count error occurrences
       errorCounts[error.code] ??= { count: 0, message: error.message };
-      errorCounts[error.code]!.count++;
+      errorCounts[error.code].count++;
     }
 
     // Generate most common errors

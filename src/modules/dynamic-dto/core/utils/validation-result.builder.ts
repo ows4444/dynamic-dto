@@ -79,7 +79,11 @@ export class ValidationResultBuilder {
     return this;
   }
 
-  build(): ValidationResult & { readonly errors: ValidationIssue[]; readonly warnings: ValidationIssue[]; readonly infos: ValidationIssue[] } {
+  build(): ValidationResult & {
+    readonly errors: ValidationIssue[];
+    readonly warnings: ValidationIssue[];
+    readonly infos: ValidationIssue[];
+  } {
     return ValidationResultFactory.create({
       isValid: this.issues.filter((issue) => issue.severity === ValidationSeverity.error).length === 0,
       issues: [...this.issues],

@@ -5,7 +5,16 @@ import { CacheMemoryInfo, CleanupResult } from '../../../core/interfaces/cache/c
 @Injectable()
 export class MemoryCacheStrategy implements ICacheStrategy {
   private readonly logger = new Logger(MemoryCacheStrategy.name);
-  private readonly cache = new Map<string, { value: unknown; expires?: number; size?: number; accessCount: number; lastAccess: number }>();
+  private readonly cache = new Map<
+    string,
+    {
+      value: unknown;
+      expires?: number;
+      size?: number;
+      accessCount: number;
+      lastAccess: number;
+    }
+  >();
   private hitCount = 0;
   private missCount = 0;
   private lastCleanup?: Date;

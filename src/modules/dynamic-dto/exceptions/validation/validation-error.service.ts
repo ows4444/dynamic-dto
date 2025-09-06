@@ -164,11 +164,11 @@ export class ValidationErrorService {
     for (const error of errors) {
       // Group by field
       errorsByField[error.field] ??= [];
-      errorsByField[error.field]!.push(error);
+      errorsByField[error.field].push(error);
 
       // Group by code
       errorsByCode[error.code] ??= [];
-      errorsByCode[error.code]!.push(error);
+      errorsByCode[error.code].push(error);
     }
 
     return {

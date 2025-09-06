@@ -52,7 +52,10 @@ export class DtoValidationService {
     });
   }
 
-  validateSchemas(schemas: DynamicSchemaEntity[]): { validSchemas: DynamicSchemaEntity[]; invalidCount: number } {
+  validateSchemas(schemas: DynamicSchemaEntity[]): {
+    validSchemas: DynamicSchemaEntity[];
+    invalidCount: number;
+  } {
     const validSchemas: DynamicSchemaEntity[] = [];
     let invalidCount = 0;
 

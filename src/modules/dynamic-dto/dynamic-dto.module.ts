@@ -30,14 +30,11 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
       global: options.isGlobal ?? false,
       imports: [
         // Core feature modules (always loaded)
-        FieldProcessingModule.forRoot(options),
+        FieldProcessingModule,
         FieldValidationModule,
-        ValidationModule.forRoot(options),
-
-        // Optional feature modules (lazy loaded based on configuration)
-        ...(options.cache ? [CacheModule.forRoot(options)] : []),
-        ...(options.monitoring?.enableAlerting !== false ? [MonitoringModule.forRoot(options)] : []),
-
+        ValidationModule,
+        MonitoringModule,
+        CacheModule,
         // Additional user imports
         ...(options.imports ?? []),
       ],
@@ -70,6 +67,7 @@ export class DynamicDtoModule extends ConfigurableModuleClass {
         DtoCacheService,
         DtoBatchProcessor,
         SchemaOrchestratorService,
+        MODULE_OPTIONS_TOKEN,
 
         // Processing pipelines
         DtoGenerationPipeline,

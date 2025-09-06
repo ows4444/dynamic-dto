@@ -12,7 +12,8 @@ export class DtoCacheService {
 
   constructor(
     @Inject('ICacheManager') private readonly cacheManager: ICacheManager,
-    @Inject(MODULE_OPTIONS_TOKEN) private readonly options: DynamicDtoModuleOptions,
+    @Inject(MODULE_OPTIONS_TOKEN)
+    private readonly options: DynamicDtoModuleOptions,
   ) {}
 
   async get<T = classConstructor<object>>(schema: DynamicSchemaEntity): Promise<T | null> {
@@ -72,16 +73,32 @@ export class DtoCacheService {
             type: fieldSchema.type,
             required: isRequired,
             // Include field properties that affect DTO generation
-            ...(fieldSchema.nullable !== undefined && { nullable: fieldSchema.nullable }),
-            ...(fieldSchema.readonly !== undefined && { readonly: fieldSchema.readonly }),
+            ...(fieldSchema.nullable !== undefined && {
+              nullable: fieldSchema.nullable,
+            }),
+            ...(fieldSchema.readonly !== undefined && {
+              readonly: fieldSchema.readonly,
+            }),
             ...(fieldSchema.default !== undefined && { hasDefault: true }),
-            ...(fieldSchema.validationStrategy && { validationStrategy: fieldSchema.validationStrategy }),
-            ...(fieldSchema.conditionalValidation && { hasConditionalValidation: true }),
+            ...(fieldSchema.validationStrategy && {
+              validationStrategy: fieldSchema.validationStrategy,
+            }),
+            ...(fieldSchema.conditionalValidation && {
+              hasConditionalValidation: true,
+            }),
             ...(fieldSchema.permissions && { hasPermissions: true }),
-            ...(fieldSchema.deprecated && { deprecated: fieldSchema.deprecated }),
-            ...(fieldSchema.experimental !== undefined && { experimental: fieldSchema.experimental }),
-            ...(fieldSchema.expose !== undefined && { expose: fieldSchema.expose }),
-            ...(fieldSchema.exclude !== undefined && { exclude: fieldSchema.exclude }),
+            ...(fieldSchema.deprecated && {
+              deprecated: fieldSchema.deprecated,
+            }),
+            ...(fieldSchema.experimental !== undefined && {
+              experimental: fieldSchema.experimental,
+            }),
+            ...(fieldSchema.expose !== undefined && {
+              expose: fieldSchema.expose,
+            }),
+            ...(fieldSchema.exclude !== undefined && {
+              exclude: fieldSchema.exclude,
+            }),
           };
         }),
       required: schema.required.sort(), // Sort for consistency

@@ -2,10 +2,9 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheMonitorService } from './cache-monitor.service';
 import { EnhancedCacheMonitorService } from './enhanced-cache-monitor.service';
-import { HealthCheckController } from './health-check.controller';
 import { SystemMetricsService } from './system-metrics.service';
 import { PerformanceMetricsService } from './performance-metrics.service';
-import type { DynamicDtoModuleOptions } from '../../interfaces/module-options.interface';
+import { CacheModule } from '../../modules/cache.module';
 
 /**
  * Monitoring module providing health checks and system metrics
@@ -13,37 +12,27 @@ import type { DynamicDtoModuleOptions } from '../../interfaces/module-options.in
  */
 @Module({
   imports: [
-    ScheduleModule.forRoot(), // Enable scheduled tasks for periodic monitoring
+    ScheduleModule.forRoot({}), // Enable scheduled tasks for periodic monitoring
+    CacheModule, // Import cache module to access ICacheManager
   ],
-  controllers: [
-    HealthCheckController, // HTTP endpoints for health checks
-  ],
+
   providers: [
-    CacheMonitorService, // Basic cache monitoring with alerts
+    // Cache monitor configuration provider
+    {
+      provide: 'CACHE_MONITOR_CONFIG',
+      useValue: {},
+    },
+
+    // Cache monitor service with configuration
+    {
+      provide: CacheMonitorService,
+      useFactory: () => new CacheMonitorService({}),
+    },
+
     EnhancedCacheMonitorService, // Advanced cache monitoring with metrics
     SystemMetricsService, // System-wide metrics and counters
     PerformanceMetricsService, // Detailed performance metrics and analysis
   ],
-  exports: [CacheMonitorService, EnhancedCacheMonitorService, SystemMetricsService, PerformanceMetricsService, HealthCheckController],
+  exports: [CacheMonitorService, EnhancedCacheMonitorService, SystemMetricsService, PerformanceMetricsService],
 })
-export class MonitoringModule {
-  /**
-   * Configure monitoring with custom options
-   */
-  static forRoot(options?: DynamicDtoModuleOptions) {
-    return {
-      module: MonitoringModule,
-      providers: [
-        {
-          provide: 'MONITORING_CONFIG',
-          useValue: options?.monitoring || {},
-        },
-        CacheMonitorService,
-        EnhancedCacheMonitorService,
-        SystemMetricsService,
-        PerformanceMetricsService,
-      ],
-      exports: [CacheMonitorService, EnhancedCacheMonitorService, SystemMetricsService, PerformanceMetricsService],
-    };
-  }
-}
+export class MonitoringModule {}

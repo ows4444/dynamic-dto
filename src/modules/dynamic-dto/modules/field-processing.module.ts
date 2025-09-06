@@ -43,83 +43,75 @@ import { FieldProcessorRegistry } from '../infrastructure/registries/field-proce
 import { FieldProcessorDiscoveryService } from '../infrastructure/services/field-processor-discovery.service';
 import { NestedClassGeneratorService } from '../infrastructure/services/nested-class-generator.service';
 
-// === MODULE OPTIONS ===
-import type { DynamicDtoModuleOptions } from '../interfaces/module-options.interface';
-
 @Global()
-@Module({})
-export class FieldProcessingModule {
-  static forRoot(_options: DynamicDtoModuleOptions = {}) {
-    return {
-      module: FieldProcessingModule,
-      providers: [
-        // === CORE DISCOVERY SERVICES ===
-        DiscoveryService,
-        Reflector,
-        FieldProcessorDiscoveryService,
+@Module({
+  providers: [
+    // === CORE DISCOVERY SERVICES ===
+    DiscoveryService,
+    Reflector,
+    FieldProcessorDiscoveryService,
 
-        // === FIELD PROCESSOR REGISTRY ===
-        FieldProcessorRegistry,
+    // === FIELD PROCESSOR REGISTRY ===
+    FieldProcessorRegistry,
 
-        // === NESTED CLASS GENERATION ===
-        NestedClassGeneratorService,
+    // === NESTED CLASS GENERATION ===
+    NestedClassGeneratorService,
 
-        // === STRING PROCESSING INFRASTRUCTURE ===
-        StringFormatProcessorFactory,
+    // === STRING PROCESSING INFRASTRUCTURE ===
+    StringFormatProcessorFactory,
 
-        // === FIELD PROCESSORS ===
-        // String processors
-        StringBasicProcessor,
-        StringFormatProcessor,
-        StringTransformationProcessor,
-        StringAutoGenerationProcessor,
-        StringFieldProcessorComposite,
+    // === FIELD PROCESSORS ===
+    // String processors
+    StringBasicProcessor,
+    StringFormatProcessor,
+    StringTransformationProcessor,
+    StringAutoGenerationProcessor,
+    StringFieldProcessorComposite,
 
-        // Other primitive processors
-        NumberFieldProcessor,
-        BooleanFieldProcessor,
+    // Other primitive processors
+    NumberFieldProcessor,
+    BooleanFieldProcessor,
 
-        // Specialized processors
-        DateFieldProcessor,
-        UnionFieldProcessor,
+    // Specialized processors
+    DateFieldProcessor,
+    UnionFieldProcessor,
 
-        // Union processor services (extracted for SRP compliance)
-        UnionTypeDetectorService,
-        UnionValidatorService,
-        UnionDiscriminatorHandlerService,
-        UnionTransformerService,
-        UnionSafeDefaultService,
-        UnionValidatorRegistry,
+    // Union processor services (extracted for SRP compliance)
+    UnionTypeDetectorService,
+    UnionValidatorService,
+    UnionDiscriminatorHandlerService,
+    UnionTransformerService,
+    UnionSafeDefaultService,
+    UnionValidatorRegistry,
 
-        // Complex processors
-        ArrayFieldProcessor,
-        ObjectFieldProcessorComposite,
+    // Complex processors
+    ArrayFieldProcessor,
+    ObjectFieldProcessorComposite,
 
-        // Object processing services
-        CircularReferenceDetectorService,
-        ObjectValidationService,
-        PropertyFilteringService,
-        NestedObjectTransformerService,
+    // Object processing services
+    CircularReferenceDetectorService,
+    ObjectValidationService,
+    PropertyFilteringService,
+    NestedObjectTransformerService,
 
-        // String token provider for legacy injection
-        {
-          provide: 'FieldProcessorRegistry',
-          useExisting: FieldProcessorRegistry,
-        },
-      ],
-      exports: [
-        FieldProcessorRegistry,
-        FieldProcessorDiscoveryService,
-        // Export key processors for external use
-        StringFieldProcessorComposite,
-        NumberFieldProcessor,
-        BooleanFieldProcessor,
-        DateFieldProcessor,
-        ArrayFieldProcessor,
-        ObjectFieldProcessorComposite,
-        // Export string token for legacy injection
-        'FieldProcessorRegistry',
-      ],
-    };
-  }
-}
+    // String token provider for legacy injection
+    {
+      provide: 'FieldProcessorRegistry',
+      useExisting: FieldProcessorRegistry,
+    },
+  ],
+  exports: [
+    FieldProcessorRegistry,
+    FieldProcessorDiscoveryService,
+    // Export key processors for external use
+    StringFieldProcessorComposite,
+    NumberFieldProcessor,
+    BooleanFieldProcessor,
+    DateFieldProcessor,
+    ArrayFieldProcessor,
+    ObjectFieldProcessorComposite,
+    // Export string token for legacy injection
+    'FieldProcessorRegistry',
+  ],
+})
+export class FieldProcessingModule {}
