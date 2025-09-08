@@ -77,7 +77,10 @@ export class DefaultFieldTransformationService implements FieldTransformationSer
             currentValue = newValue;
           }
         } catch (error) {
-          console.warn(`Transformation '${fn.name}' failed:`, error);
+          // Instead of silently logging, propagate transformation errors
+          const errorMessage = `Transformation '${fn.name}' failed: ${error instanceof Error ? error.message : String(error)}`;
+          console.error(errorMessage);
+          throw new Error(errorMessage);
         }
       }
 
@@ -86,10 +89,48 @@ export class DefaultFieldTransformationService implements FieldTransformationSer
   }
 
   private executeHook(hook: unknown, value: unknown): unknown {
-    // Simplified hook execution - actual implementation would be more sophisticated
+    // Handle function hooks with proper error handling
     if (typeof hook === 'function') {
-      return hook(value);
+      try {
+        const result = hook(value);
+        return result !== undefined ? result : value;
+      } catch (error) {
+        // Log the error and propagate it instead of silently failing
+        const errorMessage = `Hook execution failed: ${error instanceof Error ? error.message : String(error)}`;
+        console.error(errorMessage);
+        throw new Error(errorMessage);
+      }
     }
+
+    // Handle object hooks with transform method
+    if (hook && typeof hook === 'object' && 'transform' in hook) {
+      const hookObj = hook as { transform: unknown; name?: string };
+      if (typeof hookObj.transform === 'function') {
+        try {
+          const result = hookObj.transform(value);
+          return result !== undefined ? result : value;
+        } catch (error) {
+          const hookName = hookObj.name || 'unnamed';
+          const errorMessage = `Hook '${hookName}' execution failed: ${error instanceof Error ? error.message : String(error)}`;
+          console.error(errorMessage);
+          throw new Error(errorMessage);
+        }
+      }
+    }
+
+    // Handle async hooks (promises)
+    if (hook && typeof hook === 'object' && 'then' in hook) {
+      // For now, we don't support async hooks in synchronous transformation
+      // This should be handled at a higher level
+      console.warn('Async hooks are not supported in synchronous transformation pipeline');
+      return value;
+    }
+
+    // If hook is not a valid transformation, log warning and return original value
+    if (hook != null) {
+      console.warn('Invalid hook type provided:', typeof hook, 'Expected function or object with transform method');
+    }
+
     return value;
   }
 

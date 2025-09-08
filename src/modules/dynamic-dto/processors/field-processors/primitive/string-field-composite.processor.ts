@@ -74,18 +74,18 @@ export class StringFieldProcessorComposite extends BaseFieldProcessor<StringFiel
     const validatedSchema = super.validateSchemaStructure(schema);
 
     // Ensure all processors that claim to handle this schema can actually process it
-    const schemaAny = schema as any;
-
-    if (schemaAny.format && !this.formatProcessor.canProcess(schema)) {
-      throw new Error(`Format processor cannot handle schema with format: ${schemaAny.format}`);
+    const stringSchema = schema as StringFieldSchema;
+    
+    if (stringSchema.format && !this.formatProcessor.canProcess(schema)) {
+      throw new Error(`Format processor cannot handle schema with format: ${stringSchema.format}`);
     }
 
-    if ((schemaAny.caseTransform || schemaAny.trimming) && !this.transformationProcessor.canProcess(schema)) {
+    if ((stringSchema.caseTransform || stringSchema.trimming) && !this.transformationProcessor.canProcess(schema)) {
       throw new Error(`Transformation processor cannot handle schema with transformations`);
     }
 
-    if (schemaAny.autoGenerate && !this.autoGenerationProcessor.canProcess(schema)) {
-      throw new Error(`Auto-generation processor cannot handle schema with autoGenerate: ${schemaAny.autoGenerate}`);
+    if (stringSchema.autoGenerate && !this.autoGenerationProcessor.canProcess(schema)) {
+      throw new Error(`Auto-generation processor cannot handle schema with autoGenerate: ${stringSchema.autoGenerate}`);
     }
 
     return validatedSchema;

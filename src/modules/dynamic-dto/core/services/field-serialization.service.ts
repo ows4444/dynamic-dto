@@ -13,18 +13,18 @@ export interface SerializationContext {
 }
 
 export interface FieldSerializationService {
-  generateSerializationDecorators(schema: FieldSchema, isRequired: boolean, isArray: boolean): PropertyDecorator[];
+  generateSerializationDecorators(schema: FieldSchema, isRequired: boolean, isArray: boolean, context?: SerializationContext): PropertyDecorator[];
   checkFieldPermissions(permissions: FieldPermissions, context: SerializationContext): boolean;
 }
 
 @Injectable()
 export class DefaultFieldSerializationService implements FieldSerializationService {
-  generateSerializationDecorators(schema: FieldSchema, _isRequired: boolean, _isArray: boolean): PropertyDecorator[] {
+  generateSerializationDecorators(schema: FieldSchema, _isRequired: boolean, _isArray: boolean, context?: SerializationContext): PropertyDecorator[] {
     const decorators: PropertyDecorator[] = [];
 
     // Handle field visibility
     if (schema.permissions) {
-      const shouldExpose = this.shouldExposeField(schema.permissions);
+      const shouldExpose = this.shouldExposeField(schema.permissions, context);
       if (shouldExpose) {
         decorators.push(Expose());
       } else {
@@ -60,10 +60,52 @@ export class DefaultFieldSerializationService implements FieldSerializationServi
     return true;
   }
 
-  private shouldExposeField(_permissions: FieldPermissions): boolean {
-    // Simplified logic - all fields are exposed by default
-    // Real implementation would check permissions based on context
+  private shouldExposeField(permissions: FieldPermissions, context?: SerializationContext): boolean {
+    // If no context provided, default to exposing the field
+    if (!context) {
+      return true;
+    }
+
+    // If no permissions defined on the field, expose it
+    if (!permissions) {
+      return true;
+    }
+
+    // Check operation-based permissions
+    if (context.operation) {
+      const relevantPermissions = this.getRelevantPermissions(permissions, context.operation);
+
+      // If no specific permissions are set for this operation, allow access
+      if (!relevantPermissions || relevantPermissions.length === 0) {
+        return true;
+      }
+
+      // If user has no roles, deny access when permissions are required
+      if (!context.userRoles || context.userRoles.length === 0) {
+        return false;
+      }
+
+      // Check if user has any of the required roles
+      return context.userRoles.some((role) => relevantPermissions.includes(role));
+    }
+
+    // Default to exposing if no specific operation context
     return true;
+  }
+
+  private getRelevantPermissions(permissions: FieldPermissions, operation: string): readonly string[] | undefined {
+    switch (operation) {
+      case 'read':
+        return permissions.read;
+      case 'create':
+        return permissions.create;
+      case 'update':
+        return permissions.update;
+      case 'delete':
+        return permissions.delete;
+      default:
+        return undefined;
+    }
   }
 
   private buildSerializationCondition(conditional: unknown): (obj: unknown) => boolean {

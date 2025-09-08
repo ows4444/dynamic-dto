@@ -138,10 +138,7 @@ export class FieldValidatorRegistry implements OnModuleInit {
       }
 
       if (!validator.canValidate(schema)) {
-        return ValidationResultBuilder.error('VALIDATOR_INCOMPATIBLE', `Validator cannot handle schema for field: ${context.fieldPath}`, context.fieldPath, {
-          validator: validator.name,
-          fieldType: (schema as any).type,
-        });
+        return ValidationResultBuilder.error('VALIDATOR_INCOMPATIBLE', `Validator cannot handle schema for field: ${context.fieldPath}. Validator: ${validator.name}, Field type: ${schema.type}`, context.fieldPath);
       }
 
       return validator.validate(schema, context);

@@ -135,9 +135,14 @@ export class UnionValidatorService {
 
     for (let i = 0; i < schema.unionTypes.length; i++) {
       const typeSchema = schema.unionTypes[i];
+      if (!typeSchema) {
+        // Skip invalid type schemas
+        continue;
+      }
+
       try {
         // Calculate confidence using type detector
-        const confidence = this.typeDetector.calculateTypeConfidence(value, typeSchema as any, schema.typeHints ?? []);
+        const confidence = this.typeDetector.calculateTypeConfidence(value, typeSchema, schema.typeHints ?? []);
 
         const valid = confidence > 0.5; // Threshold for validity
 
